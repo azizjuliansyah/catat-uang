@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --font-sans: var(--font-ibm-plex-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-ibm-plex-sans-mono), monospace;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Base surface */
+  --color-surface: #09090b;
+  --color-surface-card: #18181b;
+  --color-surface-input: #27272a;
+  --color-surface-hover: #3f3f46;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Brand */
+  --color-primary: #0C5CAB;
+  --color-primary-hover: #0a4a8a;
+
+  /* Text */
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+
+  /* Semantic - Finance */
+  --color-income: #10b981;
+  --color-expense: #ef4444;
+  --color-transfer: #6366f1;
+  --color-debt-owe: #f59e0b;
+  --color-debt-lend: #06b6d4;
+  --color-goal-active: #8b5cf6;
+  --color-goal-complete: #10b981;
+
+  /* Status */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Borders */
+  --color-border: #27272a;
+  --color-border-strong: #3f3f46;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
 }
+
