@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getIconComponent } from "@/lib/utils/icons";
+import { useApp } from "@/app/providers/AppProvider";
 import {
   ArrowRightLeft,
   Plus,
@@ -47,25 +48,13 @@ interface Transaction {
   } | null;
 }
 
-interface Wallet {
-  id: string;
-  name: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  type: "income" | "expense";
-}
-
 export default function TransactionsPage() {
   const supabase = createClient();
+  const { user, wallets, categories, refreshWallets } = useApp();
 
   // Load States
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,33 +77,11 @@ export default function TransactionsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadInitialData() {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Parallel fetching
-      const [walletsRes, categoriesRes] = await Promise.all([
-        supabase.from("wallets").select("id, name").order("name"),
-        supabase.from("categories").select("id, name, type").order("name")
-      ]);
-
-      if (walletsRes.data) setWallets(walletsRes.data);
-      if (categoriesRes.data) setCategories(categoriesRes.data);
-
-      await fetchTransactions();
-    }
-    loadInitialData();
-  }, [supabase]);
-
-  // Refetch transactions when date filters change (or manual call)
+  // Refetch transactions when user or date filters change (or manual call)
   async function fetchTransactions() {
+    if (!user) return;
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       let query = supabase
         .from("transactions")
         .select(`
@@ -151,10 +118,11 @@ export default function TransactionsPage() {
     }
   }
 
-  // Handle month selection change
   useEffect(() => {
-    fetchTransactions();
-  }, [selectedMonth]);
+    if (user) {
+      fetchTransactions();
+    }
+  }, [user, selectedMonth]);
 
   // Handle Delete Transaction
   async function handleDeleteTransaction() {
@@ -173,6 +141,9 @@ export default function TransactionsPage() {
       setSuccessMsg("Transaksi berhasil dihapus.");
       setTransactions((prev) => prev.filter((t) => t.id !== transactionToDelete.id));
       setTransactionToDelete(null);
+      
+      // Update global wallet balance cache
+      await refreshWallets();
     } catch (err: any) {
       console.error("Error deleting transaction:", err);
       setErrorMsg("Gagal menghapus transaksi: " + err.message);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getIconComponent } from "@/lib/utils/icons";
+import { useApp } from "@/app/providers/AppProvider";
 import { 
   Plus, 
   Search, 
@@ -59,11 +60,10 @@ const GOAL_ICONS = [
 
 export default function GoalsPage() {
   const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
+  const { user, wallets, refreshWallets } = useApp();
 
   // Data States
   const [goals, setGoals] = useState<SavingGoal[]>([]);
-  const [wallets, setWallets] = useState<WalletItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"all" | "ongoing" | "achieved" | "withdrawn">("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -105,17 +105,20 @@ export default function GoalsPage() {
   const [transactionsHistory, setTransactionsHistory] = useState<GoalTransaction[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Load User & Data
+  // Load Goals when user changes
   useEffect(() => {
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        await Promise.all([fetchGoals(), fetchWallets()]);
-      }
+    if (user) {
+      fetchGoals();
     }
-    init();
-  }, []);
+  }, [user]);
+
+  // Set default wallet ID when wallets are loaded
+  useEffect(() => {
+    const activeWallets = wallets.filter(w => !w.is_archived);
+    if (activeWallets.length > 0 && !txWalletId) {
+      setTxWalletId(activeWallets[0].id);
+    }
+  }, [wallets, txWalletId]);
 
   const showToast = (message: string, isSuccess = true) => {
     if (isSuccess) {
@@ -144,25 +147,6 @@ export default function GoalsPage() {
       showToast("Gagal memuat target tabungan: " + err.message, false);
     } finally {
       setLoading(false);
-    }
-  }
-
-  // Fetch Wallets
-  async function fetchWallets() {
-    try {
-      const { data, error } = await supabase
-        .from("wallets")
-        .select("id, name, balance")
-        .eq("is_archived", false)
-        .order("name", { ascending: true });
-
-      if (error) throw error;
-      setWallets(data || []);
-      if (data && data.length > 0) {
-        setTxWalletId(data[0].id);
-      }
-    } catch (err: any) {
-      console.error(err);
     }
   }
 
@@ -309,7 +293,8 @@ export default function GoalsPage() {
       setSelectedGoal(null);
 
       // Refresh Data
-      await Promise.all([fetchGoals(), fetchWallets()]);
+      await fetchGoals();
+      await refreshWallets();
     } catch (err: any) {
       console.error(err);
       showToast("Transaksi gagal: " + err.message, false);
@@ -430,7 +415,8 @@ export default function GoalsPage() {
 
       // Refresh data
       await fetchHistory(historyGoal.id);
-      await Promise.all([fetchGoals(), fetchWallets()]);
+      await fetchGoals();
+      await refreshWallets();
     } catch (err: any) {
       console.error(err);
       showToast("Gagal menghapus transaksi: " + err.message, false);
@@ -952,7 +938,7 @@ export default function GoalsPage() {
                   className="w-full px-3.5 py-2.5 bg-surface-input border border-border focus:border-primary focus:outline-none rounded-xl text-sm text-text-primary font-medium"
                 >
                   <option value="" disabled>Pilih Dompet</option>
-                  {wallets.map((w) => (
+                  {wallets.filter((w) => !w.is_archived).map((w) => (
                     <option key={w.id} value={w.id}>
                       {w.name} ({formatIDR(w.balance)})
                     </option>
@@ -1049,7 +1035,7 @@ export default function GoalsPage() {
                   className="w-full px-3.5 py-2.5 bg-surface-input border border-border focus:border-primary focus:outline-none rounded-xl text-sm text-text-primary font-medium"
                 >
                   <option value="" disabled>Pilih Dompet</option>
-                  {wallets.map((w) => (
+                  {wallets.filter((w) => !w.is_archived).map((w) => (
                     <option key={w.id} value={w.id}>
                       {w.name} ({formatIDR(w.balance)})
                     </option>

@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getIconComponent } from "@/lib/utils/icons";
+import { useApp } from "@/app/providers/AppProvider";
 import {
   ArrowLeft,
   Calendar,
@@ -52,11 +53,18 @@ export default function EditTransactionPage() {
   const id = params.id as string;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load States
-  const [loading, setLoading] = useState(true);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const {
+    user,
+    loadingUser,
+    wallets,
+    loadingWallets,
+    categories,
+    loadingCategories,
+    refreshWallets
+  } = useApp();
+
+  const [loadingTx, setLoadingTx] = useState(true);
+  const loading = loadingUser || loadingWallets || loadingCategories || loadingTx;
 
   // Form States
   const [amount, setAmount] = useState("");
@@ -80,60 +88,47 @@ export default function EditTransactionPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadData() {
-      if (!id) return;
-      setLoading(true);
-      
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) {
-        router.push("/login");
-        return;
+    async function loadTransaction() {
+      if (!id || !user) return;
+      setLoadingTx(true);
+      try {
+        // Fetch transaction details
+        const { data: tx, error: txError } = await supabase
+          .from("transactions")
+          .select("*")
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .single();
+
+        if (txError || !tx) {
+          setErrorMsg("Transaksi tidak ditemukan.");
+          return;
+        }
+
+        // Populate form states
+        setAmount(tx.amount.toString());
+        setType(tx.type);
+        setWalletId(tx.wallet_id);
+        setCategoryId(tx.category_id || "");
+        setDescription(tx.description || "");
+        setTransactionDate(tx.transaction_date);
+        setExistingReceiptUrl(tx.receipt_url);
+      } catch (err: any) {
+        console.error("Error loading transaction:", err);
+        setErrorMsg("Gagal mengambil data transaksi.");
+      } finally {
+        setLoadingTx(false);
       }
-      setUser(authUser);
-
-      // Fetch transaction details
-      const { data: tx, error: txError } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("id", id)
-        .eq("user_id", authUser.id)
-        .single();
-
-      if (txError || !tx) {
-        setErrorMsg("Transaksi tidak ditemukan.");
-        setLoading(false);
-        return;
-      }
-
-      // Fetch active wallets
-      const { data: walletsData } = await supabase
-        .from("wallets")
-        .select("id, name, balance")
-        .eq("is_archived", false)
-        .order("name");
-
-      // Fetch categories
-      const { data: categoriesData } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name");
-
-      if (walletsData) setWallets(walletsData);
-      if (categoriesData) setCategories(categoriesData);
-
-      // Populate form states
-      setAmount(tx.amount.toString());
-      setType(tx.type);
-      setWalletId(tx.wallet_id);
-      setCategoryId(tx.category_id || "");
-      setDescription(tx.description || "");
-      setTransactionDate(tx.transaction_date);
-      setExistingReceiptUrl(tx.receipt_url);
-
-      setLoading(false);
     }
-    loadData();
-  }, [supabase, id, router]);
+
+    if (!loadingUser) {
+      if (!user) {
+        router.push("/login");
+      } else {
+        loadTransaction();
+      }
+    }
+  }, [supabase, user, loadingUser, id, router]);
 
   // Keep category in sync with type
   useEffect(() => {
@@ -146,7 +141,7 @@ export default function EditTransactionPage() {
     } else {
       setCategoryId("");
     }
-  }, [type, categories]);
+  }, [type, categories, categoryId]);
 
   // Handle Receipt Selection
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -185,6 +180,7 @@ export default function EditTransactionPage() {
   // Form Submit
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!user) return;
     setErrorMsg(null);
 
     const numericAmount = parseFloat(amount.replace(/[^0-9]/g, ""));
@@ -254,6 +250,7 @@ export default function EditTransactionPage() {
 
       if (updateError) throw updateError;
 
+      await refreshWallets();
       router.push("/transactions");
       router.refresh();
     } catch (err: any) {
@@ -276,6 +273,7 @@ export default function EditTransactionPage() {
 
       if (error) throw error;
 
+      await refreshWallets();
       router.push("/transactions");
       router.refresh();
     } catch (err: any) {

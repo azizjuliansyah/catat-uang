@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getIconComponent, iconMap } from "@/lib/utils/icons";
+import { useApp } from "@/app/providers/AppProvider";
 import { 
   Plus, 
   ArrowRightLeft, 
@@ -45,11 +46,8 @@ const PRESETS = {
 
 export default function WalletsPage() {
   const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
+  const { user, wallets, loadingWallets: loading, refreshWallets } = useApp();
   
-  // Data State
-  const [wallets, setWallets] = useState<WalletItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -84,37 +82,10 @@ export default function WalletsPage() {
   const [tfDate, setTfDate] = useState(new Date().toISOString().split("T")[0]);
   const [tfSubmitting, setTfSubmitting] = useState(false);
 
-  // Fetch wallets
+  // Fetch wallets (calls global context refresh)
   async function fetchWallets() {
-    try {
-      setLoading(true);
-      setErrorMsg(null);
-      const { data, error } = await supabase
-        .from("wallets")
-        .select("*")
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      setWallets(data || []);
-    } catch (err: any) {
-      console.error("Error fetching wallets:", err);
-      setErrorMsg("Gagal memuat daftar dompet: " + err.message);
-    } finally {
-      setLoading(false);
-    }
+    await refreshWallets();
   }
-
-  // Load User & Wallets on init
-  useEffect(() => {
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        await fetchWallets();
-      }
-    }
-    init();
-  }, []);
 
   // Show Toast helpers
   const showToast = (message: string, isSuccess = true) => {
@@ -293,6 +264,7 @@ export default function WalletsPage() {
   // 6. TRANSFER SALDO SUBMIT
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     if (!tfSourceId || !tfDestId) {
       showToast("Pilih dompet asal dan tujuan transfer", false);
       return;
@@ -367,7 +339,7 @@ export default function WalletsPage() {
     .reduce((sum, w) => sum + Number(w.balance), 0);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6">
       {/* Toast Notification Container */}
       {(successMsg || errorMsg) && (
         <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top-4 duration-300">

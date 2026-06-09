@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getIconComponent } from "@/lib/utils/icons";
+import { useApp } from "@/app/providers/AppProvider";
 import {
   TrendingUp,
   TrendingDown,
@@ -46,33 +47,23 @@ interface Transaction {
 
 export default function DashboardPage() {
   const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
-  const [wallets, setWallets] = useState<WalletData[]>([]);
+  const { user, wallets: allWallets, loadingUser, loadingWallets } = useApp();
+  const wallets = allWallets.filter((w) => !w.is_archived);
+
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
   const [currentMonthExpense, setCurrentMonthExpense] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loadingTx, setLoadingTx] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadDashboardData() {
-      setLoading(true);
+    if (!user) return;
+
+    async function loadDashboardTxData() {
+      if (!user) return;
+      setLoadingTx(true);
       setErrorMsg(null);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        setUser(user);
-
-        // 1. Fetch active (non-archived) wallets
-        const { data: walletData, error: walletError } = await supabase
-          .from("wallets")
-          .select("*")
-          .eq("is_archived", false)
-          .order("name", { ascending: true });
-
-        if (walletError) throw walletError;
-        setWallets(walletData || []);
-
         // Calculate date boundaries for current month in local timezone representation
         const now = new Date();
         const year = now.getFullYear();
@@ -82,7 +73,7 @@ export default function DashboardPage() {
         const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
         const endDateStr = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
 
-        // 2. Fetch current month's transactions for summary calculations
+        // Fetch current month's transactions for summary calculations
         const { data: monthTx, error: monthTxError } = await supabase
           .from("transactions")
           .select("amount, type")
@@ -106,7 +97,7 @@ export default function DashboardPage() {
         setCurrentMonthIncome(incomeSum);
         setCurrentMonthExpense(expenseSum);
 
-        // 3. Fetch 5 most recent transactions
+        // Fetch 5 most recent transactions
         const { data: recentTx, error: recentTxError } = await supabase
           .from("transactions")
           .select(`
@@ -127,15 +118,15 @@ export default function DashboardPage() {
         setRecentTransactions((recentTx as any[]) || []);
 
       } catch (err: any) {
-        console.error("Error loading dashboard data:", err);
-        setErrorMsg("Gagal memuat data dashboard: " + err.message);
+        console.error("Error loading dashboard transaction data:", err);
+        setErrorMsg("Gagal memuat data transaksi: " + err.message);
       } finally {
-        setLoading(false);
+        setLoadingTx(false);
       }
     }
 
-    loadDashboardData();
-  }, [supabase]);
+    loadDashboardTxData();
+  }, [supabase, user]);
 
   const totalBalance = wallets.reduce((sum, w) => sum + Number(w.balance), 0);
   const netCashflow = currentMonthIncome - currentMonthExpense;
@@ -156,7 +147,9 @@ export default function DashboardPage() {
     });
   };
 
-  if (loading) {
+  const isLoading = loadingUser || loadingWallets || (user && loadingTx);
+
+  if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-surface-card rounded-md" />

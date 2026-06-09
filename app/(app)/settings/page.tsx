@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useApp } from "@/app/providers/AppProvider";
 import { getIconComponent } from "@/lib/utils/icons";
 import {
   User,
@@ -59,20 +60,16 @@ const PRESET_ICONS = [
 
 export default function SettingsPage() {
   const supabase = createClient();
+  const { user, categories, loadingCategories: categoriesLoading, refreshCategories, refreshUser } = useApp();
   const [activeTab, setActiveTab] = useState<"profile" | "categories">("profile");
   const [categoryType, setCategoryType] = useState<"expense" | "income">("expense");
 
   // User Profile States
-  const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileName, setProfileName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
-
-  // Categories States
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   // Category Modal States
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -102,16 +99,15 @@ export default function SettingsPage() {
   }, [errorMsg, successMsg]);
 
   useEffect(() => {
-    async function loadData() {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (authUser) {
-        setUser(authUser);
-        
+    async function loadProfile() {
+      if (!user) return;
+      
+      try {
         // Fetch user profile from public.users table
-        const { data: prof, error: profError } = await supabase
+        const { data: prof } = await supabase
           .from("users")
           .select("*")
-          .eq("id", authUser.id)
+          .eq("id", user.id)
           .single();
         
         if (prof) {
@@ -119,28 +115,14 @@ export default function SettingsPage() {
           setProfileName(prof.name || "");
           setAvatarUrl(prof.avatar_url || "");
         } else {
-          setProfileName(authUser.user_metadata?.name || authUser.email || "");
+          setProfileName(user.user_metadata?.name || user.email || "");
         }
-
-        // Fetch categories
-        await fetchCategories();
+      } catch (err) {
+        console.error("Error loading profile:", err);
       }
     }
-    loadData();
-  }, [supabase]);
-
-  async function fetchCategories() {
-    setCategoriesLoading(true);
-    const { data, error } = await supabase
-      .from("categories")
-      .select("*")
-      .order("name", { ascending: true });
-
-    if (!error && data) {
-      setCategories(data);
-    }
-    setCategoriesLoading(false);
-  }
+    loadProfile();
+  }, [user, supabase]);
 
   // Handle Profile Update (Name & Avatar url already uploaded)
   async function handleProfileSave(e: React.FormEvent) {
@@ -167,9 +149,8 @@ export default function SettingsPage() {
         data: { name: profileName }
       });
 
+      await refreshUser();
       setSuccessMsg("Profil berhasil diperbarui!");
-      // Reload layout profile metadata
-      window.location.reload();
     } catch (err: any) {
       console.error("Error updating profile:", err);
       setErrorMsg("Gagal memperbarui profil: " + err.message);
@@ -219,6 +200,7 @@ export default function SettingsPage() {
         data: { avatar_url: publicUrl }
       });
 
+      await refreshUser();
       setAvatarUrl(publicUrl);
       setSuccessMsg("Foto profil berhasil diperbarui!");
     } catch (err: any) {
@@ -275,7 +257,7 @@ export default function SettingsPage() {
       setIsCategoryModalOpen(false);
       setCatName("");
       setEditingCategory(null);
-      await fetchCategories();
+      await refreshCategories();
     } catch (err: any) {
       console.error("Error saving category:", err);
       setErrorMsg("Gagal menyimpan kategori: " + err.message);
@@ -301,7 +283,7 @@ export default function SettingsPage() {
 
       setSuccessMsg(`Kategori "${categoryToDelete.name}" berhasil dihapus.`);
       setCategoryToDelete(null);
-      await fetchCategories();
+      await refreshCategories();
     } catch (err: any) {
       console.error("Error deleting category:", err);
       setErrorMsg("Gagal menghapus kategori: " + err.message);

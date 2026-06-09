@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useApp } from "@/app/providers/AppProvider";
 import { 
   Plus, 
   Search, 
@@ -54,12 +55,12 @@ interface DebtPaymentItem {
 
 export default function DebtsPage() {
   const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
+  const { user, loadingUser, wallets, loadingWallets, refreshWallets } = useApp();
   
   // Data States
   const [debts, setDebts] = useState<DebtItem[]>([]);
-  const [wallets, setWallets] = useState<WalletItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingDebts, setLoadingDebts] = useState(true);
+  const loading = loadingUser || loadingWallets || loadingDebts;
   const [activeTab, setActiveTab] = useState<"owe" | "lend">("owe");
   const [subTab, setSubTab] = useState<"active" | "settled">("active");
   const [searchTerm, setSearchTerm] = useState("");
@@ -104,7 +105,7 @@ export default function DebtsPage() {
   // Fetch all debts
   async function fetchDebts() {
     try {
-      setLoading(true);
+      setLoadingDebts(true);
       setErrorMsg(null);
       const { data, error } = await supabase
         .from("debts")
@@ -117,40 +118,25 @@ export default function DebtsPage() {
       console.error("Error fetching debts:", err);
       showToast("Gagal memuat daftar hutang/piutang: " + err.message, false);
     } finally {
-      setLoading(false);
+      setLoadingDebts(false);
     }
   }
 
-  // Fetch wallets
-  async function fetchWallets() {
-    try {
-      const { data, error } = await supabase
-        .from("wallets")
-        .select("id, name, balance")
-        .eq("is_archived", false)
-        .order("name", { ascending: true });
-
-      if (error) throw error;
-      setWallets(data || []);
-      if (data && data.length > 0) {
-        setPayWalletId(data[0].id);
-      }
-    } catch (err: any) {
-      console.error("Error fetching wallets:", err);
-    }
-  }
-
-  // Init Data
+  // Init Data and select default wallet
   useEffect(() => {
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        await Promise.all([fetchDebts(), fetchWallets()]);
+    if (!loadingUser && user) {
+      fetchDebts();
+    }
+  }, [user, loadingUser]);
+
+  useEffect(() => {
+    if (wallets.length > 0 && !payWalletId) {
+      const activeWallets = wallets.filter(w => !w.is_archived);
+      if (activeWallets.length > 0) {
+        setPayWalletId(activeWallets[0].id);
       }
     }
-    init();
-  }, []);
+  }, [wallets, payWalletId]);
 
   // Toast Helpers
   const showToast = (message: string, isSuccess = true) => {
@@ -306,7 +292,8 @@ export default function DebtsPage() {
       setPayingDebt(null);
 
       // Refresh Data
-      await Promise.all([fetchDebts(), fetchWallets()]);
+      await fetchDebts();
+      await refreshWallets();
     } catch (err: any) {
       console.error(err);
       showToast("Gagal mencatat pembayaran: " + err.message, false);
@@ -367,7 +354,8 @@ export default function DebtsPage() {
 
       // Refresh
       await fetchHistory(selectedDebtForHistory.id);
-      await Promise.all([fetchDebts(), fetchWallets()]);
+      await fetchDebts();
+      await refreshWallets();
     } catch (err: any) {
       console.error(err);
       showToast("Gagal menghapus pembayaran: " + err.message, false);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getIconComponent } from "@/lib/utils/icons";
+import { useApp } from "@/app/providers/AppProvider";
 import {
   ArrowLeft,
   Calendar,
@@ -37,11 +38,17 @@ export default function NewTransactionPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load States
-  const [loading, setLoading] = useState(true);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const {
+    user,
+    loadingUser,
+    wallets,
+    loadingWallets,
+    categories,
+    loadingCategories,
+    refreshWallets
+  } = useApp();
+
+  const loading = loadingUser || loadingWallets || loadingCategories;
 
   // Form States
   const [amount, setAmount] = useState("");
@@ -62,53 +69,25 @@ export default function NewTransactionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Redirect to login if not authenticated
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) {
-        router.push("/login");
-        return;
-      }
-      setUser(authUser);
-
-      // Fetch active wallets
-      const { data: walletsData } = await supabase
-        .from("wallets")
-        .select("id, name, balance")
-        .eq("is_archived", false)
-        .order("name");
-
-      // Fetch categories
-      const { data: categoriesData } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name");
-
-      if (walletsData) {
-        setWallets(walletsData);
-        // Pre-select default wallet if any or first wallet
-        const { data: defaultWallet } = await supabase
-          .from("wallets")
-          .select("id")
-          .eq("is_default", true)
-          .eq("is_archived", false)
-          .maybeSingle();
-
-        if (defaultWallet) {
-          setWalletId(defaultWallet.id);
-        } else if (walletsData.length > 0) {
-          setWalletId(walletsData[0].id);
-        }
-      }
-
-      if (categoriesData) {
-        setCategories(categoriesData);
-      }
-      setLoading(false);
+    if (!loadingUser && !user) {
+      router.push("/login");
     }
-    loadData();
-  }, [supabase, router]);
+  }, [user, loadingUser, router]);
+
+  // Pre-select default wallet if any or first wallet
+  useEffect(() => {
+    if (!loadingWallets && wallets.length > 0 && !walletId) {
+      const activeWallets = wallets.filter((w) => !w.is_archived);
+      const defaultWallet = activeWallets.find((w) => w.is_default);
+      if (defaultWallet) {
+        setWalletId(defaultWallet.id);
+      } else if (activeWallets.length > 0) {
+        setWalletId(activeWallets[0].id);
+      }
+    }
+  }, [wallets, loadingWallets, walletId]);
 
   // Pre-select category when type or category list changes
   useEffect(() => {
@@ -122,7 +101,7 @@ export default function NewTransactionPage() {
     } else {
       setCategoryId("");
     }
-  }, [type, categories]);
+  }, [type, categories, categoryId]);
 
   // Handle Receipt Selection
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -161,6 +140,7 @@ export default function NewTransactionPage() {
   // Handle form submit
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!user) return;
     setErrorMsg(null);
 
     const numericAmount = parseFloat(amount.replace(/[^0-9]/g, ""));
@@ -215,8 +195,8 @@ export default function NewTransactionPage() {
 
       if (insertError) throw insertError;
 
+      await refreshWallets();
       router.push("/transactions");
-      router.refresh();
     } catch (err: any) {
       console.error("Error creating transaction:", err);
       setErrorMsg("Gagal menyimpan transaksi: " + err.message);

@@ -3,12 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useApp } from "@/app/providers/AppProvider";
 import {
   LayoutDashboard,
   ArrowRightLeft,
   Wallet,
   Receipt,
   Target,
+  TrendingUp,
   Settings,
   LogOut,
   ChevronDown,
@@ -18,19 +20,12 @@ import {
   Plus
 } from "lucide-react";
 
-interface WalletItem {
-  id: string;
-  name: string;
-  balance: number;
-}
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { user, wallets, loadingUser } = useApp();
 
-  const [user, setUser] = useState<any>(null);
-  const [wallets, setWallets] = useState<WalletItem[]>([]);
   const [selectedWalletId, setSelectedWalletId] = useState<string>("all");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -49,33 +44,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Fetch user session on mount
+  // Redirect to login if user is not logged in and we are done loading
   useEffect(() => {
-    async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/auth/login");
-        return;
-      }
-      setUser(user);
+    if (!loadingUser && !user) {
+      router.push("/auth/login");
     }
-    loadUser();
-  }, [supabase, router]);
-
-  // Fetch wallets on mount and when pathname changes
-  useEffect(() => {
-    async function loadWallets() {
-      const { data: walletData, error } = await supabase
-        .from("wallets")
-        .select("id, name, balance")
-        .order("name", { ascending: true });
-
-      if (!error && walletData) {
-        setWallets(walletData);
-      }
-    }
-    loadWallets();
-  }, [supabase, pathname]);
+  }, [user, loadingUser, router]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -83,12 +57,28 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push("/auth/login");
   };
 
+  if (loadingUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-text-secondary animate-pulse">Memuat sesi...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Transaksi", href: "/transactions", icon: ArrowRightLeft },
     { name: "Dompet", href: "/wallets", icon: Wallet },
     { name: "Hutang", href: "/debts", icon: Receipt },
     { name: "Tabungan", href: "/goals", icon: Target },
+    { name: "Laporan", href: "/reports", icon: TrendingUp },
   ];
 
   // Calculate total balance for 'Semua Dompet'
