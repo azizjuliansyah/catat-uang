@@ -2,7 +2,7 @@ import React from "react";
 import { Spinner } from "./Spinner";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "destructive" | "dashed";
+  variant?: "primary" | "secondary" | "ghost" | "destructive" | "dashed" | "success";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   fullWidth?: boolean;
@@ -36,6 +36,8 @@ export function Button({
       "bg-danger hover:bg-danger/90 text-white shadow-md shadow-danger/10 border border-danger hover:border-danger/90",
     dashed:
       "bg-transparent hover:bg-surface-hover text-text-secondary hover:text-primary border border-dashed border-border hover:border-primary/50",
+    success:
+      "bg-success hover:bg-success/90 text-white shadow-md shadow-success/10 border border-success hover:border-success/90",
   };
 
   const sizeClasses = {

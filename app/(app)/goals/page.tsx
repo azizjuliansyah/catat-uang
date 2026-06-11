@@ -150,7 +150,6 @@ export default function GoalsPage() {
               goal={goal}
               onEdit={state.openEditModal}
               onDelete={state.setGoalToDelete}
-              onHistory={(g) => handleOpenHistoryModal(g, state.setHistoryGoal, state.setIsHistoryModalOpen)}
               onTopup={(g) => state.openTxModal(g, "topup")}
               onWithdraw={(g) => state.openTxModal(g, "withdrawal")}
             />

@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Manrope, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/app/providers/AppProvider";
 import { ToastProvider } from "@/components/ui/molecules/Toast";
+import { PWAUpdatePrompt } from "@/components/pwa/PWAUpdatePrompt";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -32,6 +33,20 @@ const newsreader = Newsreader({
 export const metadata: Metadata = {
   title: "CatatUang - Premium Personal Finance & Planning",
   description: "Track your wallets, transactions, debts, and financial goals in one beautiful dashboard.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "CatatUang",
+  },
+  icons: {
+    icon: [{ url: "/icon-192x192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icon-192x192.png", sizes: "192x192", type: "image/png" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#6366f1",
 };
 
 export default function RootLayout({
@@ -49,6 +64,7 @@ export default function RootLayout({
           <AppProvider>
             {children}
           </AppProvider>
+          <PWAUpdatePrompt />
         </ToastProvider>
       </body>
     </html>

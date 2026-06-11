@@ -1,9 +1,9 @@
 import { useState } from "react";
+import Link from "next/link";
 import { SavingGoal } from "../types";
 import { getIconComponent } from "@/lib/utils/icons";
-import { calculateETAInfo } from "../utils";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, History, Plus, ArrowUpRight, Calendar, AlertCircle, Check } from "lucide-react";
+import { Edit2, Trash2, Plus, ArrowUpRight, Calendar, ArrowRight } from "lucide-react";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
@@ -15,7 +15,6 @@ interface GoalCardProps {
   goal: SavingGoal;
   onEdit: (goal: SavingGoal) => void;
   onDelete: (goal: SavingGoal) => void;
-  onHistory: (goal: SavingGoal) => void;
   onTopup: (goal: SavingGoal) => void;
   onWithdraw: (goal: SavingGoal) => void;
 }
@@ -24,17 +23,16 @@ export function GoalCard({
   goal,
   onEdit,
   onDelete,
-  onHistory,
   onTopup,
   onWithdraw
 }: GoalCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const progress = Math.min(100, (goal.current_amount / goal.target_amount) * 100);
   const remaining = Math.max(0, goal.target_amount - goal.current_amount);
-  const eta = calculateETAInfo(goal);
   const IconComp = getIconComponent(goal.icon);
   const isAchieved = goal.status === "achieved";
   const isWithdrawn = goal.status === "withdrawn";
+  const hasFunds = goal.current_amount > 0;
 
   const cardColor = isAchieved
     ? "#10b981" // Goal Complete
@@ -120,60 +118,34 @@ export function GoalCard({
         </div>
       </div>
 
-      {/* ETA details section */}
-      <div className="mt-4 pt-3 border-t border-border/40 bg-surface-hover/30 p-2.5 rounded-xl border border-border/20 relative z-10 w-full">
-        <div className="flex items-start gap-1.5 text-xs text-text-secondary">
-          <Calendar className="w-4 h-4 text-text-secondary shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold">
-              Batas Target:{" "}
-              <span className="font-bold text-text-primary font-mono">
-                {formatDateTimeShort(goal.target_date)}
-              </span>
-            </p>
-
-            {eta.status === "ongoing" && eta.daysLeft && (
-              <p className="text-[9px] text-text-secondary leading-relaxed">
-                Estimasi: <span className="font-bold text-primary">{eta.msg}</span>.
-                Butuh <span className="font-bold text-text-primary font-mono">{formatIDR(eta.requiredWeekly || 0)}/mgg</span> atau <span className="font-bold text-text-primary font-mono">{formatIDR(eta.requiredMonthly || 0)}/bln</span>.
-              </p>
-            )}
-
-            {eta.status === "late" && (
-              <p className="text-[9px] text-danger font-bold flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                Melewati tenggat tanggal target ({formatIDR(remaining)} sisa).
-              </p>
-            )}
-
-            {eta.status === "achieved" && (
-              <p className="text-[9px] text-success font-bold flex items-center gap-1">
-                <Check className="w-3.5 h-3.5 shrink-0" />
-                Dana tabungan target Anda sudah terkumpul penuh!
-              </p>
-            )}
-          </div>
+      {/* Bottom Actions - Target Date + Detail Button */}
+      <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between relative z-10 w-full">
+        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+          <Calendar className="w-4 h-4 text-text-secondary shrink-0" />
+          <span className="text-[10px] font-semibold">
+            Target:{" "}
+            <span className="font-bold text-text-primary font-mono">
+              {formatDateTimeShort(goal.target_date)}
+            </span>
+          </span>
         </div>
+
+        <Link
+          href={`/goals/${goal.id}`}
+          className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center"
+        >
+          Lihat Detail
+          <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
+        </Link>
       </div>
 
-      {/* Bottom Actions */}
-      <div className="mt-4 pt-3 border-t border-border/40 flex items-center gap-2 relative z-10 w-full">
-        <Button
-          variant="secondary"
-          size="sm"
-          fullWidth
-          onClick={() => onHistory(goal)}
-          title="Lihat Riwayat Top-up & Penarikan"
-        >
-          <History className="w-3.5 h-3.5" />
-          Riwayat
-        </Button>
-
-        {/* Draw / Top-up Action depending on states */}
+      {/* Quick Actions Row */}
+      <div className="mt-3 flex items-center gap-2 relative z-10 w-full">
+        {/* Top-up Button - only show if ongoing or not withdrawn */}
         {goal.status === "ongoing" && (
           <Button
             size="sm"
-            color={cardColor}
+            variant="primary"
             fullWidth
             onClick={() => onTopup(goal)}
           >
@@ -182,19 +154,21 @@ export function GoalCard({
           </Button>
         )}
 
-        {goal.status === "achieved" && (
+        {/* Withdraw Button - show if has funds AND not already withdrawn */}
+        {hasFunds && !isWithdrawn && (
           <Button
             size="sm"
-            color={cardColor}
+            variant="success"
             fullWidth
             onClick={() => onWithdraw(goal)}
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
-            Tarik Dana
+            Tarik
           </Button>
         )}
 
-        {goal.status === "withdrawn" && (
+        {/* Disabled state when withdrawn */}
+        {isWithdrawn && (
           <Button
             disabled
             size="sm"
