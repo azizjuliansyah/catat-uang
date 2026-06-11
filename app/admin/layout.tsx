@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/atoms/Button";
 import {
   ShieldAlert,
   Users,
@@ -49,14 +50,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Admin Top Bar */}
       <header className="h-16 border-b border-border bg-surface-card flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-text-secondary hover:text-text-primary"
+            className="md:hidden p-2 text-text-secondary hover:text-text-primary min-h-0 h-auto"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          </button>
+          </Button>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-warning flex items-center justify-center text-zinc-950 font-bold">
               A
@@ -71,13 +73,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <span className="text-xs text-text-secondary font-mono hidden sm:block">
             {user?.email}
           </span>
-          <button
+          <Button
+            variant="ghost"
             onClick={handleLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:border-danger rounded-md text-xs font-medium text-text-secondary hover:text-danger hover:bg-danger/10 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:border-danger rounded-md text-xs font-medium text-text-secondary hover:text-danger hover:bg-danger/10 transition-all cursor-pointer min-h-0 h-auto"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Keluar</span>
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -140,13 +143,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </a>
                 );
               })}
-              <button
+              <Button
+                variant="ghost"
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-danger hover:bg-danger/10 transition-all"
+                className="w-full flex items-center justify-start gap-3 px-4 py-3 text-sm font-medium rounded-xl text-danger hover:text-danger hover:bg-danger/10 transition-all min-h-0 h-auto"
               >
                 <LogOut className="w-5 h-5" />
                 Keluar
-              </button>
+              </Button>
             </div>
           </div>
         )}

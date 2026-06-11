@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
+import { Spinner } from "@/components/ui/atoms/Spinner";
+import { Button } from "@/components/ui/atoms/Button";
 import {
   LayoutDashboard,
   ArrowRightLeft,
@@ -61,8 +63,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-text-secondary animate-pulse">Memuat sesi...</p>
+          <Spinner size="lg" className="text-primary" />
+          <p className="text-xs text-text-secondary animate-pulse font-sans">Memuat sesi...</p>
         </div>
       </div>
     );
@@ -116,9 +118,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Wallet Switcher Dropdown */}
         <div className="px-4 py-4 border-b border-border relative" ref={dropdownRef}>
-          <button
+          <Button
+            variant="secondary"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-full flex items-center justify-between p-2.5 bg-surface-input hover:bg-surface-hover border border-border hover:border-border-strong rounded-lg text-left transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between p-2.5 bg-surface-input hover:bg-surface-hover border border-border hover:border-border-strong rounded-lg text-left transition-colors cursor-pointer font-normal min-h-0 h-auto"
           >
             <div className="overflow-hidden">
               <p className="text-xs text-text-secondary font-medium truncate">
@@ -129,36 +132,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </p>
             </div>
             <ChevronDown className="w-4 h-4 text-text-secondary shrink-0 ml-2" />
-          </button>
+          </Button>
 
           {dropdownOpen && (
             <div className="absolute left-4 right-4 mt-2 bg-surface-input border border-border rounded-xl shadow-xl z-50 py-1.5 max-h-60 overflow-y-auto">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => {
                   setSelectedWalletId("all");
                   setDropdownOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2 text-xs hover:bg-surface-hover transition-colors flex flex-col ${
+                className={`w-full text-left px-4 py-2 text-xs hover:bg-surface-hover transition-colors flex flex-col items-start min-h-0 h-auto font-normal rounded-none ${
                   selectedWalletId === "all" ? "bg-primary/10 text-primary border-l-2 border-primary" : "text-text-primary"
                 }`}
               >
                 <span className="font-medium">Semua Dompet</span>
                 <span className="text-xxs font-mono text-text-secondary mt-0.5">{formatIDR(totalBalance)}</span>
-              </button>
+              </Button>
               {wallets.map((w) => (
-                <button
+                <Button
                   key={w.id}
+                  variant="ghost"
                   onClick={() => {
                     setSelectedWalletId(w.id);
                     setDropdownOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-xs hover:bg-surface-hover transition-colors flex flex-col ${
+                  className={`w-full text-left px-4 py-2 text-xs hover:bg-surface-hover transition-colors flex flex-col items-start min-h-0 h-auto font-normal rounded-none ${
                     selectedWalletId === w.id ? "bg-primary/10 text-primary border-l-2 border-primary" : "text-text-primary"
                   }`}
                 >
                   <span className="font-medium truncate">{w.name}</span>
                   <span className="text-xxs font-mono text-text-secondary mt-0.5">{formatIDR(w.balance)}</span>
-                </button>
+                </Button>
               ))}
               {wallets.length === 0 && (
                 <div className="px-4 py-3 text-center text-xs text-text-muted">
@@ -193,59 +198,88 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Bottom Section (User profile & actions) */}
         <div className="p-4 border-t border-border bg-surface-card/50">
-          <div className="flex items-center gap-3 mb-3 px-2">
-            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
-              {user?.email ? user.email[0].toUpperCase() : <User className="w-4 h-4" />}
+          <div className="flex items-center justify-between gap-2 mb-3 px-2">
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                {user?.email ? user.email[0].toUpperCase() : <User className="w-4 h-4" />}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-xs font-semibold text-text-primary truncate">
+                  {user?.user_metadata?.name || "Pengguna"}
+                </p>
+                <p className="text-[10px] text-text-secondary/70 truncate">
+                  {user?.email || "loading..."}
+                </p>
+              </div>
             </div>
-            <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-text-primary truncate">
-                {user?.user_metadata?.name || "Pengguna"}
-              </p>
-              <p className="text-xxs text-text-secondary truncate">
-                {user?.email || "loading..."}
-              </p>
-            </div>
+
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              title="Keluar Aplikasi"
+              className="w-8 h-8 min-h-0 p-0 rounded-lg flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-danger hover:bg-danger/10 rounded-md transition-all cursor-pointer"
+          <a
+            href="/settings"
+            className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-all ${
+              pathname.startsWith("/settings")
+                ? "bg-primary/10 text-primary border-l-2 border-primary font-bold"
+                : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+            }`}
           >
-            <LogOut className="w-4 h-4" />
-            Keluar Aplikasi
-          </button>
+            <Settings className={`w-4 h-4 ${pathname.startsWith("/settings") ? "text-primary" : "text-text-secondary"}`} />
+            Pengaturan
+          </a>
         </div>
       </aside>
 
       {/* 2. MOBILE TOP BAR & BOTTOM NAVBAR */}
       <div className="flex flex-col flex-1 md:pl-60 min-w-0">
         {/* Mobile Header */}
-        <header className="flex md:hidden items-center justify-between h-14 px-4 bg-surface-card border-b border-border sticky top-0 z-20">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">
+        <header className="flex md:hidden items-center justify-between h-16 px-4 border-b border-border/50 sticky top-0 z-20 glassmorphism">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base shadow-lg shadow-primary/25">
               C
             </div>
-            <span className="font-semibold text-md text-text-primary tracking-tight">
-              CatatUang
+            <span className="font-bold text-base text-text-primary tracking-tight font-display">
+              Catat<span className="text-primary">Uang</span>
             </span>
           </div>
 
-          {/* Quick Wallet Indicator / switcher on header */}
-          <div className="text-right">
-            <span className="text-xxs text-text-secondary block">Saldo Total</span>
-            <span className="text-xs font-semibold text-text-primary font-mono block">
-              {formatIDR(totalBalance)}
-            </span>
+          {/* Quick Wallet Indicator / switcher & Settings on header */}
+          <div className="flex items-center gap-3.5">
+            <div className="text-right">
+              <span className="text-[10px] text-text-secondary block font-medium">Saldo Total</span>
+              <span className="text-xs font-semibold text-text-primary font-mono block">
+                {formatIDR(totalBalance)}
+              </span>
+            </div>
+            
+            <a
+              href="/settings"
+              className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all border ${
+                pathname.startsWith("/settings")
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : "text-text-secondary hover:text-text-primary bg-surface-input/50 hover:bg-surface-hover/50 border-border"
+              }`}
+              aria-label="Pengaturan"
+            >
+              <Settings className="w-5 h-5" />
+            </a>
           </div>
         </header>
 
         {/* Page Main Content Area */}
-        <main className="flex-1 p-4 pb-20 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 pb-24 md:p-8 overflow-y-auto">
           {children}
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="flex md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-card/90 backdrop-blur-md border-t border-border items-center justify-around px-2 z-40 shadow-lg">
+        <nav className="flex md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-border/50 items-center justify-around px-2 z-40 shadow-xl glassmorphism pb-[env(safe-area-inset-bottom,0)]">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -253,25 +287,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <a
                 key={item.name}
                 href={item.href}
-                className={`flex flex-col items-center justify-center flex-1 h-full py-1 ${
-                  isActive ? "text-primary" : "text-text-secondary hover:text-text-primary"
+                className={`flex flex-col items-center justify-center flex-1 h-full py-1 min-h-[44px] transition-all relative ${
+                  isActive ? "text-primary font-bold" : "text-text-secondary hover:text-text-primary"
                 }`}
               >
-                <Icon className="w-5 h-5 mb-0.5" />
-                <span className="text-xxs font-medium tracking-tight truncate">
+                <Icon className={`w-5 h-5 transition-transform duration-200 ${isActive ? "scale-110 text-primary" : "text-text-secondary"}`} />
+                <span className="text-[10px] tracking-tight mt-0.5 font-sans">
                   {item.name}
                 </span>
+                {isActive && (
+                  <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_rgba(0,114,245,0.6)] animate-fade-in" />
+                )}
               </a>
             );
           })}
           {/* Quick Sign Out for Mobile */}
-          <button
+          <Button
+            variant="ghost"
             onClick={handleLogout}
-            className="flex flex-col items-center justify-center flex-1 h-full py-1 text-text-secondary hover:text-danger cursor-pointer"
+            className="flex flex-col items-center justify-center flex-1 h-full py-1 min-h-0 text-text-secondary hover:text-danger transition-colors font-normal rounded-none"
           >
-            <LogOut className="w-5 h-5 mb-0.5" />
-            <span className="text-xxs font-medium tracking-tight">Keluar</span>
-          </button>
+            <LogOut className="w-5 h-5" />
+            <span className="text-[10px] tracking-tight mt-0.5 font-sans">Keluar</span>
+          </Button>
         </nav>
       </div>
     </div>

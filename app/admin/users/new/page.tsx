@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createUser } from "@/app/admin/actions";
+import { Button } from "@/components/ui/atoms/Button";
 import {
   ArrowLeft,
   Mail,
@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 
 export default function NewUserPage() {
-  const router = useRouter();
 
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
@@ -79,9 +78,10 @@ export default function NewUserPage() {
       setFormPassword("");
       setFormRole("user");
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error creating user:", err);
-      setErrorMsg(err.message || "Gagal membuat pengguna. Silakan coba lagi.");
+      const msg = err instanceof Error ? err.message : String(err);
+      setErrorMsg(msg || "Gagal membuat pengguna. Silakan coba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -169,20 +169,20 @@ export default function NewUserPage() {
                 className="w-full px-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:outline-none rounded-xl text-sm text-text-primary font-mono pr-20"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg transition-colors"
+                  className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg transition-colors min-h-0 h-auto"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="ghost"
                   onClick={generatePassword}
-                  className="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-lg hover:bg-primary/20 transition-colors"
+                  className="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-lg hover:bg-primary/20 transition-colors min-h-0 h-auto"
                 >
                   Generate
-                </button>
+                </Button>
               </div>
             </div>
             <p className="text-xs text-text-secondary mt-1">
@@ -197,28 +197,28 @@ export default function NewUserPage() {
               Peran (Role) <span className="text-danger">*</span>
             </label>
             <div className="grid grid-cols-2 gap-3 bg-surface-input p-1 rounded-xl">
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 onClick={() => setFormRole("user")}
-                className={`py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                className={`py-2.5 text-sm font-semibold rounded-lg transition-all min-h-0 h-auto ${
                   formRole === "user"
                     ? "bg-surface-card text-text-primary border border-border shadow-sm"
-                    : "text-text-secondary hover:text-text-primary"
+                    : "text-text-secondary hover:text-text-primary hover:bg-transparent"
                 }`}
               >
                 User
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => setFormRole("admin")}
-                className={`py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                className={`py-2.5 text-sm font-semibold rounded-lg transition-all min-h-0 h-auto ${
                   formRole === "admin"
                     ? "bg-surface-card text-text-primary border border-border shadow-sm"
-                    : "text-text-secondary hover:text-text-primary"
+                    : "text-text-secondary hover:text-text-primary hover:bg-transparent"
                 }`}
               >
                 Admin
-              </button>
+              </Button>
             </div>
             <p className="text-xs text-text-secondary mt-1">
               <strong>User:</strong> Akses penuh ke fitur keuangan pribadi.
@@ -247,13 +247,13 @@ export default function NewUserPage() {
             >
               Batal
             </Link>
-            <button
+            <Button
               type="submit"
-              disabled={submitting}
-              className="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors disabled:cursor-not-allowed"
+              isLoading={submitting}
+              className="flex-1"
             >
-              {submitting ? "Memproses..." : "Buat Pengguna"}
-            </button>
+              Buat Pengguna
+            </Button>
           </div>
         </form>
       </div>
@@ -276,15 +276,16 @@ export default function NewUserPage() {
             >
               Kembali ke Daftar Pengguna
             </Link>
-            <button
+            <Button
+              variant="secondary"
               onClick={() => {
                 setCreatedUserEmail(null);
                 setSuccessMsg(null);
               }}
-              className="px-3 py-1.5 bg-surface-input text-text-secondary text-xs font-medium rounded-lg hover:bg-surface-hover transition-colors"
+              className="px-3 py-1.5 text-xs min-h-0 h-auto"
             >
               Buat Pengguna Lain
-            </button>
+            </Button>
           </div>
         </div>
       )}

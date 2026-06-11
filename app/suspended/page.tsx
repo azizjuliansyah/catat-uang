@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/atoms/Button";
 import { AlertOctagon, LogOut, Mail, RefreshCw } from "lucide-react";
 
 export default function SuspendedPage() {
@@ -55,22 +56,24 @@ export default function SuspendedPage() {
 
         {/* Navigation / Actions */}
         <div className="flex justify-between items-center px-2">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => router.refresh()}
-            className="flex items-center gap-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors min-h-0 h-auto p-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Cek Status
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="ghost"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-2 text-xs font-medium text-danger hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
+            className="flex items-center gap-2 text-xs font-medium text-danger hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer min-h-0 h-auto p-0 hover:bg-transparent"
           >
             <LogOut className="w-3.5 h-3.5" />
             {loggingOut ? "Mengeluarkan..." : "Keluar Akun"}
-          </button>
+          </Button>
         </div>
 
         {/* Footer */}

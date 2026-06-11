@@ -4,47 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { getIconComponent } from "@/lib/utils/icons";
 import { useApp } from "@/app/providers/AppProvider";
-import {
-  ArrowLeft,
-  Calendar,
-  Wallet as WalletIcon,
-  Tag,
-  FileText,
-  UploadCloud,
-  X,
-  AlertCircle,
-  Check,
-  Image as ImageIcon,
-  Trash2,
-  ExternalLink
-} from "lucide-react";
-
-interface Wallet {
-  id: string;
-  name: string;
-  balance: number;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  type: "income" | "expense";
-  icon: string;
-  color: string;
-}
-
-interface Transaction {
-  id: string;
-  wallet_id: string;
-  category_id: string | null;
-  amount: number;
-  type: "income" | "expense";
-  description: string | null;
-  transaction_date: string;
-  receipt_url: string | null;
-}
+import { useToast } from "@/components/ui/molecules/Toast";
+import { Modal } from "@/components/ui/organisms/Modal";
+import { Button } from "@/components/ui/atoms/Button";
+import { TabButton } from "@/components/ui/molecules/TabButton";
+import { ArrowLeft, Calendar, Wallet as WalletIcon, FileText, Trash2 } from "lucide-react";
+import { CategoryGridSelector } from "../components/CategoryGridSelector";
+import { ReceiptManager } from "../components/ReceiptManager";
+import { formatForDateTimeInput } from "@/lib/utils/date";
 
 export default function EditTransactionPage() {
   const supabase = createClient();
@@ -52,16 +20,11 @@ export default function EditTransactionPage() {
   const params = useParams();
   const id = params.id as string;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const amountInputRef = useRef<HTMLInputElement>(null);
+  const walletSelectRef = useRef<HTMLSelectElement>(null);
 
-  const {
-    user,
-    loadingUser,
-    wallets,
-    loadingWallets,
-    categories,
-    loadingCategories,
-    refreshWallets
-  } = useApp();
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
+  const { user, loadingUser, wallets, loadingWallets, categories, loadingCategories, refreshWallets } = useApp();
 
   const [loadingTx, setLoadingTx] = useState(true);
   const loading = loadingUser || loadingWallets || loadingCategories || loadingTx;
@@ -85,14 +48,12 @@ export default function EditTransactionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadTransaction() {
       if (!id || !user) return;
       setLoadingTx(true);
       try {
-        // Fetch transaction details
         const { data: tx, error: txError } = await supabase
           .from("transactions")
           .select("*")
@@ -101,21 +62,20 @@ export default function EditTransactionPage() {
           .single();
 
         if (txError || !tx) {
-          setErrorMsg("Transaksi tidak ditemukan.");
+          showErrorToast("Transaksi tidak ditemukan.");
           return;
         }
 
-        // Populate form states
         setAmount(tx.amount.toString());
         setType(tx.type);
         setWalletId(tx.wallet_id);
         setCategoryId(tx.category_id || "");
         setDescription(tx.description || "");
-        setTransactionDate(tx.transaction_date);
+        setTransactionDate(formatForDateTimeInput(tx.transaction_date));
         setExistingReceiptUrl(tx.receipt_url);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error loading transaction:", err);
-        setErrorMsg("Gagal mengambil data transaksi.");
+        showErrorToast("Gagal mengambil data transaksi.");
       } finally {
         setLoadingTx(false);
       }
@@ -128,7 +88,7 @@ export default function EditTransactionPage() {
         loadTransaction();
       }
     }
-  }, [supabase, user, loadingUser, id, router]);
+  }, [supabase, user, loadingUser, id, router, showErrorToast]);
 
   // Keep category in sync with type
   useEffect(() => {
@@ -136,6 +96,7 @@ export default function EditTransactionPage() {
     if (typeCategories.length > 0) {
       const currentCat = categories.find((c) => c.id === categoryId);
       if (!currentCat || currentCat.type !== type) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCategoryId(typeCategories[0].id);
       }
     } else {
@@ -149,14 +110,12 @@ export default function EditTransactionPage() {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setErrorMsg("Ukuran file nota maksimal adalah 5MB");
+      showErrorToast("Ukuran file nota maksimal adalah 5MB");
       return;
     }
 
     setReceiptFile(file);
-    setErrorMsg(null);
 
-    // Create image preview if image
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -181,16 +140,17 @@ export default function EditTransactionPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    setErrorMsg(null);
 
     const numericAmount = parseFloat(amount.replace(/[^0-9]/g, ""));
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      setErrorMsg("Jumlah transaksi harus lebih besar dari 0");
+      showErrorToast("Jumlah transaksi harus lebih besar dari 0");
+      amountInputRef.current?.focus();
       return;
     }
 
     if (!walletId) {
-      setErrorMsg("Silakan pilih dompet");
+      showErrorToast("Silakan pilih dompet");
+      walletSelectRef.current?.focus();
       return;
     }
 
@@ -202,7 +162,6 @@ export default function EditTransactionPage() {
       // 1. Check if we should delete existing receipt
       if (shouldDeleteExistingReceipt && existingReceiptUrl) {
         finalReceiptUrl = null;
-        // Optionally delete file from storage (let's keep simple or delete)
         try {
           const path = existingReceiptUrl.split("/storage/v1/object/public/receipts/")[1];
           if (path) {
@@ -242,7 +201,7 @@ export default function EditTransactionPage() {
           amount: numericAmount,
           type: type,
           description: description.trim() || null,
-          transaction_date: transactionDate,
+          transaction_date: new Date(transactionDate).toISOString(),
           receipt_url: finalReceiptUrl,
           updated_at: new Date().toISOString()
         })
@@ -250,12 +209,14 @@ export default function EditTransactionPage() {
 
       if (updateError) throw updateError;
 
+      showSuccessToast("Transaksi berhasil diperbarui.");
       await refreshWallets();
       router.push("/transactions");
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating transaction:", err);
-      setErrorMsg("Gagal menyimpan perubahan: " + err.message);
+      const message = err instanceof Error ? err.message : String(err);
+      showErrorToast("Gagal menyimpan perubahan: " + message);
       setSubmitting(false);
     }
   }
@@ -263,7 +224,6 @@ export default function EditTransactionPage() {
   // Handle Delete
   async function handleDeleteTransaction() {
     setDeleting(true);
-    setErrorMsg(null);
 
     try {
       const { error } = await supabase
@@ -273,18 +233,19 @@ export default function EditTransactionPage() {
 
       if (error) throw error;
 
+      showSuccessToast("Transaksi berhasil dihapus.");
       await refreshWallets();
       router.push("/transactions");
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting transaction:", err);
-      setErrorMsg("Gagal menghapus transaksi: " + err.message);
+      const message = err instanceof Error ? err.message : String(err);
+      showErrorToast("Gagal menghapus transaksi: " + message);
       setDeleting(false);
       setIsDeleteModalOpen(false);
     }
   }
 
-  // Format rupiah helper
   const getFormattedPreview = () => {
     const rawVal = amount.replace(/[^0-9]/g, "");
     if (!rawVal) return "Rp 0";
@@ -300,16 +261,14 @@ export default function EditTransactionPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto space-y-6 animate-pulse">
-        <div className="h-6 w-32 bg-surface-card rounded" />
+        <div className="h-6 w-32 bg-border/40 rounded" />
         <div className="h-96 bg-surface-card border border-border rounded-xl" />
       </div>
     );
   }
 
-  const filteredCategories = categories.filter((c) => c.type === type);
-
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 font-sans">
       {/* Back Link */}
       <div>
         <Link
@@ -324,69 +283,61 @@ export default function EditTransactionPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
             Sunting Catatan Transaksi
           </h1>
-          <p className="text-sm text-text-secondary mt-1">
+          <p className="text-xs text-text-secondary mt-1">
             Ubah data nominal, kategori, dompet, deskripsi, atau lampiran nota transaksi.
           </p>
         </div>
 
-        <button
-          type="button"
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={() => setIsDeleteModalOpen(true)}
-          className="px-4 py-2.5 bg-danger/10 hover:bg-danger/20 text-danger text-sm font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 self-stretch sm:self-auto justify-center"
+          className="self-stretch sm:self-auto"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 mr-1.5" />
           Hapus Transaksi
-        </button>
+        </Button>
       </div>
 
-      {/* Error Alert */}
-      {errorMsg && (
-        <div className="bg-danger/10 border border-danger/20 text-danger px-4 py-3 rounded-lg flex items-start gap-3 animate-fade-in">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          <span className="text-xs font-medium">{errorMsg}</span>
-        </div>
-      )}
-
       {/* Form Card */}
-      <div className="bg-surface-card border border-border rounded-xl p-6 shadow-sm">
+      <div className="bg-surface-card border border-border rounded-2xl p-6 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Segment Type Selector */}
-          <div className="grid grid-cols-2 gap-2 bg-surface-input border border-border p-1 rounded-lg">
-            <button
-              type="button"
-              onClick={() => setType("expense")}
-              className={`py-2 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                type === "expense"
-                  ? "bg-expense/15 text-expense border border-expense/20 font-bold"
-                  : "text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              Pengeluaran
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("income")}
-              className={`py-2 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                type === "income"
-                  ? "bg-income/15 text-income border border-income/20 font-bold"
-                  : "text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              Pemasukan
-            </button>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
+            <div className="grid grid-cols-2 gap-2 bg-surface-hover/30 border border-border p-1 rounded-xl">
+              <TabButton
+                isActive={type === "expense"}
+                onClick={() => setType("expense")}
+                className={`py-2 text-xs rounded-lg ${type === "expense" ? "bg-expense/10 text-expense" : ""}`}
+              >
+                Pengeluaran
+              </TabButton>
+              <TabButton
+                isActive={type === "income"}
+                onClick={() => setType("income")}
+                className={`py-2 text-xs rounded-lg ${type === "income" ? "bg-income/10 text-income" : ""}`}
+              >
+                Pemasukan
+              </TabButton>
+            </div>
           </div>
 
           {/* Amount Field */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary block">Jumlah Uang (Rupiah)</label>
+            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+              Jumlah Uang (Rupiah)
+              <span className="text-danger">*</span>
+            </label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm font-bold text-text-secondary">
-                Rp
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm font-bold text-text-secondary select-none">
+                Rp.
               </span>
               <input
+                ref={amountInputRef}
                 type="text"
                 value={amount ? parseInt(amount).toLocaleString("id-ID") : ""}
                 onChange={(e) => {
@@ -394,12 +345,12 @@ export default function EditTransactionPage() {
                   setAmount(raw);
                 }}
                 placeholder="0"
-                className="w-full pl-10 pr-4 py-3 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-base font-bold font-mono outline-none transition-all"
+                className="w-full pl-11 pr-4 py-3 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-base font-bold font-mono outline-none transition-all focus-glow"
                 required
               />
             </div>
-            <p className="text-xxs text-text-secondary italic">
-              Terformat: <span className="font-semibold text-text-primary">{getFormattedPreview()}</span>
+            <p className="text-xs text-text-muted mt-1.5">
+              Terformat: {getFormattedPreview()}
             </p>
           </div>
 
@@ -407,14 +358,17 @@ export default function EditTransactionPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Transaction Date */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-text-secondary block">Tanggal</label>
+              <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+                Tanggal Transaksi
+                <span className="text-danger">*</span>
+              </label>
               <div className="relative">
-                <Calendar className="w-5 h-5 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Calendar className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={transactionDate}
                   onChange={(e) => setTransactionDate(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-sm outline-none transition-all cursor-pointer"
+                  className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer focus-glow"
                   required
                 />
               </div>
@@ -422,13 +376,17 @@ export default function EditTransactionPage() {
 
             {/* Source/Target Wallet */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-text-secondary block">Sumber Dompet</label>
+              <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+                Sumber Dompet
+                <span className="text-danger">*</span>
+              </label>
               <div className="relative">
-                <WalletIcon className="w-5 h-5 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <WalletIcon className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <select
+                  ref={walletSelectRef}
                   value={walletId}
                   onChange={(e) => setWalletId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-sm outline-none transition-all cursor-pointer"
+                  className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer focus-glow"
                   required
                 >
                   <option value="" disabled>Pilih Dompet</option>
@@ -443,215 +401,100 @@ export default function EditTransactionPage() {
           </div>
 
           {/* Category Selection */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary block">Kategori</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-surface-input border border-border p-3 rounded-lg max-h-48 overflow-y-auto">
-              {filteredCategories.map((cat) => {
-                const IconComponent = getIconComponent(cat.icon);
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setCategoryId(cat.id)}
-                    className={`p-3 rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all border text-center cursor-pointer ${
-                      categoryId === cat.id
-                        ? "border-primary bg-primary/10 text-primary font-semibold"
-                        : "border-transparent text-text-secondary hover:bg-surface-hover"
-                    }`}
-                  >
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0"
-                      style={{ backgroundColor: cat.color }}
-                    >
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-                    <span className="text-xxs truncate w-full">{cat.name}</span>
-                  </button>
-                );
-              })}
-
-              {filteredCategories.length === 0 && (
-                <div className="col-span-full py-4 text-center text-xs text-text-secondary">
-                  Belum ada kategori untuk jenis transaksi ini. Buat kategori baru di Pengaturan.
-                </div>
-              )}
-            </div>
-          </div>
+          <CategoryGridSelector
+            categories={categories}
+            categoryId={categoryId}
+            setCategoryId={setCategoryId}
+            type={type}
+          />
 
           {/* Description */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary block">Deskripsi / Catatan (Opsional)</label>
+            <label className="text-xs font-semibold text-text-secondary">Deskripsi / Catatan (Opsional)</label>
             <div className="relative">
-              <FileText className="w-5 h-5 text-text-secondary absolute left-3 top-3 pointer-events-none" />
+              <FileText className="w-4 h-4 text-text-secondary absolute left-3 top-3 pointer-events-none" />
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Contoh: Beli makan siang nasi goreng kambing"
                 rows={3}
-                className="w-full pl-10 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-sm outline-none transition-all resize-none"
+                className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none focus-glow"
               />
             </div>
           </div>
 
           {/* Receipt Upload & Management */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary block">Nota Pembayaran</label>
-
-            {/* Existing Receipt Preview */}
-            {existingReceiptUrl && !shouldDeleteExistingReceipt && (
-              <div className="bg-surface-input border border-border rounded-xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img src={existingReceiptUrl} alt="Existing receipt" className="w-12 h-12 rounded object-cover border border-border" />
-                  <div>
-                    <p className="text-xs font-semibold text-text-primary">Nota Terunggah</p>
-                    <a
-                      href={existingReceiptUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xxs text-primary hover:underline flex items-center gap-0.5"
-                    >
-                      Buka di tab baru <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShouldDeleteExistingReceipt(true)}
-                  className="p-1.5 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-md transition-colors cursor-pointer"
-                  title="Hapus Lampiran"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Upload Area for New Files (visible if no existing receipt or user marks it for deletion) */}
-            {(!existingReceiptUrl || shouldDeleteExistingReceipt) && (
-              <>
-                {receiptFile ? (
-                  <div className="bg-surface-input border border-border rounded-xl p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {receiptPreview ? (
-                        <img src={receiptPreview} alt="Receipt preview" className="w-12 h-12 rounded object-cover border border-border" />
-                      ) : (
-                        <div className="w-12 h-12 rounded bg-surface-card border border-border flex items-center justify-center text-text-secondary">
-                          <ImageIcon className="w-6 h-6" />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-text-primary truncate max-w-[180px]">
-                          {receiptFile.name}
-                        </p>
-                        <p className="text-xxs text-text-secondary">
-                          {(receiptFile.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleRemoveReceipt}
-                      className="p-1.5 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-md transition-colors cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="bg-surface-input border border-border border-dashed hover:border-border-strong rounded-xl p-6 text-center cursor-pointer hover:bg-surface-hover transition-colors flex flex-col items-center justify-center gap-2"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-surface-card border border-border flex items-center justify-center text-text-secondary">
-                        <UploadCloud className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-text-primary">
-                          Pilih file nota pembayaran baru
-                        </p>
-                        <p className="text-xxs text-text-secondary mt-0.5">
-                          Klik untuk memilih file foto/nota. Maksimal 5MB.
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
-                    </div>
-                    {shouldDeleteExistingReceipt && (
-                      <button
-                        type="button"
-                        onClick={() => setShouldDeleteExistingReceipt(false)}
-                        className="absolute right-3 top-3 text-xxs font-semibold text-primary hover:underline bg-surface-card px-2 py-1 border border-border rounded"
-                      >
-                        Urungkan Hapus Nota Lama
-                      </button>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          <ReceiptManager
+            receiptFile={receiptFile}
+            receiptPreview={receiptPreview}
+            onFileChange={handleFileChange}
+            onRemove={handleRemoveReceipt}
+            existingReceiptUrl={existingReceiptUrl}
+            shouldDeleteExistingReceipt={shouldDeleteExistingReceipt}
+            setShouldDeleteExistingReceipt={setShouldDeleteExistingReceipt}
+            fileInputRef={fileInputRef}
+          />
 
           {/* Form Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
-            <Link
-              href="/transactions"
-              className="px-4 py-2.5 bg-surface-hover border border-border hover:border-border-strong text-text-secondary text-sm font-semibold rounded-lg transition-colors cursor-pointer text-center"
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/transactions")}
+              className="px-5"
             >
               Batal
-            </Link>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={submitting}
-              className="px-6 py-2.5 bg-primary hover:bg-primary-hover disabled:bg-primary/50 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              variant="primary"
+              isLoading={submitting || uploadingReceipt}
+              className="px-6"
             >
-              {submitting ? "Menyimpan..." : "Simpan Perubahan"}
-            </button>
+              Simpan Perubahan
+            </Button>
           </div>
         </form>
       </div>
 
-      {/* Delete Transaction Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-surface-card border border-border rounded-xl max-w-sm w-full p-6 shadow-2xl space-y-6 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger/10 text-danger mb-2">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-text-primary">
-                Hapus Transaksi?
-              </h3>
-              <p className="text-xs text-text-secondary leading-relaxed">
-                Apakah Anda yakin ingin menghapus transaksi ini? Saldo dompet akan disesuaikan secara otomatis. Tindakan ini tidak dapat dibatalkan.
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 px-4 py-2.5 bg-surface-hover border border-border hover:border-border-strong text-text-secondary text-sm font-semibold rounded-lg transition-colors cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteTransaction}
-                disabled={deleting}
-                className="flex-1 px-4 py-2.5 bg-danger hover:bg-danger-hover disabled:bg-danger/50 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
-              >
-                {deleting ? "Menghapus..." : "Hapus"}
-              </button>
-            </div>
+      {/* Delete Transaction Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Hapus Catatan Transaksi?"
+        isDestructive
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="flex-1"
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteTransaction}
+              isLoading={deleting}
+              className="flex-1"
+            >
+              Hapus
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger/10 text-danger mb-2">
+            <Trash2 className="w-6 h-6" />
           </div>
+          <p className="text-xs text-text-secondary leading-relaxed">
+            Apakah Anda yakin ingin menghapus transaksi ini secara permanen?
+            <br />
+            Saldo dompet Anda akan disesuaikan kembali secara otomatis.
+          </p>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

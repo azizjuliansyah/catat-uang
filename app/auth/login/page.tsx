@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Eye, EyeOff, Mail, Lock, Loader2, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/atoms/Button";
+import { Eye, EyeOff, Mail, Lock, TrendingUp } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -167,14 +168,14 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   disabled={loading}
                 />
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary transition-colors min-h-0 h-auto p-0 hover:bg-transparent"
                   disabled={loading}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                </Button>
               </div>
               {passwordError && (
                 <p className="text-xs text-danger mt-1">{passwordError}</p>
@@ -182,20 +183,13 @@ export default function LoginPage() {
             </div>
 
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer shadow-md active:scale-[0.98]"
+              isLoading={loading}
+              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md text-sm font-medium transition-all shadow-md active:scale-[0.98]"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Memproses...
-                </>
-              ) : (
-                "Masuk"
-              )}
-            </button>
+              Masuk
+            </Button>
           </form>
         </div>
 

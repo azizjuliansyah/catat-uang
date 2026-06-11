@@ -1,18 +1,32 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Space_Grotesk, Manrope, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/app/providers/AppProvider";
+import { ToastProvider } from "@/components/ui/molecules/Toast";
 
-const ibmPlexSans = IBM_Plex_Sans({
-  variable: "--font-ibm-plex-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const ibmPlexSansMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-sans-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,12 +42,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${ibmPlexSans.variable} ${ibmPlexSansMono.variable} h-full antialiased dark`}
+      className={`${spaceGrotesk.variable} ${manrope.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col bg-surface text-text-primary">
-        <AppProvider>
-          {children}
-        </AppProvider>
+        <ToastProvider>
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </ToastProvider>
       </body>
     </html>
   );

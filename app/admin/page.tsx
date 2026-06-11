@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/atoms/Button";
 import { Users, ShieldAlert, LogOut, RefreshCw, Layers } from "lucide-react";
 
 export default function AdminPage() {
@@ -55,13 +56,14 @@ export default function AdminPage() {
           <span className="text-xs text-text-secondary font-mono">
             {user?.email}
           </span>
-          <button
+          <Button
+            variant="ghost"
             onClick={handleLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:border-danger rounded-md text-xs font-medium text-text-secondary hover:text-danger hover:bg-danger/10 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:border-danger rounded-md text-xs font-medium text-text-secondary hover:text-danger hover:bg-danger/10 transition-all cursor-pointer min-h-0 h-auto"
           >
             <LogOut className="w-3.5 h-3.5" />
             Keluar
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -90,9 +92,12 @@ export default function AdminPage() {
                   Kelola Pengguna
                 </h3>
               </div>
-              <button className="text-xxs text-text-secondary hover:underline cursor-pointer">
+              <Button
+                variant="ghost"
+                className="text-xxs text-text-secondary hover:underline cursor-pointer min-h-0 h-auto p-0"
+              >
                 Lihat Semua
-              </button>
+              </Button>
             </div>
             <div className="border border-border rounded-lg overflow-hidden">
               <table className="w-full text-xs text-left">
@@ -127,9 +132,12 @@ export default function AdminPage() {
                   Log Audit Sistem
                 </h3>
               </div>
-              <button className="text-xxs text-text-secondary hover:underline cursor-pointer">
+              <Button
+                variant="ghost"
+                className="text-xxs text-text-secondary hover:underline cursor-pointer min-h-0 h-auto p-0"
+              >
                 Refresh Log
-              </button>
+              </Button>
             </div>
             <div className="border border-border rounded-lg bg-surface-input/50 p-4 font-mono text-xxs text-text-secondary space-y-2 max-h-48 overflow-y-auto">
               <p>[2026-06-08 02:50] - SYSTEM - Database migration 0001 applied</p>
