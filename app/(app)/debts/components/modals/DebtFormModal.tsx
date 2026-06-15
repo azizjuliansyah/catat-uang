@@ -6,6 +6,7 @@ import { TabButton } from "@/components/ui/molecules/TabButton";
 import { Plus, Trash2 } from "lucide-react";
 import { DebtPackage, DebtItem } from "../../types";
 import { ProofUploader } from "./ProofUploader";
+import { getNowDateTimeString } from "@/lib/utils/date";
 
 interface DebtFormModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export function DebtFormModal({
         id: Math.random().toString(), 
         totalAmount: "", 
         dueDate: "", 
+        createdAt: getNowDateTimeString(),
         description: "",
         proofFiles: null,
         proofPreviews: null,
@@ -207,12 +209,20 @@ export function DebtFormModal({
                     />
 
                     <FormField
-                      label="Tanggal Jatuh Tempo (Opsional)"
+                      label="Tanggal Hutang/Piutang"
+                      required
                       type="datetime-local"
-                      value={pkg.dueDate}
-                      onChange={(e) => handleUpdateRow(pkg.id, "dueDate", e.target.value)}
+                      value={pkg.createdAt || ""}
+                      onChange={(e) => handleUpdateRow(pkg.id, "createdAt", e.target.value)}
                     />
                   </div>
+
+                  <FormField
+                    label="Tanggal Jatuh Tempo (Opsional)"
+                    type="datetime-local"
+                    value={pkg.dueDate}
+                    onChange={(e) => handleUpdateRow(pkg.id, "dueDate", e.target.value)}
+                  />
 
                   <FormField
                     label="Catatan Keterangan (Opsional)"

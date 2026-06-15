@@ -7,17 +7,18 @@ import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
-import { SkeletonList } from "@/components/ui/organisms/SkeletonLoading";
 import { Button } from "@/components/ui/atoms/Button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TransactionsFilters } from "./components/TransactionsFilters";
 import { TransactionsStats } from "./components/TransactionsStats";
 import { TransactionListGroup } from "./components/TransactionListGroup";
+import { TransactionsSkeleton } from "./components/TransactionsSkeleton";
 
 interface Transaction {
   id: string;
   user_id: string;
-  wallet_id: string;
+  wallet_id: string | null;
+  paylater_id: string | null;
   category_id: string | null;
   amount: number;
   type: "income" | "expense";
@@ -29,6 +30,11 @@ interface Transaction {
     name: string;
     icon: string;
     color: string;
+  } | null;
+  paylater_platforms: {
+    name: string;
+    color: string;
+    icon: string;
   } | null;
   categories: {
     name: string;
@@ -114,6 +120,7 @@ export default function TransactionsPage() {
         .select(`
           *,
           wallets (name, icon, color),
+          paylater_platforms (name, color),
           categories (name, icon, color)
         `)
         .eq("user_id", user.id);
@@ -196,7 +203,13 @@ export default function TransactionsPage() {
     const matchesSearch = t.description?.toLowerCase().includes(searchTerm.toLowerCase()) || 
       t.categories?.name.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     const matchesType = selectedType === "all" || t.type === selectedType;
-    const matchesWallet = selectedWalletId === "all" || t.wallet_id === selectedWalletId;
+    
+    // Support unified source filtering
+    const matchesWallet =
+      selectedWalletId === "all" ||
+      (selectedWalletId.startsWith("wallet:") && t.wallet_id === selectedWalletId.replace("wallet:", "")) ||
+      (selectedWalletId.startsWith("paylater:") && t.paylater_id === selectedWalletId.replace("paylater:", ""));
+
     const matchesCategory = selectedCategoryId === "all" || t.category_id === selectedCategoryId;
 
     return matchesSearch && matchesType && matchesWallet && matchesCategory;
@@ -256,14 +269,6 @@ export default function TransactionsPage() {
         </Button>
       </div>
 
-      {/* Summary Stats */}
-      <TransactionsStats
-        totalIncome={totalIncome}
-        totalExpense={totalExpense}
-        netFlow={netFlow}
-        formatIDR={formatIDR}
-      />
-
       {/* Filter and Search Bar */}
       <TransactionsFilters
         searchTerm={searchTerm}
@@ -286,12 +291,17 @@ export default function TransactionsPage() {
         categories={categories}
       />
 
+      {/* Summary Stats */}
+      <TransactionsStats
+        totalIncome={totalIncome}
+        totalExpense={totalExpense}
+        netFlow={netFlow}
+        formatIDR={formatIDR}
+      />
+
       {/* Transactions List */}
       {loading ? (
-        <div className="space-y-4">
-          <div className="h-6 w-32 bg-border/40 rounded animate-pulse" />
-          <SkeletonList rows={6} />
-        </div>
+        <TransactionsSkeleton />
       ) : uniqueDates.length > 0 ? (
         <TransactionListGroup
           uniqueDates={uniqueDates}

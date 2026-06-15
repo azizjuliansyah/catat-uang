@@ -1,8 +1,10 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Button } from "@/components/ui/atoms/Button";
+import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { WalletItem } from "../../types";
 import { formatIDR } from "../../utils";
+import { Wallet } from "lucide-react";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -60,32 +62,37 @@ export function TransferModal({
       }
     >
       <div className="space-y-4">
-        <FormField
-          label="Dompet Asal"
-          required
-          type="select"
-          value={tfSourceId}
-          onChange={(e) => setTfSourceId(e.target.value)}
-          options={activeWallets.map(w => ({
-            value: w.id,
-            label: `${w.name} (${formatIDR(w.balance)})`
-          }))}
-        />
-
-        <FormField
-          label="Dompet Tujuan"
-          required
-          type="select"
-          value={tfDestId}
-          onChange={(e) => setTfDestId(e.target.value)}
-          options={[
-            { value: "", label: "Pilih dompet tujuan...", disabled: true },
-            ...availableDestWallets.map(w => ({
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-text-secondary">
+            Dompet Asal <span className="text-danger">*</span>
+          </label>
+          <CustomSelect
+            value={tfSourceId}
+            onChange={setTfSourceId}
+            options={activeWallets.map(w => ({
               value: w.id,
-              label: `${w.name} (${formatIDR(w.balance)})`
-            }))
-          ]}
-        />
+              label: `${w.name} (${formatIDR(w.balance)})`,
+              icon: <Wallet className="w-4 h-4 text-text-secondary" />
+            }))}
+            placeholder="Pilih Dompet Asal"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-text-secondary">
+            Dompet Tujuan <span className="text-danger">*</span>
+          </label>
+          <CustomSelect
+            value={tfDestId}
+            onChange={setTfDestId}
+            options={availableDestWallets.map(w => ({
+              value: w.id,
+              label: `${w.name} (${formatIDR(w.balance)})`,
+              icon: <Wallet className="w-4 h-4 text-text-secondary" />
+            }))}
+            placeholder="Pilih Dompet Tujuan"
+          />
+        </div>
 
         <FormField
           label="Jumlah Transfer (Rupiah)"

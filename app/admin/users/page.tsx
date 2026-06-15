@@ -37,6 +37,14 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
+    
+    if (typeof window !== "undefined") {
+      const email = sessionStorage.getItem("userCreatedSuccess");
+      if (email) {
+        showToast(`Pengguna dengan email ${email} berhasil dibuat!`);
+        sessionStorage.removeItem("userCreatedSuccess");
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -12,10 +12,10 @@ interface Transaction {
     name: string;
     icon: string;
     color: string;
-  }[] | null;
+  } | null;
   wallets: {
     name: string;
-  }[] | null;
+  } | null;
 }
 
 interface CategoryBreakdown {
@@ -124,7 +124,7 @@ export async function exportToPDF({
       head: [["Tanggal", "Kategori", "Deskripsi", "Tipe", "Jumlah"]],
       body: filteredTransactions.slice(-60).map(tx => [
         new Date(tx.transaction_date).toLocaleDateString("id-ID"),
-        tx.categories?.[0]?.name || "-",
+        tx.categories?.name || "-",
         tx.description || "-",
         tx.type === "income" ? "Pemasukan" : "Pengeluaran",
         formatIDR(tx.amount)
@@ -202,9 +202,9 @@ export function exportToExcel({
       ["Tanggal", "Kategori", "Deskripsi", "Dompet", "Tipe", "Jumlah Dana (IDR)"],
       ...filteredTransactions.map(tx => [
         tx.transaction_date,
-        tx.categories?.[0]?.name || "-",
+        tx.categories?.name || "-",
         tx.description || "-",
-        tx.wallets?.[0]?.name || "-",
+        tx.wallets?.name || "-",
         tx.type === "income" ? "Pemasukan" : "Pengeluaran",
         tx.amount
       ])

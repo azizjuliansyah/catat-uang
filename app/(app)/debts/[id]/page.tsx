@@ -148,22 +148,35 @@ export default function DebtDetailPage() {
     setFormName(debt.name);
     setFormType(debt.type);
 
-    // Get first transaction if exists
-    const firstTxn = debt.debt_transactions?.[0];
-    const existingProofUrl = firstTxn?.debt_transaction_proofs?.[0]?.proof_url || null;
-
-    setFormPackages([
-      {
-        id: firstTxn?.id || debt.id,
-        totalAmount: firstTxn?.amount?.toString() || debt.total_amount.toString(),
-        dueDate: firstTxn?.due_date ? formatForDateTimeInput(firstTxn.due_date) : "",
-        description: firstTxn?.description || "",
-        proofFiles: null,
-        proofPreviews: null,
-        existingProofUrls: existingProofUrl ? [existingProofUrl] : null,
-        shouldDeleteProofUrls: null
-      }
-    ]);
+    if (debt.debt_transactions && debt.debt_transactions.length > 0) {
+      setFormPackages(
+        debt.debt_transactions.map((t) => ({
+          id: t.id,
+          totalAmount: t.amount.toString(),
+          dueDate: t.due_date ? formatForDateTimeInput(t.due_date) : "",
+          createdAt: t.created_at ? formatForDateTimeInput(t.created_at) : formatForDateTimeInput(debt.created_at),
+          description: t.description || "",
+          proofFiles: null,
+          proofPreviews: null,
+          existingProofUrls: t.debt_transaction_proofs?.map((p) => p.proof_url) || null,
+          shouldDeleteProofUrls: null
+        }))
+      );
+    } else {
+      setFormPackages([
+        {
+          id: Math.random().toString(),
+          totalAmount: "",
+          dueDate: "",
+          createdAt: formatForDateTimeInput(new Date().toISOString()),
+          description: "",
+          proofFiles: null,
+          proofPreviews: null,
+          existingProofUrls: null,
+          shouldDeleteProofUrls: null
+        }
+      ]);
+    }
     setIsEditModalOpen(true);
   };
 
@@ -182,104 +195,132 @@ export default function DebtDetailPage() {
     }
     if (formPackages.length === 0) return;
 
-    const pkg = formPackages[0];
-    const amountNum = parseFloat(pkg.totalAmount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      showErrorToast("Jumlah dana harus lebih besar dari 0");
-      return;
+    // Check all packages have valid amounts
+    for (const pkg of formPackages) {
+      const amountNum = parseFloat(pkg.totalAmount);
+      if (isNaN(amountNum) || amountNum <= 0) {
+        showErrorToast("Jumlah dana harus lebih besar dari 0");
+        return;
+      }
     }
 
     if (!user || !debt) return;
 
     try {
       setIsSavingDebt(true);
-      const isoDueDate = pkg.dueDate ? new Date(pkg.dueDate).toISOString() : null;
 
-      // 1. Update parent debt (name and type only)
+      const firstTxnDate = formPackages[0]?.createdAt 
+        ? new Date(formPackages[0].createdAt).toISOString() 
+        : new Date().toISOString();
+
+      // 1. Update parent debt
       const { error: updateDebtError } = await supabase
         .from("debts")
         .update({
           name: formName.trim(),
           type: formType,
+          created_at: firstTxnDate,
           updated_at: new Date().toISOString()
         })
         .eq("id", debt.id);
 
       if (updateDebtError) throw updateDebtError;
 
-      // 2. Get or create transaction
-      let transactionId = pkg.id;
-      const existingTxn = debt.debt_transactions?.[0];
-
-      if (existingTxn) {
-        // Update existing transaction
-        const { error: updateTxnError } = await supabase
+      // 2. Determine transaction deletions
+      const { data: dbTxns, error: fetchTxnsError } = await supabase
+        .from("debt_transactions")
+        .select("id")
+        .eq("debt_id", debt.id);
+      if (fetchTxnsError) throw fetchTxnsError;
+      
+      const dbTxnIds = dbTxns?.map((t: { id: string }) => t.id) || [];
+      const formTxnIds = formPackages.map(pkg => pkg.id);
+      
+      const txnIdsToDelete = dbTxnIds.filter((id: string) => !formTxnIds.includes(id));
+      if (txnIdsToDelete.length > 0) {
+        const { error: deleteTxnsError } = await supabase
           .from("debt_transactions")
-          .update({
-            amount: amountNum,
-            due_date: isoDueDate,
-            description: pkg.description.trim() || null,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", existingTxn.id);
-
-        if (updateTxnError) throw updateTxnError;
-        transactionId = existingTxn.id;
-      } else {
-        // Create new transaction
-        const { data: newTxn, error: insertTxnError } = await supabase
-          .from("debt_transactions")
-          .insert({
-            debt_id: debt.id,
-            amount: amountNum,
-            due_date: isoDueDate,
-            description: pkg.description.trim() || null
-          })
-          .select()
-          .single();
-
-        if (insertTxnError) throw insertTxnError;
-        transactionId = newTxn.id;
-      }
-
-      // 3. Handle proof deletions
-      if (pkg.shouldDeleteProofUrls && pkg.shouldDeleteProofUrls.length > 0) {
-        const { error: deleteProofError } = await supabase
-          .from("debt_transaction_proofs")
           .delete()
-          .eq("transaction_id", transactionId)
-          .in("proof_url", pkg.shouldDeleteProofUrls);
-        if (deleteProofError) throw deleteProofError;
+          .in("id", txnIdsToDelete);
+        if (deleteTxnsError) throw deleteTxnsError;
       }
 
-      // 4. Handle proof file uploads
-      if (pkg.proofFiles && pkg.proofFiles.length > 0) {
-        const proofUrlsToInsert: string[] = [];
-        for (const file of pkg.proofFiles) {
-          const fileExt = file.name.split(".").pop();
-          const filePath = `${user.id}/debt-proof-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      // 3. Process each transaction in formPackages
+      for (const pkg of formPackages) {
+        const amountNum = parseFloat(pkg.totalAmount);
+        const isoDueDate = pkg.dueDate ? new Date(pkg.dueDate).toISOString() : null;
+        const isoCreatedAt = pkg.createdAt ? new Date(pkg.createdAt).toISOString() : new Date().toISOString();
+        
+        let transactionId = pkg.id;
+        const isNewTxn = !debt.debt_transactions?.some(t => t.id === pkg.id);
 
-          const { error: uploadError } = await supabase.storage
-            .from("receipts")
-            .upload(filePath, file, { upsert: true });
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from("receipts")
-            .getPublicUrl(filePath);
-
-          proofUrlsToInsert.push(publicUrl);
+        if (isNewTxn) {
+          const { data: newTxn, error: insertTxnError } = await supabase
+            .from("debt_transactions")
+            .insert({
+              debt_id: debt.id,
+              amount: amountNum,
+              due_date: isoDueDate,
+              created_at: isoCreatedAt,
+              description: pkg.description.trim() || null
+            })
+            .select()
+            .single();
+          if (insertTxnError) throw insertTxnError;
+          transactionId = newTxn.id;
+        } else {
+          const { error: updateTxnError } = await supabase
+            .from("debt_transactions")
+            .update({
+              amount: amountNum,
+              due_date: isoDueDate,
+              created_at: isoCreatedAt,
+              description: pkg.description.trim() || null,
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", transactionId);
+          if (updateTxnError) throw updateTxnError;
         }
 
-        if (proofUrlsToInsert.length > 0) {
-          const { error: insertProofError } = await supabase
+        // Handle proof deletions
+        if (pkg.shouldDeleteProofUrls && pkg.shouldDeleteProofUrls.length > 0) {
+          const { error: deleteProofError } = await supabase
             .from("debt_transaction_proofs")
-            .insert(proofUrlsToInsert.map(url => ({
-              transaction_id: transactionId,
-              proof_url: url
-            })));
-          if (insertProofError) throw insertProofError;
+            .delete()
+            .eq("transaction_id", transactionId)
+            .in("proof_url", pkg.shouldDeleteProofUrls);
+          if (deleteProofError) throw deleteProofError;
+        }
+
+        // Handle proof file uploads
+        if (pkg.proofFiles && pkg.proofFiles.length > 0) {
+          const proofUrlsToInsert: string[] = [];
+          for (const file of pkg.proofFiles) {
+            const fileExt = file.name.split(".").pop();
+            const filePath = `${user.id}/debt-proof-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+              .from("receipts")
+              .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+              .from("receipts")
+              .getPublicUrl(filePath);
+
+            proofUrlsToInsert.push(publicUrl);
+          }
+
+          if (proofUrlsToInsert.length > 0) {
+            const { error: insertProofError } = await supabase
+              .from("debt_transaction_proofs")
+              .insert(proofUrlsToInsert.map(url => ({
+                transaction_id: transactionId,
+                proof_url: url
+              })));
+            if (insertProofError) throw insertProofError;
+          }
         }
       }
 
@@ -323,18 +364,45 @@ export default function DebtDetailPage() {
     try {
       setIsSavingPayment(true);
 
+      const txType = debt.type === "lend" ? "income" : "expense";
+      const txDescription = debt.type === "lend"
+        ? `Terima pelunasan: ${debt.name}`
+        : `Bayar hutang: ${debt.name}`;
+
+      const { data: newTx, error: txError } = await supabase
+        .from("transactions")
+        .insert([{
+          user_id: user.id,
+          wallet_id: payWalletId,
+          paylater_id: null,
+          category_id: null,
+          amount: amountNum,
+          type: txType,
+          description: txDescription,
+          transaction_date: new Date(payDate).toISOString(),
+          receipt_url: null
+        }])
+        .select()
+        .single();
+
+      if (txError) throw txError;
+
       const { data: newPayment, error: paymentError } = await supabase
         .from("debt_payments")
         .insert([{
           debt_id: debt.id,
           wallet_id: payWalletId,
           amount: amountNum,
-          payment_date: new Date(payDate).toISOString()
+          payment_date: new Date(payDate).toISOString(),
+          transaction_id: newTx.id
         }])
         .select()
         .single();
 
-      if (paymentError) throw paymentError;
+      if (paymentError) {
+        await supabase.from("transactions").delete().eq("id", newTx.id);
+        throw paymentError;
+      }
 
       // Handle multiple payment proofs
       if (payProofFiles && payProofFiles.length > 0) {
@@ -408,12 +476,24 @@ export default function DebtDetailPage() {
     if (!paymentToDelete) return;
     try {
       setIsDeletingPayment(true);
-      const { error } = await supabase
+
+      const txId = paymentToDelete.transaction_id;
+
+      const { error: deletePaymentError } = await supabase
         .from("debt_payments")
         .delete()
         .eq("id", paymentToDelete.id);
 
-      if (error) throw error;
+      if (deletePaymentError) throw deletePaymentError;
+
+      if (txId) {
+        const { error: deleteTxError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", txId);
+        if (deleteTxError) throw deleteTxError;
+      }
+
       showSuccessToast("Pembayaran berhasil dihapus");
       setPaymentToDelete(null);
       await loadData();
@@ -667,7 +747,7 @@ export default function DebtDetailPage() {
                 <History className="w-4 h-4 text-text-secondary" />
                 Riwayat Pembayaran
               </h3>
-              <p className="text-xxs text-text-secondary mt-0.5">Catatan cicilan yang telah dilakukan</p>
+              <p className="text-xs text-text-secondary mt-0.5">{isOwe ? "Catatan cicilan yang telah dilakukan" : "Catatan pelunasan yang telah diterima"}</p>
             </div>
 
             {debt.status === "unpaid" && (
@@ -677,7 +757,7 @@ export default function DebtDetailPage() {
                 className="text-xs py-1.5 px-3 flex items-center gap-1 cursor-pointer font-bold bg-primary text-white"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Bayar Cicilan
+                {isOwe ? "Bayar Cicilan" : "Catat Pelunasan"}
               </Button>
             )}
           </div>
@@ -694,7 +774,7 @@ export default function DebtDetailPage() {
                     <div className="space-y-1">
                       <p className="text-xs font-bold text-text-primary font-mono">{formatIDR(pm.amount)}</p>
                       <p className="text-[10px] text-text-secondary">
-                        Menggunakan {pm.wallets?.name || "Dompet Terhapus"} • {formatDateTimeShort(pm.payment_date)}
+                        {isOwe ? "Menggunakan" : "Diterima ke"} {pm.wallets?.name || "Dompet Terhapus"} • {formatDateTimeShort(pm.payment_date)}
                       </p>
                     </div>
 

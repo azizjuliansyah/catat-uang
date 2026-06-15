@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DebtItem, DebtPackage } from "../types";
 import { getTodayDate } from "../utils";
-import { formatForDateTimeInput } from "@/lib/utils/date";
+import { formatForDateTimeInput, getNowDateTimeString } from "@/lib/utils/date";
 
 export function useDebtsState(wallets: any[]) {
   // Data States
@@ -23,7 +23,7 @@ export function useDebtsState(wallets: any[]) {
   const [formName, setFormName] = useState("");
   const [formType, setFormType] = useState<"owe" | "lend">("owe");
   const [formPackages, setFormPackages] = useState<DebtPackage[]>([
-    { id: "1", totalAmount: "", dueDate: "", description: "", proofFiles: null, proofPreviews: null, existingProofUrls: null, shouldDeleteProofUrls: null }
+    { id: "1", totalAmount: "", dueDate: "", description: "", proofFiles: null, proofPreviews: null, existingProofUrls: null, shouldDeleteProofUrls: null, createdAt: getNowDateTimeString() }
   ]);
   const [editingDebt, setEditingDebt] = useState<DebtItem | null>(null);
   const [submittingDebt, setSubmittingDebt] = useState(false);
@@ -43,8 +43,9 @@ export function useDebtsState(wallets: any[]) {
   useEffect(() => {
     if (wallets.length > 0 && !payWalletId) {
       const activeWallets = wallets.filter((w: any) => !w.is_archived);
-      if (activeWallets.length > 0) {
-        setPayWalletId(activeWallets[0].id);
+      const defaultWallet = activeWallets.find((w: any) => w.is_default) || activeWallets[0];
+      if (defaultWallet) {
+        setPayWalletId(defaultWallet.id);
       }
     }
   }, [wallets, payWalletId]);
@@ -62,7 +63,7 @@ export function useDebtsState(wallets: any[]) {
     setFormName("");
     setFormType("owe");
     setFormPackages([
-      { id: Math.random().toString(), totalAmount: "", dueDate: "", description: "", proofFiles: null, proofPreviews: null, existingProofUrls: null, shouldDeleteProofUrls: null }
+      { id: Math.random().toString(), totalAmount: "", dueDate: "", description: "", proofFiles: null, proofPreviews: null, existingProofUrls: null, shouldDeleteProofUrls: null, createdAt: getNowDateTimeString() }
     ]);
     setEditingDebt(null);
   };
@@ -81,12 +82,13 @@ export function useDebtsState(wallets: any[]) {
           proofFiles: null,
           proofPreviews: null,
           existingProofUrls: t.debt_transaction_proofs?.map(p => p.proof_url) || null,
-          shouldDeleteProofUrls: null
+          shouldDeleteProofUrls: null,
+          createdAt: t.created_at ? formatForDateTimeInput(t.created_at) : getNowDateTimeString()
         }))
       );
     } else {
       setFormPackages([
-        { id: Math.random().toString(), totalAmount: "", dueDate: "", description: "", proofFiles: null, proofPreviews: null, existingProofUrls: null, shouldDeleteProofUrls: null }
+        { id: Math.random().toString(), totalAmount: "", dueDate: "", description: "", proofFiles: null, proofPreviews: null, existingProofUrls: null, shouldDeleteProofUrls: null, createdAt: getNowDateTimeString() }
       ]);
     }
     setIsEditModalOpen(true);

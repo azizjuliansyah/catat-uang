@@ -27,6 +27,30 @@ export interface CategoryItem {
   created_at: string;
 }
 
+export interface PaylaterPlatformItem {
+  id: string;
+  user_id: string;
+  name: string;
+  limit_amount: number;
+  balance: number;
+  billing_cycle_date: number;
+  due_date_offset: number;
+  icon: string;
+  color: string;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 interface AppContextType {
   user: User | null;
   loadingUser: boolean;
@@ -34,9 +58,15 @@ interface AppContextType {
   loadingWallets: boolean;
   categories: CategoryItem[];
   loadingCategories: boolean;
+  paylaterPlatforms: PaylaterPlatformItem[];
+  loadingPaylaterPlatforms: boolean;
   refreshUser: () => Promise<void>;
   refreshWallets: () => Promise<void>;
   refreshCategories: () => Promise<void>;
+  refreshPaylaterPlatforms: () => Promise<void>;
+  isInstallable: boolean;
+  isInstalled: boolean;
+  triggerInstallPrompt: () => Promise<boolean>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -49,6 +79,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loadingWallets, setLoadingWallets] = useState(false);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [paylaterPlatforms, setPaylaterPlatforms] = useState<PaylaterPlatformItem[]>([]);
+  const [loadingPaylaterPlatforms, setLoadingPaylaterPlatforms] = useState(false);
+
+  // PWA Installation state
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if running in standalone mode (already installed)
+    const checkStandalone = () => {
+      if (typeof window !== "undefined") {
+        const isStandaloneMode =
+          window.matchMedia("(display-mode: standalone)").matches ||
+          (window.navigator as any).standalone ||
+          document.referrer.includes("android-app://");
+        setIsInstalled(isStandaloneMode);
+      }
+    };
+
+    checkStandalone();
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent default prompt behavior
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setIsInstallable(true);
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+      setIsInstalled(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const triggerInstallPrompt = async () => {
+    if (!deferredPrompt) {
+      console.warn("PWA install prompt is not available yet.");
+      return false;
+    }
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+      
+      return outcome === "accepted";
+    } catch (err) {
+      console.error("Error triggering PWA install prompt:", err);
+      return false;
+    }
+  };
 
   const refreshUser = async () => {
     try {
@@ -103,6 +195,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshPaylaterPlatforms = async () => {
+    try {
+      setLoadingPaylaterPlatforms(true);
+      const { data, error } = await supabase
+        .from("paylater_platforms")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (!error && data) {
+        setPaylaterPlatforms(data as PaylaterPlatformItem[]);
+      }
+    } catch (err) {
+      console.error("Error in refreshPaylaterPlatforms:", err);
+    } finally {
+      setLoadingPaylaterPlatforms(false);
+    }
+  };
+
   // On mount: fetch user and set up auth listener
   useEffect(() => {
     refreshUser();
@@ -114,6 +224,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setWallets([]);
         setCategories([]);
+        setPaylaterPlatforms([]);
       }
       setLoadingUser(false);
     });
@@ -128,6 +239,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (user) {
       refreshWallets();
       refreshCategories();
+      refreshPaylaterPlatforms();
     }
   }, [user]);
 
@@ -140,9 +252,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         loadingWallets,
         categories,
         loadingCategories,
+        paylaterPlatforms,
+        loadingPaylaterPlatforms,
         refreshUser,
         refreshWallets,
         refreshCategories,
+        refreshPaylaterPlatforms,
+        isInstallable,
+        isInstalled,
+        triggerInstallPrompt,
       }}
     >
       {children}

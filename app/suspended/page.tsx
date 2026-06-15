@@ -56,24 +56,22 @@ export default function SuspendedPage() {
 
         {/* Navigation / Actions */}
         <div className="flex justify-between items-center px-2">
-          <Button
-            variant="ghost"
+          <button
             onClick={() => router.refresh()}
-            className="flex items-center gap-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors min-h-0 h-auto p-0"
+            className="flex items-center gap-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors min-h-0 h-auto p-0 cursor-pointer active:scale-95 bg-transparent border-none"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Cek Status
-          </Button>
+          </button>
 
-          <Button
-            variant="ghost"
+          <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-2 text-xs font-medium text-danger hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer min-h-0 h-auto p-0 hover:bg-transparent"
+            className="flex items-center gap-2 text-xs font-medium text-danger hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer min-h-0 h-auto p-0 hover:bg-transparent bg-transparent border-none active:scale-95"
           >
             <LogOut className="w-3.5 h-3.5" />
             {loggingOut ? "Mengeluarkan..." : "Keluar Akun"}
-          </Button>
+          </button>
         </div>
 
         {/* Footer */}

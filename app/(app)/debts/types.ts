@@ -38,7 +38,9 @@ export interface DebtPackage {
   proofPreviews?: string[] | null;
   existingProofUrls?: string[] | null;
   shouldDeleteProofUrls?: string[] | null;
+  createdAt?: string;
 }
+
 
 export interface DebtPaymentProof {
   id: string;
@@ -54,6 +56,7 @@ export interface DebtPaymentItem {
   amount: number;
   payment_date: string;
   created_at: string;
+  transaction_id?: string | null;
   wallets: {
     name: string;
   } | null;

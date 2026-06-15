@@ -102,8 +102,9 @@ export function useWalletsState(wallets: WalletItem[], user: any) {
   const openTransferModal = () => {
     const activeList = wallets.filter(w => !w.is_archived);
     if (activeList.length > 0) {
-      setTfSourceId(activeList[0].id);
-      setTfDestId(activeList[1]?.id || "");
+      const defaultWallet = activeList.find(w => w.is_default) || activeList[0];
+      setTfSourceId(defaultWallet.id);
+      setTfDestId(activeList.find(w => w.id !== defaultWallet.id)?.id || "");
     }
     setIsTransferModalOpen(true);
   };

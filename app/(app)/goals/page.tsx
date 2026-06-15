@@ -2,8 +2,6 @@
 
 import { Plus, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
-import { SkeletonCard } from "@/components/ui/organisms/SkeletonLoading";
-
 import { useGoalsData } from "./hooks/useGoalsData";
 import { useGoalsState } from "./hooks/useGoalsState";
 import { useGoalsHandlers } from "./hooks/useGoalsHandlers";
@@ -12,6 +10,7 @@ import { GoalsSummary } from "./components/GoalsSummary";
 import { GoalCard } from "./components/GoalCard";
 import { GoalsFilters } from "./components/GoalsFilters";
 import { GoalsModals } from "./components/GoalsModals";
+import { GoalsSkeleton } from "./components/GoalsSkeleton";
 
 export default function GoalsPage() {
   const {
@@ -103,9 +102,6 @@ export default function GoalsPage() {
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <GoalsSummary goals={goals} />
-
       {/* Filters and Search */}
       <GoalsFilters
         statusFilter={state.statusFilter}
@@ -114,13 +110,12 @@ export default function GoalsPage() {
         onSearchChange={state.setSearchTerm}
       />
 
+      {/* Summary Cards */}
+      <GoalsSummary goals={goals} />
+
       {/* Goals Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((n) => (
-            <SkeletonCard key={n} />
-          ))}
-        </div>
+        <GoalsSkeleton />
       ) : filteredGoals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-border rounded-2xl text-center">
           <div className="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center text-text-secondary/40 mb-3">

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SavingGoal } from "../types";
 import { getIconComponent } from "@/lib/utils/icons";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, Plus, ArrowUpRight, Calendar, ArrowRight } from "lucide-react";
+import { Edit2, Trash2, Plus, ArrowUpRight, Calendar, ExternalLink } from "lucide-react";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
@@ -69,7 +69,7 @@ export function GoalCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-0.5 shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <ActionButton
               size="sm"
               icon={Edit2}
@@ -132,34 +132,21 @@ export function GoalCard({
 
         <Link
           href={`/goals/${goal.id}`}
-          className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center"
+          className="text-[10px] font-semibold text-primary hover:underline uppercase flex items-center gap-1"
         >
+          <ExternalLink className="w-3 h-3" />
           Lihat Detail
-          <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
         </Link>
       </div>
 
       {/* Quick Actions Row */}
-      <div className="mt-3 flex items-center gap-2 relative z-10 w-full">
-        {/* Top-up Button - only show if ongoing or not withdrawn */}
-        {goal.status === "ongoing" && (
-          <Button
-            size="sm"
-            variant="primary"
-            fullWidth
-            onClick={() => onTopup(goal)}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Top-up
-          </Button>
-        )}
-
+      <div className="mt-3 flex items-center justify-end gap-2 relative z-10 w-full">
+      
         {/* Withdraw Button - show if has funds AND not already withdrawn */}
         {hasFunds && !isWithdrawn && (
           <Button
             size="sm"
             variant="success"
-            fullWidth
             onClick={() => onWithdraw(goal)}
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -173,9 +160,20 @@ export function GoalCard({
             disabled
             size="sm"
             variant="secondary"
-            fullWidth
           >
             Sudah Ditarik
+          </Button>
+        )}
+
+        {/* Top-up Button - only show if ongoing or not withdrawn */}
+        {goal.status === "ongoing" && (
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => onTopup(goal)}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Top-up
           </Button>
         )}
       </div>

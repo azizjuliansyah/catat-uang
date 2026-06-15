@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
-import { SkeletonCard, SkeletonList } from "@/components/ui/organisms/SkeletonLoading";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
 import { PiggyBank, AlertCircle } from "lucide-react";
 
@@ -12,6 +11,7 @@ import { DashboardHeader } from "./components/DashboardHeader";
 import { DashboardStats } from "./components/DashboardStats";
 import { DashboardWallets } from "./components/DashboardWallets";
 import { DashboardRecentTransactions } from "./components/DashboardRecentTransactions";
+import { DashboardSkeleton } from "./components/DashboardSkeleton";
 
 interface Transaction {
   id: string;
@@ -20,6 +20,9 @@ interface Transaction {
   description: string | null;
   transaction_date: string;
   wallets: {
+    name: string;
+  } | null;
+  paylater_platforms: {
     name: string;
   } | null;
   categories: {
@@ -32,8 +35,16 @@ interface Transaction {
 export default function DashboardPage() {
   const supabase = createClient();
   const router = useRouter();
-  const { user, wallets: allWallets, loadingUser, loadingWallets } = useApp();
+  const { 
+    user, 
+    wallets: allWallets, 
+    paylaterPlatforms,
+    loadingUser, 
+    loadingWallets,
+    loadingPaylaterPlatforms
+  } = useApp();
   const wallets = allWallets.filter((w) => !w.is_archived);
+  const activePaylater = paylaterPlatforms.filter((p) => !p.is_archived);
 
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
@@ -92,6 +103,7 @@ export default function DashboardPage() {
             description,
             transaction_date,
             wallets (name),
+            paylater_platforms (name),
             categories (name, icon, color)
           `)
           .eq("user_id", user.id)
@@ -115,35 +127,11 @@ export default function DashboardPage() {
   }, [supabase, user]);
 
   const totalBalance = wallets.reduce((sum, w) => sum + Number(w.balance), 0);
+  const totalPaylaterDebt = activePaylater.reduce((sum, p) => sum + Number(p.balance), 0);
   const netCashflow = currentMonthIncome - currentMonthExpense;
-  const isLoading = loadingUser || loadingWallets || (user && loadingTx);
+  const isLoading = loadingUser || loadingWallets || loadingPaylaterPlatforms || (user && loadingTx);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-8 w-48 bg-border/40 rounded animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-4">
-            <div className="h-4 w-28 bg-border/40 rounded animate-pulse" />
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 bg-surface-card border border-border/40 rounded-xl animate-pulse" />
-              ))}
-            </div>
-          </div>
-          <div className="lg:col-span-2 space-y-4">
-            <div className="h-4 w-36 bg-border/40 rounded animate-pulse" />
-            <SkeletonList rows={5} />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <DashboardSkeleton />;
 
   if (wallets.length === 0) {
     return (
@@ -178,6 +166,7 @@ export default function DashboardPage() {
         currentMonthIncome={currentMonthIncome}
         currentMonthExpense={currentMonthExpense}
         netCashflow={netCashflow}
+        totalPaylaterDebt={totalPaylaterDebt}
       />
 
       {/* Main Grid: Wallets (Left) & Recent Transactions (Right) */}

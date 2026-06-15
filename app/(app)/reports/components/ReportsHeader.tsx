@@ -25,7 +25,7 @@ export function ReportsHeader({
 
       <div className="flex items-center gap-2">
         <Button
-          variant="secondary"
+          variant="success"
           size="sm"
           onClick={onExportExcel}
           disabled={exportingExcel}

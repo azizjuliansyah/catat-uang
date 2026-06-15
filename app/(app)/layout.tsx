@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   ArrowRightLeft,
   Wallet,
+  CreditCard,
   Receipt,
   Target,
   TrendingUp,
@@ -46,10 +47,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Redirect to login if user is not logged in and we are done loading
+  // Redirect to login if user is not logged in, or to admin if the user is an administrator
   useEffect(() => {
-    if (!loadingUser && !user) {
-      router.push("/auth/login");
+    if (!loadingUser) {
+      if (!user) {
+        router.push("/auth/login");
+      } else if (user.app_metadata?.role === "admin") {
+        router.push("/admin");
+      }
     }
   }, [user, loadingUser, router]);
 
@@ -78,6 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Transaksi", href: "/transactions", icon: ArrowRightLeft },
     { name: "Dompet", href: "/wallets", icon: Wallet },
+    { name: "Paylater", href: "/paylater", icon: CreditCard },
     { name: "Hutang", href: "/debts", icon: Receipt },
     { name: "Tabungan", href: "/goals", icon: Target },
     { name: "Laporan", href: "/reports", icon: TrendingUp },
@@ -147,7 +153,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 }`}
               >
                 <span className="font-medium">Semua Dompet</span>
-                <span className="text-xxs font-mono text-text-secondary mt-0.5">{formatIDR(totalBalance)}</span>
+                <span className="text-xs font-mono text-text-secondary mt-0.5">{formatIDR(totalBalance)}</span>
               </Button>
               {wallets.map((w) => (
                 <Button
@@ -162,7 +168,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   }`}
                 >
                   <span className="font-medium truncate">{w.name}</span>
-                  <span className="text-xxs font-mono text-text-secondary mt-0.5">{formatIDR(w.balance)}</span>
+                  <span className="text-xs font-mono text-text-secondary mt-0.5">{formatIDR(w.balance)}</span>
                 </Button>
               ))}
               {wallets.length === 0 && (
@@ -213,14 +219,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            <Button
-              variant="ghost"
+            <button
               onClick={handleLogout}
               title="Keluar Aplikasi"
-              className="w-8 h-8 min-h-0 p-0 rounded-lg flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors shrink-0 cursor-pointer active:scale-95"
             >
               <LogOut className="w-4 h-4" />
-            </Button>
+            </button>
           </div>
 
           <a
@@ -258,7 +263,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 {formatIDR(totalBalance)}
               </span>
             </div>
-            
+
             <a
               href="/settings"
               className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all border ${
@@ -302,14 +307,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             );
           })}
           {/* Quick Sign Out for Mobile */}
-          <Button
-            variant="ghost"
+          <button
             onClick={handleLogout}
-            className="flex flex-col items-center justify-center flex-1 h-full py-1 min-h-0 text-text-secondary hover:text-danger transition-colors font-normal rounded-none"
+            className="flex flex-col items-center justify-center flex-1 h-full py-1 min-h-0 text-text-secondary hover:text-danger transition-colors font-normal rounded-none cursor-pointer active:scale-95"
           >
             <LogOut className="w-5 h-5" />
             <span className="text-[10px] tracking-tight mt-0.5 font-sans">Keluar</span>
-          </Button>
+          </button>
         </nav>
       </div>
     </div>

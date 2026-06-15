@@ -5,7 +5,6 @@ import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { Wallet as DefaultWalletIcon } from "lucide-react";
 import { useApp } from "@/app/providers/AppProvider";
-import { SkeletonCard } from "@/components/ui/organisms/SkeletonLoading";
 import { Button } from "@/components/ui/atoms/Button";
 
 import { useWalletsState } from "./hooks/useWalletsState";
@@ -18,6 +17,7 @@ import { AddWalletModal } from "./components/modals/AddWalletModal";
 import { EditWalletModal } from "./components/modals/EditWalletModal";
 import { TransferModal } from "./components/modals/TransferModal";
 import { DeleteWalletModal } from "./components/modals/DeleteWalletModal";
+import { WalletsSkeleton } from "./components/WalletsSkeleton";
 
 export default function WalletsPage() {
   const { user, wallets, loadingWallets: loading, refreshWallets } = useApp();
@@ -91,27 +91,7 @@ export default function WalletsPage() {
 
       {/* Grid List of Wallets */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="p-[1.5px] rounded-2xl bg-border/30 w-full h-44 animate-pulse">
-              <div className="bg-surface-card rounded-[15px] w-full h-full p-5 flex flex-col justify-between relative overflow-hidden">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-surface-hover shrink-0" />
-                    <div className="space-y-1.5">
-                      <div className="h-4 w-24 bg-surface-hover rounded" />
-                      <div className="h-3 w-12 bg-surface-hover rounded" />
-                    </div>
-                  </div>
-                </div>
-                <div className="pt-2.5 border-t border-border/40 space-y-1.5">
-                  <div className="h-3 w-16 bg-surface-hover rounded" />
-                  <div className="h-5 w-32 bg-surface-hover rounded" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <WalletsSkeleton />
       ) : state.filteredWallets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-border rounded-2xl text-center">
           <div className="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center text-text-secondary/40 mb-3">

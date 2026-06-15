@@ -5,8 +5,6 @@ import { useApp } from "@/app/providers/AppProvider";
 import { Plus, Search, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { TabButton } from "@/components/ui/molecules/TabButton";
-import { SkeletonCard } from "@/components/ui/organisms/SkeletonLoading";
-
 import { useDebtsState } from "./hooks/useDebtsState";
 import { useDebtsHandlers } from "./hooks/useDebtsHandlers";
 
@@ -16,6 +14,7 @@ import { DebtsFilters } from "./components/DebtsFilters";
 import { DebtFormModal } from "./components/modals/DebtFormModal";
 import { PaymentModal } from "./components/modals/PaymentModal";
 import { DeleteDebtModal } from "./components/modals/DeleteDebtModal";
+import { DebtsSkeleton } from "./components/DebtsSkeleton";
 
 export default function DebtsPage() {
   const { user, loadingUser, wallets, loadingWallets, refreshWallets } = useApp();
@@ -81,9 +80,6 @@ export default function DebtsPage() {
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <DebtsSummary debts={state.debts} />
-
       {/* Filters and Search */}
       <DebtsFilters
         activeTab={state.activeTab}
@@ -97,13 +93,12 @@ export default function DebtsPage() {
         onSearchChange={state.setSearchTerm}
       />
 
+      {/* Summary Cards */}
+      <DebtsSummary debts={state.debts} />
+
       {/* Main List */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2].map((n) => (
-            <SkeletonCard key={n} />
-          ))}
-        </div>
+        <DebtsSkeleton />
       ) : state.filteredDebts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-border rounded-2xl text-center">
           <div className="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center text-text-secondary/40 mb-3">

@@ -1,8 +1,9 @@
 import { useState } from "react";
+import Link from "next/link";
 import { getIconComponent } from "@/lib/utils/icons";
 import { WalletItem } from "../types";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, Archive, RotateCcw, GripVertical } from "lucide-react";
+import { Edit2, Trash2, Archive, RotateCcw, GripVertical, History, ExternalLink, Star } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/atoms/Button";
@@ -83,7 +84,16 @@ export function WalletCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {!wallet.is_default && !wallet.is_archived && (
+            <ActionButton
+              size="sm"
+              icon={Star}
+              title="Setel Utama"
+              variant="primary"
+              onClick={() => onSetDefault(wallet)}
+            />
+          )}
           <ActionButton
             size="sm"
             icon={Edit2}
@@ -115,19 +125,15 @@ export function WalletCard({
           {formatIDR(wallet.balance)}
         </span>
 
-        {/* Set default trigger */}
-        {!wallet.is_default && !wallet.is_archived && (
-          <button
-            type="button"
-            onClick={() => onSetDefault(wallet)}
-            className="text-left text-[10px] hover:underline mt-2 font-bold flex items-center gap-0.5 self-start transition-colors duration-300 bg-transparent border-transparent p-0 h-auto"
-            style={{
-              color: isHovered ? wallet.color : "var(--color-primary)"
-            }}
+        <div className="flex justify-end mt-2">
+          <Link
+            href={`/wallets/${wallet.id}`}
+            className="text-[10px] font-semibold text-primary hover:underline uppercase flex items-center gap-1"
           >
-            Setel Utama
-          </button>
-        )}
+            <ExternalLink className="w-3 h-3" />
+            Lihat Detail
+          </Link>
+        </div>
       </div>
     </FinancialCard>
   );

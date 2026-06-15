@@ -24,11 +24,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs Selector */}
-      <div className="bg-surface-hover/30 border border-border p-1 rounded-xl flex gap-1 self-start max-w-sm flex-wrap">
+      <div className="bg-surface-hover/30 border border-border p-1 rounded-xl flex gap-1 self-start max-w-md flex-wrap">
         <TabButton
           isActive={activeTab === "profile"}
           onClick={() => setActiveTab("profile")}
-          className="px-4 py-2.5 text-xs flex-1 min-w-[100px]"
+          className="px-4 py-2.5 text-xs flex-1 min-w-[90px]"
         >
           Profil
         </TabButton>
@@ -36,7 +36,7 @@ export default function SettingsPage() {
         <TabButton
           isActive={activeTab === "security"}
           onClick={() => setActiveTab("security")}
-          className="px-4 py-2.5 text-xs flex-1 min-w-[100px]"
+          className="px-4 py-2.5 text-xs flex-1 min-w-[90px]"
         >
           Keamanan
         </TabButton>
@@ -44,7 +44,7 @@ export default function SettingsPage() {
         <TabButton
           isActive={activeTab === "categories"}
           onClick={() => setActiveTab("categories")}
-          className="px-4 py-2.5 text-xs flex-1 min-w-[100px]"
+          className="px-4 py-2.5 text-xs flex-1 min-w-[90px]"
         >
           Kategori
         </TabButton>
@@ -57,3 +57,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

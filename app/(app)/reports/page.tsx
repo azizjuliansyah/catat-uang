@@ -4,13 +4,13 @@ import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
-import { SkeletonTable } from "@/components/ui/organisms/SkeletonLoading";
 import { exportToPDF, exportToExcel } from "./utils/exports";
 import { ReportsHeader } from "./components/ReportsHeader";
-import { PeriodFilter } from "./components/PeriodFilter";
+import { PeriodFilter } from "./components/FilterBar";
 import { SummaryCards } from "./components/SummaryCards";
 import { ReportsCharts } from "./components/ReportsCharts";
 import { ReportsTables } from "./components/ReportsTables";
+import { ReportsSkeleton } from "./components/ReportsSkeleton";
 
 interface Transaction {
   id: string;
@@ -18,14 +18,15 @@ interface Transaction {
   type: "income" | "expense";
   transaction_date: string;
   description: string | null;
+  category_id: string | null;
   categories: {
     name: string;
     icon: string;
     color: string;
-  }[] | null;
+  } | null;
   wallets: {
     name: string;
-  }[] | null;
+  } | null;
 }
 
 interface DebtData {
@@ -54,7 +55,7 @@ const CHART_COLORS = {
 
 export default function ReportsPage() {
   const supabase = createClient();
-  const { user, wallets: cachedWallets } = useApp();
+  const { user, wallets: cachedWallets, categories } = useApp();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,9 @@ export default function ReportsPage() {
 
   // View Mode: Visual charts vs accessible tabular data tables
   const [viewMode, setViewMode] = useState<"visual" | "tabular">("visual");
+
+  // Filter States
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
 
   // Data States
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -99,6 +103,7 @@ export default function ReportsPage() {
           type,
           transaction_date,
           description,
+          category_id,
           categories (name, icon, color),
           wallets (name)
         `)
@@ -197,9 +202,11 @@ export default function ReportsPage() {
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tx => {
       const txDate = new Date(tx.transaction_date);
-      return txDate >= startDate && txDate <= endDate;
+      const matchesDate = txDate >= startDate && txDate <= endDate;
+      const matchesCategory = selectedCategoryId === "all" || tx.category_id === selectedCategoryId;
+      return matchesDate && matchesCategory;
     });
-  }, [transactions, startDate, endDate]);
+  }, [transactions, startDate, endDate, selectedCategoryId]);
 
   // Calculate monthly cashflow
   const cashflowData = useMemo(() => {
@@ -243,8 +250,8 @@ export default function ReportsPage() {
     const categoryMap = new Map<string, { amount: number; color: string }>();
 
     expenseTx.forEach(tx => {
-      const catName = tx.categories?.[0]?.name || "Tanpa Kategori";
-      const catColor = tx.categories?.[0]?.color || "#71717a";
+      const catName = tx.categories?.name || "Tanpa Kategori";
+      const catColor = tx.categories?.color || "#71717a";
       const existing = categoryMap.get(catName) || { amount: 0, color: catColor };
       existing.amount += Number(tx.amount);
       categoryMap.set(catName, existing);
@@ -334,9 +341,7 @@ export default function ReportsPage() {
     });
   };
 
-  if (loading) {
-    return <SkeletonTable rows={8} cols={5} className="mt-6" />;
-  }
+  if (loading) return <ReportsSkeleton />;
 
   if (errorMsg) {
     return <div className="text-center py-10 text-danger">{errorMsg}</div>;
@@ -360,6 +365,9 @@ export default function ReportsPage() {
         setCustomEndDate={setCustomEndDate}
         viewMode={viewMode}
         setViewMode={setViewMode}
+        selectedCategoryId={selectedCategoryId}
+        setSelectedCategoryId={setSelectedCategoryId}
+        categories={categories}
       />
 
       <SummaryCards

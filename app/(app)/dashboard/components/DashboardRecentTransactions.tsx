@@ -18,6 +18,9 @@ interface Transaction {
   wallets: {
     name: string;
   } | null;
+  paylater_platforms: {
+    name: string;
+  } | null;
   categories: {
     name: string;
     icon: string;
@@ -91,7 +94,7 @@ export function DashboardRecentTransactions({ recentTransactions }: DashboardRec
                         </span>
                         <span>•</span>
                         <span className="truncate max-w-[120px]">
-                          {tx.wallets?.name || "Dompet Terhapus"}
+                          {tx.wallets?.name || tx.paylater_platforms?.name || "Dompet Terhapus"}
                         </span>
                       </div>
                     </div>

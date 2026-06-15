@@ -1,0 +1,176 @@
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
+import { Calendar, ChevronDown, Check } from "lucide-react";
+import { Button } from "@/components/ui/atoms/Button";
+
+export interface DatePeriodOption {
+  value: string;
+  label: string;
+}
+
+interface DatePeriodFilterProps {
+  value: string;
+  onChange: (value: string) => void;
+  customStartDate: string;
+  setCustomStartDate: (value: string) => void;
+  customEndDate: string;
+  setCustomEndDate: (value: string) => void;
+  options: DatePeriodOption[];
+  placeholder?: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+export const DatePeriodFilter = ({
+  value,
+  onChange,
+  customStartDate,
+  setCustomStartDate,
+  customEndDate,
+  setCustomEndDate,
+  options,
+  placeholder = "Pilih Tanggal",
+  size = "sm",
+  className = "",
+}: DatePeriodFilterProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const formatCompactDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    if (parts.length !== 3) return dateStr;
+    const [year, month, day] = parts;
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+    const monthIndex = parseInt(month) - 1;
+    const monthLabel = months[monthIndex] || month;
+    return `${day} ${monthLabel} ${year}`;
+  };
+
+  const getDisplayValue = () => {
+    if (value === "custom") {
+      if (customStartDate && customEndDate) {
+        return `${formatCompactDate(customStartDate)} - ${formatCompactDate(customEndDate)}`;
+      }
+      return "Custom Tanggal";
+    }
+    const matched = options.find((opt) => opt.value === value);
+    return matched ? matched.label : placeholder;
+  };
+
+  return (
+    <div className={`relative ${className}`} ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          w-full flex items-center justify-between gap-2
+          border border-border hover:border-border-strong outline-none transition-all duration-200 font-sans
+          bg-surface-input focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer
+          ${size === "sm" ? "px-3 py-1.5 text-xs min-h-[36px] rounded-lg" : ""}
+          ${size === "md" ? "px-3.5 py-2.5 text-xs min-h-[44px] rounded-xl" : ""}
+          ${size === "lg" ? "px-4 py-3 text-sm min-h-[52px] rounded-xl" : ""}
+        `}
+      >
+        <span className="flex-grow text-left truncate inline-flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-text-muted shrink-0" />
+          <span className="truncate text-text-primary font-medium">{getDisplayValue()}</span>
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-text-muted transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div
+          className={`
+            absolute z-50 w-72 mt-2
+            bg-surface-card border border-border rounded-2xl
+            shadow-xl shadow-black/20
+            p-3
+            animate-fade-in
+            ${size === "sm" ? "left-0" : "right-0 md:left-0"}
+          `}
+        >
+          <div className="flex flex-col gap-1">
+            {options.map((opt) => {
+              const isActive = value === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    if (opt.value !== "custom") {
+                      setIsOpen(false);
+                    }
+                  }}
+                  className={`
+                    flex items-center justify-between gap-3 cursor-pointer w-full text-left
+                    ${size === "sm" ? "py-1.5 px-3 text-xs rounded-lg" : "py-2 px-3.5 text-xs rounded-xl"}
+                    ${isActive 
+                      ? "bg-primary/10 text-primary font-semibold hover:text-primary hover:bg-primary/10" 
+                      : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                    }
+                    transition-colors duration-150
+                  `}
+                >
+                  <span>{opt.label}</span>
+                  {isActive && <Check className="w-4 h-4 shrink-0 text-primary" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {value === "custom" && (
+            <div className="pt-3 border-t border-border/50 space-y-3 animate-fade-in">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">Mulai</label>
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="w-full px-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-[11px] outline-none transition-all cursor-pointer focus-glow h-8"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">Selesai</label>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="w-full px-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-[11px] outline-none transition-all cursor-pointer focus-glow h-8"
+                  />
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                className="w-full h-8 min-h-[32px] text-xs"
+                onClick={() => setIsOpen(false)}
+              >
+                Terapkan
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};

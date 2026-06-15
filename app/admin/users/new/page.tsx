@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createUser } from "@/app/admin/actions";
 import { Button } from "@/components/ui/atoms/Button";
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 export default function NewUserPage() {
+  const router = useRouter();
 
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
@@ -27,7 +29,6 @@ export default function NewUserPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [createdUserEmail, setCreatedUserEmail] = useState<string | null>(null);
 
   const generatePassword = () => {
     const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
@@ -69,20 +70,15 @@ export default function NewUserPage() {
       // Create user via Server Action
       await createUser(formName, formEmail, formPassword, formRole);
 
-      setCreatedUserEmail(formEmail);
-      setSuccessMsg(`Pengguna ${formEmail} berhasil dibuat!`);
+      // Save success email in sessionStorage to display toast on user list page
+      sessionStorage.setItem("userCreatedSuccess", formEmail);
 
-      // Reset form
-      setFormName("");
-      setFormEmail("");
-      setFormPassword("");
-      setFormRole("user");
-
+      // Redirect to user list page immediately
+      router.push("/admin/users");
     } catch (err: unknown) {
       console.error("Error creating user:", err);
       const msg = err instanceof Error ? err.message : String(err);
       setErrorMsg(msg || "Gagal membuat pengguna. Silakan coba lagi.");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -258,37 +254,6 @@ export default function NewUserPage() {
         </form>
       </div>
 
-      {/* Success Message with Next Steps */}
-      {createdUserEmail && (
-        <div className="bg-success/5 border border-success/20 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-success flex items-center gap-2 mb-2">
-            <Check className="w-4 h-4" />
-            Pengguna Berhasil Dibuat!
-          </h3>
-          <p className="text-xs text-text-secondary leading-relaxed mb-3">
-            Akun dengan email <strong>{createdUserEmail}</strong> telah berhasil dibuat dan siap digunakan.
-            Pengguna dapat login dengan email dan password yang telah ditetapkan.
-          </p>
-          <div className="flex gap-2">
-            <Link
-              href="/admin/users"
-              className="px-3 py-1.5 bg-success/10 text-success text-xs font-medium rounded-lg hover:bg-success/20 transition-colors"
-            >
-              Kembali ke Daftar Pengguna
-            </Link>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setCreatedUserEmail(null);
-                setSuccessMsg(null);
-              }}
-              className="px-3 py-1.5 text-xs min-h-0 h-auto"
-            >
-              Buat Pengguna Lain
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

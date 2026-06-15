@@ -1,9 +1,11 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Button } from "@/components/ui/atoms/Button";
+import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { DebtItem } from "../../types";
 import { formatIDR } from "../../utils";
 import { ProofUploader } from "./ProofUploader";
+import { Wallet } from "lucide-react";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -48,7 +50,7 @@ export function PaymentModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Bayar Cicilan: ${payingDebt?.name}`}
+      title={payingDebt?.type === "lend" ? `Catat Pelunasan: ${payingDebt?.name}` : `Bayar Cicilan: ${payingDebt?.name}`}
       onSubmit={onSubmit}
       footer={
         <>
@@ -71,17 +73,21 @@ export function PaymentModal({
           placeholder="0"
         />
 
-        <FormField
-          label="Bayar Menggunakan Dompet"
-          required
-          type="select"
-          value={payWalletId}
-          onChange={(e) => setPayWalletId(e.target.value)}
-          options={activeWallets.map(w => ({
-            value: w.id,
-            label: `${w.name} (${formatIDR(w.balance)})`
-          }))}
-        />
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-text-secondary">
+            {payingDebt?.type === "lend" ? "Bayar Ke Dompet" : "Bayar Menggunakan Dompet"} <span className="text-danger">*</span>
+          </label>
+          <CustomSelect
+            value={payWalletId}
+            onChange={setPayWalletId}
+            options={activeWallets.map(w => ({
+              value: w.id,
+              label: `${w.name} (${formatIDR(w.balance)})`,
+              icon: <Wallet className="w-4 h-4 text-text-secondary" />
+            }))}
+            placeholder="Pilih Dompet"
+          />
+        </div>
 
         <FormField
           label="Tanggal Pembayaran"

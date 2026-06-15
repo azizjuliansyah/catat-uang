@@ -8,27 +8,38 @@ import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { Button } from "@/components/ui/atoms/Button";
 import { TabButton } from "@/components/ui/molecules/TabButton";
-import { ArrowLeft, Calendar, Wallet as WalletIcon, FileText } from "lucide-react";
+import { ArrowLeft, Calendar, Wallet as WalletIcon, CreditCard, FileText } from "lucide-react";
 import { CategoryGridSelector } from "../components/CategoryGridSelector";
 import { ReceiptManager } from "../components/ReceiptManager";
 import { getNowDateTimeString } from "@/lib/utils/date";
+import CustomSelect from "@/components/ui/atoms/CustomSelect";
 
 export default function NewTransactionPage() {
   const supabase = createClient();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const amountInputRef = useRef<HTMLInputElement>(null);
-  const walletSelectRef = useRef<HTMLSelectElement>(null);
 
   const { success: showSuccessToast, error: showErrorToast } = useToast();
-  const { user, loadingUser, wallets, loadingWallets, categories, loadingCategories, refreshWallets } = useApp();
+  const {
+    user,
+    loadingUser,
+    wallets,
+    loadingWallets,
+    categories,
+    loadingCategories,
+    paylaterPlatforms,
+    loadingPaylaterPlatforms,
+    refreshWallets,
+    refreshPaylaterPlatforms
+  } = useApp();
 
-  const loading = loadingUser || loadingWallets || loadingCategories;
+  const loading = loadingUser || loadingWallets || loadingCategories || loadingPaylaterPlatforms;
 
   // Form States
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"expense" | "income">("expense");
-  const [walletId, setWalletId] = useState("");
+  const [sourceId, setSourceId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [description, setDescription] = useState("");
   const [transactionDate, setTransactionDate] = useState(() => {
@@ -51,16 +62,16 @@ export default function NewTransactionPage() {
   /* eslint-disable react-hooks/set-state-in-effect */
   // Pre-select default wallet
   useEffect(() => {
-    if (!loadingWallets && wallets.length > 0 && !walletId) {
+    if (!loadingWallets && wallets.length > 0 && !sourceId) {
       const activeWallets = wallets.filter((w) => !w.is_archived);
       const defaultWallet = activeWallets.find((w) => w.is_default);
       if (defaultWallet) {
-        setWalletId(defaultWallet.id);
+        setSourceId(`wallet:${defaultWallet.id}`);
       } else if (activeWallets.length > 0) {
-        setWalletId(activeWallets[0].id);
+        setSourceId(`wallet:${activeWallets[0].id}`);
       }
     }
-  }, [wallets, loadingWallets, walletId]);
+  }, [wallets, loadingWallets, sourceId]);
 
   // Pre-select category when type changes
   useEffect(() => {
@@ -120,11 +131,14 @@ export default function NewTransactionPage() {
       return;
     }
 
-    if (!walletId) {
-      showErrorToast("Silakan pilih dompet");
-      walletSelectRef.current?.focus();
+    if (!sourceId) {
+      showErrorToast("Silakan pilih sumber dana");
       return;
     }
+
+    const isWallet = sourceId.startsWith("wallet:");
+    const actualWalletId = isWallet ? sourceId.replace("wallet:", "") : null;
+    const actualPaylaterId = !isWallet ? sourceId.replace("paylater:", "") : null;
 
     setSubmitting(true);
 
@@ -156,7 +170,8 @@ export default function NewTransactionPage() {
         .from("transactions")
         .insert({
           user_id: user.id,
-          wallet_id: walletId,
+          wallet_id: actualWalletId,
+          paylater_id: actualPaylaterId,
           category_id: categoryId || null,
           amount: numericAmount,
           type: type,
@@ -169,6 +184,7 @@ export default function NewTransactionPage() {
 
       showSuccessToast("Transaksi baru berhasil disimpan.");
       await refreshWallets();
+      await refreshPaylaterPlatforms();
       router.push("/transactions");
     } catch (err: unknown) {
       console.error("Error creating transaction:", err);
@@ -297,26 +313,32 @@ export default function NewTransactionPage() {
             {/* Source/Target Wallet */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-                Sumber Dompet
+                Sumber Dana
                 <span className="text-danger">*</span>
               </label>
-              <div className="relative">
-                <WalletIcon className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <select
-                  ref={walletSelectRef}
-                  value={walletId}
-                  onChange={(e) => setWalletId(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer focus-glow"
-                  required
-                >
-                  <option value="" disabled>Pilih Dompet</option>
-                  {wallets.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name} ({new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(w.balance)})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CustomSelect
+                value={sourceId}
+                onChange={setSourceId}
+                options={[
+                  { value: "header-wallets", label: "Dompet / Rekening", disabled: true },
+                  ...wallets.filter((w) => !w.is_archived).map((w) => ({
+                    value: `wallet:${w.id}`,
+                    label: `${w.name} (${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(w.balance)})`,
+                    icon: <WalletIcon className="w-4 h-4 text-text-secondary" />
+                  })),
+                  ...(paylaterPlatforms.filter((p) => !p.is_archived).length > 0
+                    ? [
+                        { value: "header-paylater", label: "Paylater (Kredit)", disabled: true },
+                        ...paylaterPlatforms.filter((p) => !p.is_archived).map((p) => ({
+                          value: `paylater:${p.id}`,
+                          label: `${p.name} (Outstanding: ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.balance)})`,
+                          icon: <CreditCard className="w-4 h-4 text-text-secondary" />
+                        }))
+                      ]
+                    : [])
+                ]}
+                placeholder="Pilih Sumber Dana"
+              />
             </div>
           </div>
 

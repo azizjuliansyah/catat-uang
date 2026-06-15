@@ -1,8 +1,10 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Button } from "@/components/ui/atoms/Button";
+import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { SavingGoal } from "../../types";
 import { formatIDR } from "../../utils";
+import { Wallet } from "lucide-react";
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -72,17 +74,21 @@ export function WithdrawModal({
           placeholder="0"
         />
 
-        <FormField
-          label="Simpan Dana Ke Dompet"
-          required
-          type="select"
-          value={txWalletId}
-          onChange={(e) => onTxWalletIdChange(e.target.value)}
-          options={wallets.map(w => ({
-            value: w.id,
-            label: `${w.name} (${formatIDR(w.balance)})`
-          }))}
-        />
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-text-secondary">
+            Simpan Dana Ke Dompet <span className="text-danger">*</span>
+          </label>
+          <CustomSelect
+            value={txWalletId}
+            onChange={onTxWalletIdChange}
+            options={wallets.map(w => ({
+              value: w.id,
+              label: `${w.name} (${formatIDR(w.balance)})`,
+              icon: <Wallet className="w-4 h-4 text-text-secondary" />
+            }))}
+            placeholder="Pilih Dompet"
+          />
+        </div>
 
         <FormField
           label="Tanggal Transaksi"

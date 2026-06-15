@@ -9,7 +9,11 @@
       "mcp__context7__query-docs",
       "Bash(node scripts/generate-icons.js)",
       "Bash(npx next *)",
-      "Bash(Select-String -Pattern \"Unsupported metadata themeColor\" -Context 0,0)"
+      "Bash(Select-String -Pattern \"Unsupported metadata themeColor\" -Context 0,0)",
+      "Bash(del *)",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(cd \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\"; $env:NODE_ENV=\"development\"; node node_modules/.bin/next dev 2>&1 | Select-Object -First 10)"
     ]
   }
 }

@@ -6,42 +6,117 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 // 1. Fetch audit logs
 export async function getAuditLogs() {
   const adminSupabase = await createAdminClient();
-  const { data, error } = await adminSupabase
+  const { data: logs, error: logsError } = await adminSupabase
     .from("audit_logs")
-    .select(`
-      *,
-      actor_user:users!audit_logs_actor_id_fkey (email, name)
-    `)
+    .select("*")
     .order("created_at", { ascending: false })
     .limit(500);
 
-  if (error) throw error;
-  return data || [];
+  if (logsError) throw logsError;
+  if (!logs) return [];
+
+  // Fetch names and details from public.users table
+  const { data: dbUsers, error: dbError } = await adminSupabase
+    .from("users")
+    .select("id, name");
+
+  if (dbError) throw dbError;
+
+  // Fetch emails from auth.users via admin API
+  const { data: { users: authUsers }, error: authError } = await adminSupabase.auth.admin.listUsers({
+    perPage: 1000
+  });
+
+  if (authError) throw authError;
+
+  const nameMap = new Map<string, string>();
+  if (dbUsers) {
+    dbUsers.forEach((u) => {
+      if (u.name) nameMap.set(u.id, u.name);
+    });
+  }
+
+  const emailMap = new Map<string, string>();
+  if (authUsers) {
+    authUsers.forEach((u) => {
+      if (u.email) emailMap.set(u.id, u.email);
+    });
+  }
+
+  return logs.map((log) => {
+    const actorId = log.actor_id;
+    return {
+      ...log,
+      actor_user: actorId ? {
+        email: emailMap.get(actorId) || `user_${actorId.slice(0, 8)}`,
+        name: nameMap.get(actorId) || null
+      } : null
+    };
+  });
 }
+
 
 // 2. Fetch admin users
 export async function getAdminUsers() {
   const adminSupabase = await createAdminClient();
-  const { data, error } = await adminSupabase
+  const { data: dbUsers, error: dbError } = await adminSupabase
     .from("users")
-    .select("id, email, name")
+    .select("id, name")
     .eq("role", "admin");
 
-  if (error) throw error;
-  return data || [];
+  if (dbError) throw dbError;
+  if (!dbUsers) return [];
+
+  const { data: { users: authUsers }, error: authError } = await adminSupabase.auth.admin.listUsers({
+    perPage: 1000
+  });
+
+  if (authError) throw authError;
+
+  const emailMap = new Map<string, string>();
+  if (authUsers) {
+    authUsers.forEach((u) => {
+      if (u.email) emailMap.set(u.id, u.email);
+    });
+  }
+
+  return dbUsers.map((user) => ({
+    ...user,
+    email: emailMap.get(user.id) || ""
+  }));
 }
+
 
 // 3. Fetch all users
 export async function getUsers() {
   const adminSupabase = await createAdminClient();
-  const { data, error } = await adminSupabase
+  const { data: dbUsers, error: dbError } = await adminSupabase
     .from("users")
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  return data || [];
+  if (dbError) throw dbError;
+  if (!dbUsers) return [];
+
+  const { data: { users: authUsers }, error: authError } = await adminSupabase.auth.admin.listUsers({
+    perPage: 1000
+  });
+
+  if (authError) throw authError;
+
+  const emailMap = new Map<string, string>();
+  if (authUsers) {
+    authUsers.forEach((u) => {
+      if (u.email) emailMap.set(u.id, u.email);
+    });
+  }
+
+  return dbUsers.map((user) => ({
+    ...user,
+    email: emailMap.get(user.id) || ""
+  }));
 }
+
 
 // 4. Toggle suspend user status
 export async function toggleSuspendUser(userId: string, currentStatus: "active" | "suspended", userEmail: string) {
@@ -166,30 +241,6 @@ export async function createUser(formName: string, formEmail: string, formPasswo
 
   if (createError) throw createError;
 
-  // Insert into public.users table
-  const { error: dbError } = await adminSupabase.from("users").insert([{
-    id: newUser.user.id,
-    email: formEmail.trim(),
-    name: formName.trim(),
-    role: formRole,
-    status: "active"
-  }]);
-
-  if (dbError) throw dbError;
-
-  // Seed default categories for the new user
-  const { error: categoriesError } = await adminSupabase.from("categories").insert([
-    { user_id: newUser.user.id, name: "Gaji", type: "income", icon: "Briefcase", color: "#10B981" },
-    { user_id: newUser.user.id, name: "Investasi", type: "income", icon: "TrendingUp", color: "#3B82F6" },
-    { user_id: newUser.user.id, name: "Makanan & Minuman", type: "expense", icon: "Utensils", color: "#EF4444" },
-    { user_id: newUser.user.id, name: "Transportasi", type: "expense", icon: "Car", color: "#F59E0B" },
-    { user_id: newUser.user.id, name: "Belanja", type: "expense", icon: "ShoppingBag", color: "#EC4899" },
-    { user_id: newUser.user.id, name: "Utilitas & Tagihan", type: "expense", icon: "FileText", color: "#8B5CF6" },
-    { user_id: newUser.user.id, name: "Hiburan", type: "expense", icon: "Film", color: "#6366F1" },
-    { user_id: newUser.user.id, name: "Lainnya", type: "expense", icon: "HelpCircle", color: "#71717a" },
-  ]);
-
-  if (categoriesError) console.error("Error seeding categories:", categoriesError);
 
   // Log to audit_logs
   const { error: logError } = await adminSupabase.from("audit_logs").insert([{
@@ -212,29 +263,58 @@ export async function createUser(formName: string, formEmail: string, formPasswo
 // 8. Get user details
 export async function getUserDetails(userId: string) {
   const adminSupabase = await createAdminClient();
-  const { data, error } = await adminSupabase
+  const { data: dbUser, error: dbError } = await adminSupabase
     .from("users")
     .select("*")
     .eq("id", userId)
     .single();
 
-  if (error) throw error;
-  return data;
+  if (dbError) throw dbError;
+
+  const { data: authUser, error: authError } = await adminSupabase.auth.admin.getUserById(userId);
+  if (authError) throw authError;
+
+  return {
+    ...dbUser,
+    email: authUser.user.email || ""
+  };
 }
+
 
 // 9. Get user audit logs
 export async function getUserAuditLogs(userId: string) {
   const adminSupabase = await createAdminClient();
-  const { data, error } = await adminSupabase
+  const { data: logs, error: logsError } = await adminSupabase
     .from("audit_logs")
-    .select(`
-      *,
-      users:users!audit_logs_actor_id_fkey (email)
-    `)
+    .select("*")
     .eq("target_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);
 
-  if (error) throw error;
-  return data || [];
+  if (logsError) throw logsError;
+  if (!logs) return [];
+
+  const { data: { users: authUsers }, error: authError } = await adminSupabase.auth.admin.listUsers({
+    perPage: 1000
+  });
+
+  if (authError) throw authError;
+
+  const emailMap = new Map<string, string>();
+  if (authUsers) {
+    authUsers.forEach((u) => {
+      if (u.email) emailMap.set(u.id, u.email);
+    });
+  }
+
+  return logs.map((log) => {
+    const actorId = log.actor_id;
+    return {
+      ...log,
+      users: actorId ? {
+        email: emailMap.get(actorId) || `user_${actorId.slice(0, 8)}`
+      } : null
+    };
+  });
 }
+

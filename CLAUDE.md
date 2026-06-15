@@ -17,14 +17,9 @@ CatatUang is a personal finance management web app built with Next.js 16 (App Ro
 ## Development Commands
 
 ```bash
-# Development
 npm run dev          # Start dev server on http://localhost:3000
-
-# Build & Production
 npm run build        # Production build
 npm run start        # Start production server
-
-# Linting
 npm run lint         # Run ESLint
 ```
 
@@ -35,9 +30,9 @@ npm run lint         # Run ESLint
 Required in `.env.local`:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=           # Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=      # Supabase anon key (client-safe)
-SUPABASE_SERVICE_ROLE_KEY=           # Service role key (server-only, never expose)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=           # Server-only, never expose to client
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -47,50 +42,58 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Supabase Client Pattern
 
-Three distinct Supabase clients for different contexts:
+Three distinct clients — always pick the right one:
 
-- **`lib/supabase/client.ts`** - Browser client for client components
-- **`lib/supabase/server.ts`** - Server component client (uses `anon` key)
-- **`lib/supabase/admin.ts`** - Admin client using `service_role` key for privileged operations
+- **`lib/supabase/client.ts`** — Browser client for `"use client"` components
+- **`lib/supabase/server.ts`** — Server component client (uses `anon` key)
+- **`lib/supabase/admin.ts`** — `service_role` key for privileged ops (user mgmt, audit logs)
 
-Use the appropriate client based on context:
-- Client components → `createClient()` from `client.ts`
-- Server components → `await createClient()` from `server.ts`
-- Admin operations (user management, audit logs) → `await createAdminClient()` from `admin.ts`
+### AppProvider (Global Shared State)
+
+`app/providers/AppProvider.tsx` wraps the entire `(app)` layout and provides shared data via `useApp()`:
+
+- `user` / `loadingUser` — authenticated Supabase user
+- `wallets` / `loadingWallets` — all user wallets
+- `categories` / `loadingCategories` — all user categories
+- `paylaterPlatforms` / `loadingPaylaterPlatforms` — all paylater platforms
+- `refreshWallets()`, `refreshCategories()`, `refreshPaylaterPlatforms()` — manual refetch triggers
+
+Pages that need wallets or categories pull them from `useApp()` instead of fetching independently. After a mutation, call the relevant `refresh*()` function to sync the shared state.
+
+```tsx
+const { wallets, categories, refreshWallets } = useApp();
+```
 
 ### Route Groups & Layouts
 
-- **`app/(app)/`** - User-facing routes with shared sidebar layout (`app/(app)/layout.tsx`)
-- **`app/auth/`** - Authentication routes (login)
-- **`app/admin/`** - Admin panel routes (role: `admin`)
-- **`app/suspended/`** - Suspended user page
+- **`app/(app)/`** — User-facing routes; `app/(app)/layout.tsx` renders the sidebar + auth guard
+- **`app/auth/`** — Login page
+- **`app/admin/`** — Admin panel (`role=admin` only)
+- **`app/suspended/`** — Suspended user landing
 
-Route groups use parentheses for file organization without affecting URL structure.
+Auth is enforced in `app/(app)/layout.tsx` via `useApp()` — it redirects to `/auth/login` if no user, or `/admin` if `app_metadata.role === "admin"`.
 
-### Middleware (`middleware.ts`)
+### Complex Page Hook Pattern
 
-Critical authentication and authorization logic:
+Feature-heavy pages split logic into two hooks:
 
-1. **Suspension guard:** Redirects suspended users to `/suspended`
-2. **Unauthenticated:** Redirects to `/auth/login`
-3. **Role-based redirects:**
-   - `role=user` trying to access `/admin/*` → `/dashboard`
-   - `role=admin` trying to access `/dashboard` → `/admin`
-   - Authenticated users on `/auth/login` → role-appropriate dashboard
+- **`use[Feature]State`** — all `useState` declarations, derived/filtered data, modal open/close helpers
+- **`use[Feature]Handlers`** — async operations (Supabase reads/writes, file uploads, form submits)
 
-Role is stored in `user.app_metadata.role` (set via Supabase Auth admin API).
+Example: `app/(app)/debts/hooks/useDebtsState.ts` + `useDebtsHandlers.ts`
 
 ### Database Schema Key Points
 
 All financial tables use `user_id uuid references auth.users(id) on delete cascade`:
 
-- **`wallets`** - User wallets with balance tracking
-- **`categories`** - User-defined income/expense categories with icons
-- **`transactions`** - Financial transactions linked to wallet and category
-- **`transfers`** - Wallet-to-wallet transfers
-- **`debts`** - Debt tracking (owe/lend) with status auto-updates
-- **`debt_payments`** - Payment records for debts
-- **`saving_goals`** - Savings goals with progress tracking
+- **`wallets`** — balance tracking
+- **`categories`** — income/expense categories with icon/color
+- **`transactions`** — linked to wallet and category
+- **`transfers`** — wallet-to-wallet transfers
+- **`debts`** / **`debt_payments`** / **`debt_transactions`** / **`debt_transaction_proofs`** — debt tracking with multi-package support and proof uploads
+- **`saving_goals`** — savings goals with progress
+- **`paylater_platforms`** — BNPL platform credit limits and billing cycles
+- **`paylater_transactions`** — usage/payment records per platform
 
 Monetary values use `numeric(15,2)` — never float.
 
@@ -100,28 +103,23 @@ Monetary values use `numeric(15,2)` — never float.
 
 ### CSS Variables (Tailwind v4)
 
-All colors defined in `app/globals.css` using `@theme`:
+All colors defined in `app/globals.css` using `@theme`. Never use raw hex values — always use these tokens:
 
-- **Surfaces:** `surface`, `surface-card`, `surface-input`, `surface-hover`
-- **Brand:** `primary`, `primary-hover`
-- **Text:** `text-primary`, `text-secondary`, `text-muted`
-- **Finance semantic:** `income` (green), `expense` (red), `transfer` (indigo)
-- **Debt semantic:** `debt-owe` (amber), `debt-lend` (cyan)
-- **Goal semantic:** `goal-active` (purple), `goal-complete` (green)
-- **Status:** `success`, `warning`, `danger`, `info`
-- **Borders:** `border`, `border-strong`
-
-Use tokens like `bg-surface-card`, `text-income`, `border-border-strong` — never raw hex values.
+- **Surfaces:** `bg-surface`, `bg-surface-card`, `bg-surface-input`, `bg-surface-hover`
+- **Brand:** `bg-primary`, `hover:bg-primary-hover`, `text-primary`
+- **Text:** `text-text-primary`, `text-text-secondary`, `text-text-muted`
+- **Finance semantic:** `text-income` (green), `text-expense` (red), `text-transfer` (indigo)
+- **Debt semantic:** `text-debt-owe` (amber), `text-debt-lend` (cyan)
+- **Status:** `text-text-success`, `text-feedback-error`, `bg-feedback-error`
+- **Borders:** `border-border`, `border-border-strong`
 
 ### Typography
 
-- **Primary:** IBM Plex Sans (variable: `--font-ibm-plex-sans`)
-- **Mono:** IBM Plex Sans Mono (variable: `--font-ibm-plex-sans-mono`)
-- All currency amounts MUST use `font-mono` class
+- **Primary font:** IBM Plex Sans — `font-sans` or `font-display`
+- **Mono font:** IBM Plex Sans Mono — `font-mono`
+- All currency amounts **must** use `font-mono`
 
 ### Icon System
-
-Icons from `lucide-react`, mapped via `lib/utils/icons.ts`:
 
 ```tsx
 import { getIconComponent } from "@/lib/utils/icons";
@@ -132,20 +130,20 @@ const IconComponent = getIconComponent(wallet.icon);
 
 ### Currency Formatting
 
-Use `id-ID` locale for all currency displays:
+Use `formatIDR` from `lib/utils/format.ts` — do not redefine inline:
 
 ```tsx
-const formatIDR = (val: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(val);
-};
+import { formatIDR } from "@/lib/utils/format";
+// Output: "Rp 1.500.000"
 ```
 
-Output: `"Rp 1.500.000"`
+### Component Atomic Structure
+
+`components/ui/` follows atoms → molecules → organisms:
+
+- **atoms:** `Button`, `Input`, `Select`, `CustomSelect`, `Badge`, `Spinner`, `ActionButton`, `StatusBadge`, `DynamicColorIcon`, `DatePeriodFilter`
+- **molecules:** `FormField`, `Toast`, `Breadcrumbs`, `TabButton`, `Tooltip`, `InfoCard`, `UploadZone`, `FilePreviewCard`
+- **organisms:** `Modal`, `DeleteConfirmationModal`, `EmptyState`, `SkeletonLoading`, `FinancialCard`, `TransactionDetailModal`
 
 ---
 
@@ -153,48 +151,20 @@ Output: `"Rp 1.500.000"`
 
 ### Role-Based Access
 
-- **`user`** role: Can access `/dashboard`, `/transactions`, `/wallets`, `/debts`, `/goals`, `/reports`, `/settings`
-- **`admin`** role: Can access `/admin` routes only
-- **`suspended`** status: Redirected to `/suspended` page
+- **`user`** role: `/dashboard`, `/transactions`, `/wallets`, `/paylater`, `/debts`, `/goals`, `/reports`, `/settings`
+- **`admin`** role: `/admin/*` only — never accesses financial tables
+- **`suspended`** status: redirected to `/suspended`
 
-Admin panel NEVER displays financial data — enforced at both middleware and UI level.
+Role is stored in `user.app_metadata.role` (set via Supabase Auth admin API, not `public.users`).
 
-### Page Structure Patterns
+### Loading & Empty States
 
-**Client Components with Data Fetching:**
-
-```tsx
-"use client";
-
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-
-export default function Page() {
-  const supabase = createClient();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      const { data, error } = await supabase.from("table").select("*");
-      setData(data);
-      setLoading(false);
-    }
-    loadData();
-  }, [supabase]);
-
-  if (loading) return <Skeleton />;
-  return <PageContent data={data} />;
-}
-```
-
-**Loading States:** Use skeleton placeholders with `animate-pulse bg-surface-hover`
-
-**Empty States:** Centered content with illustration, descriptive text, and CTA
+- Skeletons: `animate-pulse bg-surface-hover` placeholders
+- Empty states: centered card with `border-dashed`, an icon, description text, and a CTA button
 
 ### Database Queries
 
-Always include `user_id` filter for financial data:
+Always include `user_id` filter; RLS is a safety net, not a substitute:
 
 ```tsx
 const { data } = await supabase
@@ -203,57 +173,61 @@ const { data } = await supabase
   .eq("user_id", user.id);
 ```
 
-### File Organization
-
-- **`lib/supabase/`** - Supabase client factories
-- **`lib/utils/`** - Utility functions (icons, formatters)
-- **`supabase/migrations/`** - SQL migration files
-- **`app/(app)/`** - User app pages
-- **`app/admin/`** - Admin panel pages
-
 ---
 
 ## Key Constraints
 
-1. **Monetary values:** Always `numeric(15,2)` in PostgreSQL, never float
-2. **Dates:** Store as `date`, display using `id-ID` locale
-3. **Currency:** Always format as `"Rp 1.500.000"` with thousand separators
+1. **Monetary values:** `numeric(15,2)` in PostgreSQL — never float
+2. **Dates:** Store as `timestamptz`; use `lib/utils/date.ts` helpers for formatting/parsing
+3. **Currency display:** Always `formatIDR()` from `lib/utils/format.ts`
 4. **RLS:** All user-scoped tables require RLS policies
-5. **Admin isolation:** Admin routes cannot access financial tables (enforced in middleware)
-6. **Role storage:** Role stored in `user.app_metadata.role`, not `public.users` table
+5. **Admin isolation:** Admin routes cannot read financial tables
+6. **Shared state:** Wallets, categories, and paylater platforms come from `AppProvider` — don't re-fetch them inside individual pages
 
 ---
 
 ## Supabase Migrations
 
-Run migrations in Supabase SQL editor or via CLI:
+Apply in order via Supabase SQL editor or CLI:
 
-- `0001_initial_schema.sql` - Core tables (users, wallets, categories, transactions, etc.)
-- `0002_phase2_schema_updates.sql` - Schema updates
-- `0003_storage_setup.sql` - Storage buckets (receipts)
-- `0004_phase3_schema_updates.sql` - Additional schema changes
+- `0001` — Core tables (wallets, categories, transactions, transfers, debts, saving_goals)
+- `0002` — Phase 2 schema updates
+- `0003` — Storage buckets (receipts)
+- `0004` — Phase 3 schema updates
+- `0005` — Date columns to timestamp
+- `0006` — Make due_date nullable
+- `0007` — Add proof_url to debts
+- `0008` — Phase 4 debt relations (debt_transactions, debt_transaction_proofs)
+- `0009` — Add target fields to audit_logs
+- `0010` — Paylater tables (paylater_platforms, paylater_transactions)
 
 ---
 
 ## Page Routes Reference
 
 ### User Routes (`role=user`)
-- `/` → Redirects to `/dashboard` or `/auth/login`
-- `/auth/login` → Login page
-- `/dashboard` → Financial summary cards, wallets, recent transactions
-- `/transactions` → Transaction list with filters
-- `/transactions/new` → New transaction form
-- `/transactions/[id]` → Transaction detail/edit
-- `/wallets` → Wallet management
-- `/debts` → Debt tracking
-- `/goals` → Saving goals
-- `/reports` → Financial reports/charts
-- `/settings` → User settings
+- `/dashboard` — Financial summary, wallets, recent transactions
+- `/transactions` — Transaction list with filters
+- `/transactions/new` — New transaction form
+- `/transactions/[id]` — Transaction detail/edit
+- `/wallets` — Wallet management
+- `/paylater` — BNPL platform credit tracking
+- `/paylater/[id]` — Paylater platform detail & transaction history
+- `/debts` — Debt tracking (owe/lend)
+- `/debts/[id]` — Debt detail
+- `/goals` — Saving goals
+- `/goals/[id]` — Goal detail
+- `/reports` — Financial reports/charts
+- `/settings` — Profile, security, categories
 
 ### Admin Routes (`role=admin`)
-- `/admin` → Admin dashboard
-- `/admin/users` → User management
-- `/admin/audit-log` → System audit logs
+- `/admin` — Admin dashboard
+- `/admin/users` — User management
+- `/admin/users/new` — Create user
+- `/admin/users/[id]` — User detail & audit logs
+- `/admin/audit-log` — System audit logs
+- `/admin/settings` — Admin settings
 
 ### Special Routes
-- `/suspended` → Suspended account page
+- `/auth/login` — Login page
+- `/suspended` — Suspended account page

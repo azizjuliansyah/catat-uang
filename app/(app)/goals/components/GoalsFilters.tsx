@@ -23,6 +23,18 @@ export function GoalsFilters({
 
   return (
     <div className="bg-surface-card border border-border rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Search Input */}
+      <div className="relative flex-1 sm:w-60">
+        <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <input
+          type="text"
+          placeholder="Cari target tabungan..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="w-full pl-9 pr-4 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all focus-glow h-10"
+        />
+      </div>
+
       {/* Status Filter tabs */}
       <div className="bg-surface-hover/30 border border-border p-1 rounded-xl flex gap-1 self-stretch md:self-auto overflow-x-auto max-w-full h-10 items-center">
         {tabs.map((tab) => (
@@ -35,18 +47,6 @@ export function GoalsFilters({
             {tab.label}
           </TabButton>
         ))}
-      </div>
-
-      {/* Search Input */}
-      <div className="relative w-full md:w-60">
-        <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        <input
-          type="text"
-          placeholder="Cari target tabungan..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-9 pr-4 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all focus-glow h-10"
-        />
       </div>
     </div>
   );

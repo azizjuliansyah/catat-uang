@@ -4,7 +4,8 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  CreditCard
 } from "lucide-react";
 
 interface DashboardStatsProps {
@@ -12,13 +13,15 @@ interface DashboardStatsProps {
   currentMonthIncome: number;
   currentMonthExpense: number;
   netCashflow: number;
+  totalPaylaterDebt: number;
 }
 
 export function DashboardStats({
   totalBalance,
   currentMonthIncome,
   currentMonthExpense,
-  netCashflow
+  netCashflow,
+  totalPaylaterDebt
 }: DashboardStatsProps) {
   const formatIDR = (val: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -30,7 +33,7 @@ export function DashboardStats({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 font-sans">
       {/* Total Balance */}
       <InfoCard
         title="Total Saldo"
@@ -64,6 +67,15 @@ export function DashboardStats({
         icon={netCashflow >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
         variant={netCashflow >= 0 ? "success" : "danger"}
         valueClassName={netCashflow >= 0 ? "text-success" : "text-danger"}
+      />
+
+      {/* Paylater Debt */}
+      <InfoCard
+        title="Hutang Paylater"
+        value={formatIDR(totalPaylaterDebt)}
+        icon={<CreditCard className="w-5 h-5" />}
+        variant="owe"
+        valueClassName="text-feedback-error"
       />
     </div>
   );

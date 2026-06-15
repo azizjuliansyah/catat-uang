@@ -3,7 +3,7 @@ import { SavingGoal, GoalTransaction } from "../types";
 import { getDefaultTargetDate, getTodayDate } from "../utils";
 import { formatForDateTimeInput } from "@/lib/utils/date";
 
-export function useGoalsState(activeWallets: Array<{ id: string }>) {
+export function useGoalsState(activeWallets: Array<{ id: string; is_default?: boolean }>) {
   // Filter States
   const [statusFilter, setStatusFilter] = useState<"all" | "ongoing" | "achieved" | "withdrawn">("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,7 +46,8 @@ export function useGoalsState(activeWallets: Array<{ id: string }>) {
   // Set default wallet ID when activeWallets change
   useEffect(() => {
     if (activeWallets.length > 0 && !txWalletId) {
-      setTxWalletId(activeWallets[0].id);
+      const defaultWallet = activeWallets.find(w => w.is_default) || activeWallets[0];
+      setTxWalletId(defaultWallet.id);
     }
   }, [activeWallets, txWalletId]);
 

@@ -137,16 +137,25 @@ export function useDebtsHandlers({
 
       // 1. Create or Update parent debt row
       if (editingDebt) {
+        const firstTxnDate = formPackages[0]?.createdAt 
+          ? new Date(formPackages[0].createdAt).toISOString() 
+          : new Date().toISOString();
+
         const { error: updateDebtError } = await supabase
           .from("debts")
           .update({
             name: formName.trim(),
             type: formType,
+            created_at: firstTxnDate,
             updated_at: new Date().toISOString()
           })
           .eq("id", editingDebt.id);
         if (updateDebtError) throw updateDebtError;
       } else {
+        const firstTxnDate = formPackages[0]?.createdAt 
+          ? new Date(formPackages[0].createdAt).toISOString() 
+          : new Date().toISOString();
+
         const { data: newDebt, error: newDebtError } = await supabase
           .from("debts")
           .insert({
@@ -155,7 +164,8 @@ export function useDebtsHandlers({
             type: formType,
             total_amount: 0, // Will be calculated by trigger automatically
             paid_amount: 0,
-            status: "unpaid"
+            status: "unpaid",
+            created_at: firstTxnDate
           })
           .select()
           .single();
@@ -188,6 +198,7 @@ export function useDebtsHandlers({
       for (const pkg of formPackages) {
         const amountNum = parseFloat(pkg.totalAmount);
         const isoDueDate = pkg.dueDate ? new Date(pkg.dueDate).toISOString() : null;
+        const isoCreatedAt = pkg.createdAt ? new Date(pkg.createdAt).toISOString() : new Date().toISOString();
         
         let transactionId = pkg.id;
         const isNewTxn = !editingDebt || !editingDebt.debt_transactions?.some(t => t.id === pkg.id);
@@ -199,6 +210,7 @@ export function useDebtsHandlers({
               debt_id: parentDebtId,
               amount: amountNum,
               due_date: isoDueDate,
+              created_at: isoCreatedAt,
               description: pkg.description.trim() || null
             })
             .select()
@@ -211,6 +223,7 @@ export function useDebtsHandlers({
             .update({
               amount: amountNum,
               due_date: isoDueDate,
+              created_at: isoCreatedAt,
               description: pkg.description.trim() || null,
               updated_at: new Date().toISOString()
             })
@@ -329,18 +342,45 @@ export function useDebtsHandlers({
     try {
       setSubmittingPayment(true);
 
+      const txType = payingDebt.type === "lend" ? "income" : "expense";
+      const txDescription = payingDebt.type === "lend"
+        ? `Terima pelunasan: ${payingDebt.name}`
+        : `Bayar hutang: ${payingDebt.name}`;
+
+      const { data: newTx, error: txError } = await supabase
+        .from("transactions")
+        .insert([{
+          user_id: user.id,
+          wallet_id: payWalletId,
+          paylater_id: null,
+          category_id: null,
+          amount: amountNum,
+          type: txType,
+          description: txDescription,
+          transaction_date: new Date(payDate).toISOString(),
+          receipt_url: null
+        }])
+        .select()
+        .single();
+
+      if (txError) throw txError;
+
       const { data: newPayment, error: paymentError } = await supabase
         .from("debt_payments")
         .insert([{
           debt_id: payingDebt.id,
           wallet_id: payWalletId,
           amount: amountNum,
-          payment_date: new Date(payDate).toISOString()
+          payment_date: new Date(payDate).toISOString(),
+          transaction_id: newTx.id
         }])
         .select()
         .single();
 
-      if (paymentError) throw paymentError;
+      if (paymentError) {
+        await supabase.from("transactions").delete().eq("id", newTx.id);
+        throw paymentError;
+      }
 
       // Handle multiple payment proofs
       if (payProofFiles && payProofFiles.length > 0) {

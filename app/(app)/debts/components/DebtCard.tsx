@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DebtItem } from "../types";
 import { isOverdue } from "../utils";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, User, Calendar, History, Coins } from "lucide-react";
+import { Edit2, Trash2, User, Calendar, History, Coins, ExternalLink } from "lucide-react";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
@@ -49,14 +49,19 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
               >
                 {item.name}
               </h3>
-              <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block mt-0.5">
-                {isOwe ? "Hutang Ke" : "Piutang Dari"}
+              <span className="text-[10px] text-text-secondary block mt-0.5">
+                <span className="font-semibold uppercase tracking-wider">{isOwe ? "Hutang Ke" : "Piutang Dari"}</span>
+                {item.created_at && (
+                  <span className="text-text-muted font-normal">
+                     • {formatDateTimeShort(item.created_at)}
+                  </span>
+                )}
               </span>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-0.5 shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <ActionButton
               size="sm"
               icon={Edit2}
@@ -120,15 +125,16 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5">
           <Link
             href={`/debts/${item.id}`}
-            title="Lihat Detail & Riwayat Pembayaran"
-            className="px-2.5 py-1.5 bg-surface-input hover:bg-surface-hover border border-border text-text-primary rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all"
+            className="text-[10px] font-semibold text-primary hover:underline uppercase flex items-center gap-1"
           >
-            <History className="w-3.5 h-3.5" />
-            Detail
+            <ExternalLink className="w-3 h-3" />
+            Lihat Detail
           </Link>
+      </div>
+
+      <div className="flex justify-end mt-1.5">
           {item.status === "unpaid" && (
             <Button
               size="sm"
@@ -139,7 +145,6 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
               Bayar
             </Button>
           )}
-        </div>
       </div>
     </FinancialCard>
   );

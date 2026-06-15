@@ -20,12 +20,14 @@ import {
   PiggyBank,
   CheckCircle2,
   AlertCircle,
-  Clock
+  Clock,
+  Wallet
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils/format";
 import { formatDateTimeShort, formatForDateTimeInput } from "@/lib/utils/date";
 import { SavingGoal, GoalTransaction, ETAInfo } from "../types";
 import { calculateETAInfo } from "../utils";
+import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 
 function getErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -102,6 +104,7 @@ export default function GoalDetailPage() {
           amount,
           topup_date,
           created_at,
+          transaction_id,
           wallets(name)
         `)
         .eq("goal_id", id);
@@ -118,6 +121,7 @@ export default function GoalDetailPage() {
           amount,
           withdrawal_date,
           created_at,
+          transaction_id,
           wallets(name)
         `)
         .eq("goal_id", id);
@@ -134,7 +138,8 @@ export default function GoalDetailPage() {
           date: t.topup_date,
           type: "topup" as const,
           wallet_name: t.wallets?.name || "Dompet Terhapus",
-          created_at: t.created_at
+          created_at: t.created_at,
+          transaction_id: t.transaction_id || null
         })),
         ...(withdrawals || []).map((w: any) => ({
           id: w.id,
@@ -144,7 +149,8 @@ export default function GoalDetailPage() {
           date: w.withdrawal_date,
           type: "withdrawal" as const,
           wallet_name: w.wallets?.name || "Dompet Terhapus",
-          created_at: w.created_at
+          created_at: w.created_at,
+          transaction_id: w.transaction_id || null
         }))
       ];
 
@@ -282,21 +288,43 @@ export default function GoalDetailPage() {
 
       const tableName = type === "topup" ? "goal_topups" : "goal_withdrawals";
       const dateColumn = type === "topup" ? "topup_date" : "withdrawal_date";
+      const txType = type === "topup" ? "expense" : "income";
+      const txDescription = type === "topup"
+        ? `Top-up tabungan: ${goal.name}`
+        : `Tarik tabungan: ${goal.name}`;
 
-      const { error: txError } = await supabase
+      const { data: newTx, error: newTxError } = await supabase
+        .from("transactions")
+        .insert([{
+          user_id: user.id,
+          wallet_id: txWalletId,
+          paylater_id: null,
+          category_id: null,
+          amount: amountNum,
+          type: txType,
+          description: txDescription,
+          transaction_date: new Date(txDate).toISOString(),
+          receipt_url: null
+        }])
+        .select()
+        .single();
+
+      if (newTxError) throw newTxError;
+
+      const { error: moduleError } = await supabase
         .from(tableName)
         .insert([{
           goal_id: goal.id,
           wallet_id: txWalletId,
           amount: amountNum,
-          [dateColumn]: new Date(txDate).toISOString()
+          [dateColumn]: new Date(txDate).toISOString(),
+          transaction_id: newTx.id
         }]);
 
-      if (txError) throw txError;
-
-      // Note: Database triggers automatically update:
-      // - goal current_amount and status
-      // - wallet balance
+      if (moduleError) {
+        await supabase.from("transactions").delete().eq("id", newTx.id);
+        throw moduleError;
+      }
 
       showSuccessToast(type === "topup" ? "Top-up berhasil!" : "Penarikan berhasil!");
       if (type === "topup") {
@@ -343,17 +371,22 @@ export default function GoalDetailPage() {
       setIsDeletingTx(true);
 
       const tableName = transactionToDelete.type === "topup" ? "goal_topups" : "goal_withdrawals";
+      const txId = transactionToDelete.transaction_id;
 
-      const { error: deleteError } = await supabase
+      const { error: deleteModuleError } = await supabase
         .from(tableName)
         .delete()
         .eq("id", transactionToDelete.id);
 
-      if (deleteError) throw deleteError;
+      if (deleteModuleError) throw deleteModuleError;
 
-      // Note: Database triggers automatically reverse:
-      // - goal current_amount and status
-      // - wallet balance
+      if (txId) {
+        const { error: deleteTxError } = await supabase
+          .from("transactions")
+          .delete()
+          .eq("id", txId);
+        if (deleteTxError) throw deleteTxError;
+      }
 
       showSuccessToast("Transaksi berhasil dihapus");
       setTransactionToDelete(null);
@@ -589,7 +622,7 @@ export default function GoalDetailPage() {
               <History className="w-4 h-4 text-text-secondary" />
               Riwayat Transaksi
             </h3>
-            <p className="text-xxs text-text-secondary mt-0.5">Catatan top-up & penarikan</p>
+            <p className="text-xs text-text-secondary mt-0.5">Catatan top-up & penarikan</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -760,18 +793,16 @@ export default function GoalDetailPage() {
                 <label className="block text-xs font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
                   Dari Dompet
                 </label>
-                <select
+                <CustomSelect
                   value={txWalletId}
-                  onChange={(e) => setTxWalletId(e.target.value)}
-                  className="w-full px-3 py-2 bg-surface-input border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                >
-                  <option value="">Pilih dompet</option>
-                  {wallets.filter(w => !w.is_archived).map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name} ({formatIDR(w.balance)})
-                    </option>
-                  ))}
-                </select>
+                  onChange={setTxWalletId}
+                  options={wallets.filter(w => !w.is_archived).map((w) => ({
+                    value: w.id,
+                    label: `${w.name} (${formatIDR(w.balance)})`,
+                    icon: <Wallet className="w-4 h-4 text-text-secondary" />
+                  }))}
+                  placeholder="Pilih dompet"
+                />
               </div>
 
               <div>
@@ -839,18 +870,16 @@ export default function GoalDetailPage() {
                 <label className="block text-xs font-bold text-text-secondary mb-1.5 uppercase tracking-wider">
                   Ke Dompet
                 </label>
-                <select
+                <CustomSelect
                   value={txWalletId}
-                  onChange={(e) => setTxWalletId(e.target.value)}
-                  className="w-full px-3 py-2 bg-surface-input border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                >
-                  <option value="">Pilih dompet</option>
-                  {wallets.filter(w => !w.is_archived).map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name} ({formatIDR(w.balance)})
-                    </option>
-                  ))}
-                </select>
+                  onChange={setTxWalletId}
+                  options={wallets.filter(w => !w.is_archived).map((w) => ({
+                    value: w.id,
+                    label: `${w.name} (${formatIDR(w.balance)})`,
+                    icon: <Wallet className="w-4 h-4 text-text-secondary" />
+                  }))}
+                  placeholder="Pilih dompet"
+                />
               </div>
 
               <div>

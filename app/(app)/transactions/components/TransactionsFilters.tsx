@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Search, Calendar, SlidersHorizontal, ChevronDown, Check } from "lucide-react";
+import React from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { TabButton } from "@/components/ui/molecules/TabButton";
+import CustomSelect from "@/components/ui/atoms/CustomSelect";
+import { DatePeriodFilter } from "@/components/ui/atoms/DatePeriodFilter";
 
 interface Wallet {
   id: string;
@@ -57,46 +59,47 @@ export function TransactionsFilters({
   wallets,
   categories
 }: TransactionsFiltersProps) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const periodOptions = [
+    { value: "1week", label: "Satu Minggu yang Lalu" },
+    { value: "2weeks", label: "Dua Minggu yang Lalu" },
+    { value: "1month", label: "Sebulan yang Lalu" },
+    { value: "3months", label: "3 Bulan yang Lalu" },
+    { value: "custom", label: "Custom Tanggal" }
+  ];
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const walletOptions = [
+    { value: "all", label: "Semua Dompet" },
+    ...wallets.map((w) => ({
+      value: w.id,
+      label: w.name,
+    })),
+  ];
 
-  const formatCompactDate = (dateStr: string) => {
-    if (!dateStr) return "";
-    const parts = dateStr.split("-");
-    if (parts.length !== 3) return dateStr;
-    const [year, month, day] = parts;
-    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
-    const monthIndex = parseInt(month) - 1;
-    const monthLabel = months[monthIndex] || month;
-    return `${day} ${monthLabel} ${year}`;
-  };
+  const incomeCategoryOptions = [
+    { value: "all", label: "Semua Kategori Masuk" },
+    ...categories
+      .filter((c) => c.type === "income")
+      .map((c) => ({
+        value: c.id,
+        label: c.name,
+      })),
+  ];
 
-  const getDropdownLabel = () => {
-    switch (dateRangeType) {
-      case "1week":
-        return "Satu Minggu yang Lalu";
-      case "2weeks":
-        return "Dua Minggu yang Lalu";
-      case "1month":
-        return "Sebulan yang Lalu";
-      case "3months":
-        return "3 Bulan yang Lalu";
-      case "custom":
-        return `${formatCompactDate(customStartDate)} - ${formatCompactDate(customEndDate)}`;
-      default:
-        return "Pilih Tanggal";
-    }
-  };
+  const expenseCategoryOptions = [
+    { value: "all", label: "Semua Kategori Keluar" },
+    ...categories
+      .filter((c) => c.type === "expense")
+      .map((c) => ({
+        value: c.id,
+        label: c.name,
+      })),
+  ];
+
+  const selectedIncomeCategory = categories.find((c) => c.id === selectedCategoryId && c.type === "income");
+  const selectedExpenseCategory = categories.find((c) => c.id === selectedCategoryId && c.type === "expense");
+
+  const incomeVal = selectedIncomeCategory ? selectedCategoryId : "all";
+  const expenseVal = selectedExpenseCategory ? selectedCategoryId : "all";
 
   return (
     <div className="bg-surface-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
@@ -113,91 +116,18 @@ export function TransactionsFilters({
           />
         </div>
 
-        {/* Date Selector Custom Dropdown */}
-        <div className="relative w-full sm:w-56 shrink-0" ref={dropdownRef}>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full flex items-center pl-9 pr-3 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer focus-glow h-10 select-none !justify-between min-h-0"
-          >
-            <Calendar className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <span className="truncate font-medium text-left">
-              {getDropdownLabel()}
-            </span>
-            <ChevronDown className={`w-3.5 h-3.5 text-text-secondary transition-transform duration-200 shrink-0 ml-1 ${isDropdownOpen ? "rotate-180" : ""}`} />
-          </Button>
-
-          {isDropdownOpen && (
-            <div className="absolute right-0 sm:left-0 mt-2 w-72 bg-surface-card border border-border rounded-2xl shadow-xl p-3 z-50 animate-fade-in space-y-3">
-              <div className="flex flex-col gap-1">
-                {[
-                  { value: "1week", label: "Satu Minggu yang Lalu" },
-                  { value: "2weeks", label: "Dua Minggu yang Lalu" },
-                  { value: "1month", label: "Sebulan yang Lalu" },
-                  { value: "3months", label: "3 Bulan yang Lalu" },
-                  { value: "custom", label: "Custom Tanggal" }
-                ].map((opt) => {
-                  const isActive = dateRangeType === opt.value;
-                  return (
-                    <Button
-                      key={opt.value}
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        setDateRangeType(opt.value);
-                        if (opt.value !== "custom") {
-                          setIsDropdownOpen(false);
-                        }
-                      }}
-                      className={`w-full px-3 py-2 text-left text-xs rounded-xl min-h-0 h-auto font-normal !justify-between ${
-                        isActive
-                          ? "bg-primary/10 text-primary font-semibold hover:bg-primary/15 hover:text-primary"
-                          : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                      }`}
-                    >
-                      <span>{opt.label}</span>
-                      {isActive && <Check className="w-3.5 h-3.5" />}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              {dateRangeType === "custom" && (
-                <div className="pt-3 border-t border-border/50 space-y-3 animate-fade-in">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">Mulai</label>
-                      <input
-                        type="date"
-                        value={customStartDate}
-                        onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="w-full px-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-[11px] outline-none transition-all cursor-pointer focus-glow h-8"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">Selesai</label>
-                      <input
-                        type="date"
-                        value={customEndDate}
-                        onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="w-full px-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-[11px] outline-none transition-all cursor-pointer focus-glow h-8"
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="w-full h-8 min-h-[32px] text-xs"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    Terapkan
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Date Selector Dropdown */}
+        <DatePeriodFilter
+          value={dateRangeType}
+          onChange={setDateRangeType}
+          customStartDate={customStartDate}
+          setCustomStartDate={setCustomStartDate}
+          customEndDate={customEndDate}
+          setCustomEndDate={setCustomEndDate}
+          options={periodOptions}
+          size="sm"
+          className="w-full sm:w-56 shrink-0"
+        />
 
         {/* Filter toggle */}
         <Button
@@ -213,7 +143,7 @@ export function TransactionsFilters({
 
       {/* Expanded Filters */}
       {showFilters && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-border/50 animate-fade-in">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border/50 animate-fade-in">
           {/* Type Filter */}
           <div className="space-y-2">
             <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
@@ -245,35 +175,37 @@ export function TransactionsFilters({
           {/* Wallet Filter */}
           <div className="space-y-2">
             <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Dompet</label>
-            <select
+            <CustomSelect
+              options={walletOptions}
               value={selectedWalletId}
-              onChange={(e) => setSelectedWalletId(e.target.value)}
-              className="w-full px-3 h-10 bg-surface-input border border-border rounded-xl text-text-primary text-xs outline-none focus:border-primary cursor-pointer focus-glow"
-            >
-              <option value="all">Semua Dompet</option>
-              {wallets.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedWalletId(val || "all")}
+              placeholder="Semua Dompet"
+              size="sm"
+            />
           </div>
 
-          {/* Category Filter */}
+          {/* Category Masuk Filter */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Kategori</label>
-            <select
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="w-full px-3 h-10 bg-surface-input border border-border rounded-xl text-text-primary text-xs outline-none focus:border-primary cursor-pointer focus-glow"
-            >
-              <option value="all">Semua Kategori</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.type === "expense" ? "Keluar" : "Masuk"})
-                </option>
-              ))}
-            </select>
+            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Kategori Masuk</label>
+            <CustomSelect
+              options={incomeCategoryOptions}
+              value={incomeVal}
+              onChange={(val) => setSelectedCategoryId(val || "all")}
+              placeholder="Semua Kategori Masuk"
+              size="sm"
+            />
+          </div>
+
+          {/* Category Keluar Filter */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Kategori Keluar</label>
+            <CustomSelect
+              options={expenseCategoryOptions}
+              value={expenseVal}
+              onChange={(val) => setSelectedCategoryId(val || "all")}
+              placeholder="Semua Kategori Keluar"
+              size="sm"
+            />
           </div>
         </div>
       )}

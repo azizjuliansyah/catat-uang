@@ -20,6 +20,7 @@ export interface GoalTransaction {
   type: "topup" | "withdrawal";
   wallet_name: string;
   created_at: string;
+  transaction_id?: string | null;
 }
 
 export interface ETAInfo {
