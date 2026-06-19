@@ -65,12 +65,12 @@ export async function proxy(request: NextRequest) {
   // 3. Unauthenticated access control
   if (!user) {
     if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/') {
-      nextUrl.pathname = '/auth/login';
+      nextUrl.pathname = '/login';
       return NextResponse.redirect(nextUrl);
     }
   } else {
     // 4. Authenticated redirects
-    if (pathname.startsWith('/auth/login')) {
+    if (pathname.startsWith('/login')) {
       nextUrl.pathname = role === 'admin' ? '/admin' : '/dashboard';
       return NextResponse.redirect(nextUrl);
     }

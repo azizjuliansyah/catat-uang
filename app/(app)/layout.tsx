@@ -51,7 +51,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loadingUser) {
       if (!user) {
-        router.push("/auth/login");
+        router.push("/login");
       } else if (user.app_metadata?.role === "admin") {
         router.push("/admin");
       }
@@ -61,7 +61,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.refresh();
-    router.push("/auth/login");
+    router.push("/login");
   };
 
   if (loadingUser) {
@@ -255,8 +255,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </span>
           </div>
 
-          {/* Quick Wallet Indicator / switcher & Settings on header */}
-          <div className="flex items-center gap-3.5">
+          {/* Quick Wallet Indicator / switcher, Settings, & Logout on header */}
+          <div className="flex items-center gap-3">
             <div className="text-right">
               <span className="text-[10px] text-text-secondary block font-medium">Saldo Total</span>
               <span className="text-xs font-semibold text-text-primary font-mono block">
@@ -266,7 +266,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             <a
               href="/settings"
-              className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all border ${
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border ${
                 pathname.startsWith("/settings")
                   ? "bg-primary/10 text-primary border-primary/20"
                   : "text-text-secondary hover:text-text-primary bg-surface-input/50 hover:bg-surface-hover/50 border-border"
@@ -275,6 +275,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               <Settings className="w-5 h-5" />
             </a>
+
+            <button
+              onClick={handleLogout}
+              className="w-10 h-10 flex items-center justify-center rounded-xl transition-all border text-text-secondary hover:text-danger hover:bg-danger/10 border-border bg-surface-input/50"
+              aria-label="Keluar"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
         </header>
 
@@ -306,14 +314,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </a>
             );
           })}
-          {/* Quick Sign Out for Mobile */}
-          <button
-            onClick={handleLogout}
-            className="flex flex-col items-center justify-center flex-1 h-full py-1 min-h-0 text-text-secondary hover:text-danger transition-colors font-normal rounded-none cursor-pointer active:scale-95"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="text-[10px] tracking-tight mt-0.5 font-sans">Keluar</span>
-          </button>
         </nav>
       </div>
     </div>

@@ -140,7 +140,7 @@ export default function PaylaterDetailPage() {
   useEffect(() => {
     if (!loadingUser) {
       if (!user) {
-        router.push("/auth/login");
+        router.push("/login");
       } else {
         loadData();
       }

@@ -24,5 +24,5 @@ export async function GET(request: Request) {
   }
 
   // If code exchange fails, redirect to a login page with an error
-  return NextResponse.redirect(`${origin}/auth/login?error=auth-code-error`);
+  return NextResponse.redirect(`${origin}/login?error=auth-code-error`);
 }

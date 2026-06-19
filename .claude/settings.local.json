@@ -13,7 +13,10 @@
       "Bash(del *)",
       "PowerShell(Stop-Process *)",
       "PowerShell(Get-NetTCPConnection *)",
-      "PowerShell(cd \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\"; $env:NODE_ENV=\"development\"; node node_modules/.bin/next dev 2>&1 | Select-Object -First 10)"
+      "PowerShell(cd \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\"; $env:NODE_ENV=\"development\"; node node_modules/.bin/next dev 2>&1 | Select-Object -First 10)",
+      "Bash(mkdir -p \"D:/Data_Aziz/ngoding/code/nextjs/catat-uang/app/login\")",
+      "Bash(mv \"D:/Data_Aziz/ngoding/code/nextjs/catat-uang/app/auth/login/page.tsx\" \"D:/Data_Aziz/ngoding/code/nextjs/catat-uang/app/login/page.tsx\")",
+      "Bash(xargs grep -l \"/auth/login\")"
     ]
   }
 }

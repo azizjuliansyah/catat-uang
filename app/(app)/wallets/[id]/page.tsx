@@ -88,7 +88,7 @@ export default function WalletDetailPage() {
   useEffect(() => {
     if (!loadingUser) {
       if (!user) {
-        router.push("/auth/login");
+        router.push("/login");
       } else {
         loadTransactions();
       }

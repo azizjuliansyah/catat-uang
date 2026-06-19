@@ -6,9 +6,11 @@ import { TabButton } from "@/components/ui/molecules/TabButton";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { getIconComponent } from "@/lib/utils/icons";
-import { Plus, Edit2, Trash2, FolderMinus } from "lucide-react";
+import { Plus, Edit2, Trash2, FolderMinus, Sparkles } from "lucide-react";
 import { CategoryModal } from "./modals/CategoryModal";
 import { DeleteCategoryModal } from "./modals/DeleteCategoryModal";
+import { useToast } from "@/components/ui/molecules/Toast";
+import { applyCategoryTemplates } from "@/app/admin/actions";
 
 interface Category {
   id: string;
@@ -28,6 +30,30 @@ export function CategoriesTab() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+
+  const { success: showSuccessToast, error: showErrorToast } = useToast();
+  const [applyingTemplate, setApplyingTemplate] = useState(false);
+
+  const handleApplyTemplate = async () => {
+    try {
+      setApplyingTemplate(true);
+      const res = await applyCategoryTemplates();
+      if (res.success) {
+        if (res.count > 0) {
+          showSuccessToast(`Berhasil menerapkan template! ${res.count} kategori baru ditambahkan.`);
+          refreshCategories();
+        } else {
+          showSuccessToast("Semua kategori template sudah ada di akun Anda.");
+        }
+      }
+    } catch (err: unknown) {
+      console.error("Error applying category templates:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      showErrorToast("Gagal menerapkan template: " + msg);
+    } finally {
+      setApplyingTemplate(false);
+    }
+  };
 
   const filteredCategories = categories.filter((c) => c.type === categoryType);
 
@@ -52,17 +78,29 @@ export function CategoriesTab() {
           </TabButton>
         </div>
 
-        <Button
-          onClick={() => {
-            setEditingCategory(null);
-            setIsCategoryModalOpen(true);
-          }}
-          size="sm"
-          className="self-stretch sm:self-auto"
-        >
-          <Plus className="w-4 h-4 mr-1.5" />
-          Kategori Baru
-        </Button>
+        <div className="flex gap-2 self-stretch sm:self-auto">
+          <Button
+            onClick={handleApplyTemplate}
+            variant="ghost"
+            size="sm"
+            isLoading={applyingTemplate}
+            className="flex-1 sm:flex-initial"
+          >
+            <Sparkles className="w-4 h-4 mr-1.5" />
+            Terapkan Template
+          </Button>
+          <Button
+            onClick={() => {
+              setEditingCategory(null);
+              setIsCategoryModalOpen(true);
+            }}
+            size="sm"
+            className="flex-1 sm:flex-initial"
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            Kategori Baru
+          </Button>
+        </div>
       </div>
 
       {/* Categories Grid List */}

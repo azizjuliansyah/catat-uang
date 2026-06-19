@@ -14,7 +14,8 @@ import {
   LayoutDashboard,
   ArrowRightLeft,
   User,
-  Settings
+  Settings,
+  Tags
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -34,12 +35,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.refresh();
-    router.push("/auth/login");
+    router.push("/login");
   };
 
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Kelola Pengguna", href: "/admin/users", icon: Users },
+    { name: "Template Kategori", href: "/admin/categories", icon: Tags },
     { name: "Audit Log", href: "/admin/audit-log", icon: FileText },
   ];
 

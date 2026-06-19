@@ -15,7 +15,7 @@ export default function SuspendedPage() {
     setLoggingOut(true);
     await supabase.auth.signOut();
     router.refresh();
-    router.push("/auth/login");
+    router.push("/login");
   };
 
   return (
