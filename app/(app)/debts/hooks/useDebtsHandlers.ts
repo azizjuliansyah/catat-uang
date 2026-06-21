@@ -1,7 +1,9 @@
+import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/molecules/Toast";
-import { DebtItem, DebtPaymentItem, DebtPackage } from "../types";
+import { DebtItem, DebtPackage } from "../types";
 import { formatIDR } from "../utils";
 import { getErrorMessage } from "@/lib/utils/error";
+import { fetchDebtsList, saveDebt, deleteDebt, recordPayment } from "../services";
 
 interface UseDebtsHandlersProps {
   user: any;
@@ -78,25 +80,14 @@ export function useDebtsHandlers({
   setIsPayDeleteSubmitting,
   setDebts
 }: UseDebtsHandlersProps) {
-  const supabase = (require("@/lib/supabase/client")).createClient();
+  const supabase = createClient();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   // Fetch all debts
   async function fetchDebts() {
     try {
-      const { data, error } = await supabase
-        .from("debts")
-        .select(`
-          *,
-          debt_transactions (
-            *,
-            debt_transaction_proofs (*)
-          )
-        `)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setDebts(data || []);
+      const data = await fetchDebtsList(supabase);
+      setDebts(data);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
       console.error(err);
@@ -132,146 +123,16 @@ export function useDebtsHandlers({
 
     try {
       setSubmittingDebt(true);
-      
-      let parentDebtId = editingDebt?.id || null;
-
-      // 1. Create or Update parent debt row
-      if (editingDebt) {
-        const firstTxnDate = formPackages[0]?.createdAt 
-          ? new Date(formPackages[0].createdAt).toISOString() 
-          : new Date().toISOString();
-
-        const { error: updateDebtError } = await supabase
-          .from("debts")
-          .update({
-            name: formName.trim(),
-            type: formType,
-            created_at: firstTxnDate,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", editingDebt.id);
-        if (updateDebtError) throw updateDebtError;
-      } else {
-        const firstTxnDate = formPackages[0]?.createdAt 
-          ? new Date(formPackages[0].createdAt).toISOString() 
-          : new Date().toISOString();
-
-        const { data: newDebt, error: newDebtError } = await supabase
-          .from("debts")
-          .insert({
-            user_id: user.id,
-            name: formName.trim(),
-            type: formType,
-            total_amount: 0, // Will be calculated by trigger automatically
-            paid_amount: 0,
-            status: "unpaid",
-            created_at: firstTxnDate
-          })
-          .select()
-          .single();
-        if (newDebtError) throw newDebtError;
-        parentDebtId = newDebt.id;
-      }
-
-      // 2. If editing, determine transaction deletions
-      if (editingDebt) {
-        const { data: dbTxns, error: fetchTxnsError } = await supabase
-          .from("debt_transactions")
-          .select("id")
-          .eq("debt_id", editingDebt.id);
-        if (fetchTxnsError) throw fetchTxnsError;
-        
-        const dbTxnIds = dbTxns?.map((t: { id: string }) => t.id) || [];
-        const formTxnIds = formPackages.map(pkg => pkg.id);
-        
-        const txnIdsToDelete = dbTxnIds.filter((id: string) => !formTxnIds.includes(id));
-        if (txnIdsToDelete.length > 0) {
-          const { error: deleteTxnsError } = await supabase
-            .from("debt_transactions")
-            .delete()
-            .in("id", txnIdsToDelete);
-          if (deleteTxnsError) throw deleteTxnsError;
-        }
-      }
-
-      // 3. Process each transaction in formPackages
-      for (const pkg of formPackages) {
-        const amountNum = parseFloat(pkg.totalAmount);
-        const isoDueDate = pkg.dueDate ? new Date(pkg.dueDate).toISOString() : null;
-        const isoCreatedAt = pkg.createdAt ? new Date(pkg.createdAt).toISOString() : new Date().toISOString();
-        
-        let transactionId = pkg.id;
-        const isNewTxn = !editingDebt || !editingDebt.debt_transactions?.some(t => t.id === pkg.id);
-
-        if (isNewTxn) {
-          const { data: newTxn, error: insertTxnError } = await supabase
-            .from("debt_transactions")
-            .insert({
-              debt_id: parentDebtId,
-              amount: amountNum,
-              due_date: isoDueDate,
-              created_at: isoCreatedAt,
-              description: pkg.description.trim() || null
-            })
-            .select()
-            .single();
-          if (insertTxnError) throw insertTxnError;
-          transactionId = newTxn.id;
-        } else {
-          const { error: updateTxnError } = await supabase
-            .from("debt_transactions")
-            .update({
-              amount: amountNum,
-              due_date: isoDueDate,
-              created_at: isoCreatedAt,
-              description: pkg.description.trim() || null,
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", transactionId);
-          if (updateTxnError) throw updateTxnError;
-        }
-
-        // Handle transaction proof deletions
-        if (pkg.shouldDeleteProofUrls && pkg.shouldDeleteProofUrls.length > 0) {
-          const { error: deleteProofError } = await supabase
-            .from("debt_transaction_proofs")
-            .delete()
-            .eq("transaction_id", transactionId)
-            .in("proof_url", pkg.shouldDeleteProofUrls);
-          if (deleteProofError) throw deleteProofError;
-        }
-
-        // Handle transaction proof file uploads
-        if (pkg.proofFiles && pkg.proofFiles.length > 0) {
-          const proofUrlsToInsert: string[] = [];
-          for (const file of pkg.proofFiles) {
-            const fileExt = file.name.split(".").pop();
-            const filePath = `${user.id}/debt-proof-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-            
-            const { error: uploadError } = await supabase.storage
-              .from("receipts")
-              .upload(filePath, file, { upsert: true });
-              
-            if (uploadError) throw uploadError;
-            
-            const { data: { publicUrl } } = supabase.storage
-              .from("receipts")
-              .getPublicUrl(filePath);
-              
-            proofUrlsToInsert.push(publicUrl);
-          }
-
-          if (proofUrlsToInsert.length > 0) {
-            const { error: insertProofError } = await supabase
-              .from("debt_transaction_proofs")
-              .insert(proofUrlsToInsert.map(url => ({
-                transaction_id: transactionId,
-                proof_url: url
-              })));
-            if (insertProofError) throw insertProofError;
-          }
-        }
-      }
+      const existingTxnIds = editingDebt?.debt_transactions?.map(t => t.id) || [];
+      await saveDebt(
+        supabase,
+        user.id,
+        editingDebt?.id || null,
+        formName,
+        formType,
+        formPackages,
+        existingTxnIds
+      );
 
       showSuccessToast(
         editingDebt
@@ -296,12 +157,7 @@ export function useDebtsHandlers({
     if (!debtToDelete) return;
     try {
       setIsDeleteSubmitting(true);
-      const { error } = await supabase
-        .from("debts")
-        .delete()
-        .eq("id", debtToDelete.id);
-
-      if (error) throw error;
+      await deleteDebt(supabase, debtToDelete.id);
       showSuccessToast("Data hutang/piutang berhasil dihapus");
       setDebtToDelete(null);
       await fetchDebts();
@@ -341,77 +197,15 @@ export function useDebtsHandlers({
 
     try {
       setSubmittingPayment(true);
-
-      const txType = payingDebt.type === "lend" ? "income" : "expense";
-      const txDescription = payingDebt.type === "lend"
-        ? `Terima pelunasan: ${payingDebt.name}`
-        : `Bayar hutang: ${payingDebt.name}`;
-
-      const { data: newTx, error: txError } = await supabase
-        .from("transactions")
-        .insert([{
-          user_id: user.id,
-          wallet_id: payWalletId,
-          paylater_id: null,
-          category_id: null,
-          amount: amountNum,
-          type: txType,
-          description: txDescription,
-          transaction_date: new Date(payDate).toISOString(),
-          receipt_url: null
-        }])
-        .select()
-        .single();
-
-      if (txError) throw txError;
-
-      const { data: newPayment, error: paymentError } = await supabase
-        .from("debt_payments")
-        .insert([{
-          debt_id: payingDebt.id,
-          wallet_id: payWalletId,
-          amount: amountNum,
-          payment_date: new Date(payDate).toISOString(),
-          transaction_id: newTx.id
-        }])
-        .select()
-        .single();
-
-      if (paymentError) {
-        await supabase.from("transactions").delete().eq("id", newTx.id);
-        throw paymentError;
-      }
-
-      // Handle multiple payment proofs
-      if (payProofFiles && payProofFiles.length > 0) {
-        const paymentProofUrls: string[] = [];
-        for (const file of payProofFiles) {
-          const fileExt = file.name.split(".").pop();
-          const filePath = `${user.id}/payment-proof-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from("receipts")
-            .upload(filePath, file, { upsert: true });
-            
-          if (uploadError) throw uploadError;
-          
-          const { data: { publicUrl } } = supabase.storage
-            .from("receipts")
-            .getPublicUrl(filePath);
-            
-          paymentProofUrls.push(publicUrl);
-        }
-
-        if (paymentProofUrls.length > 0) {
-          const { error: insertProofError } = await supabase
-            .from("debt_payment_proofs")
-            .insert(paymentProofUrls.map(url => ({
-              payment_id: newPayment.id,
-              proof_url: url
-            })));
-          if (insertProofError) throw insertProofError;
-        }
-      }
+      await recordPayment(
+        supabase,
+        user.id,
+        payingDebt,
+        amountNum,
+        payWalletId,
+        payDate,
+        payProofFiles
+      );
 
       showSuccessToast("Pembayaran berhasil dicatat!");
       setIsPayModalOpen(false);
@@ -436,3 +230,4 @@ export function useDebtsHandlers({
     handleRecordPayment
   };
 }
+

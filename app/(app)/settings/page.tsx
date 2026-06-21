@@ -6,9 +6,10 @@ import { Settings as SettingsIcon } from "lucide-react";
 import { ProfileTab } from "./components/ProfileTab";
 import { CategoriesTab } from "./components/CategoriesTab";
 import { SecurityTab } from "./components/SecurityTab";
+import { TemplatesTab } from "./components/TemplatesTab";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"profile" | "categories" | "security">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "categories" | "security" | "templates">("profile");
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto font-sans">
@@ -19,7 +20,7 @@ export default function SettingsPage() {
           Pengaturan Aplikasi
         </h1>
         <p className="text-xs text-text-secondary mt-1">
-          Kelola profil pengguna, kategori transaksi, dan keamanan akun Anda.
+          Kelola profil pengguna, kategori transaksi, template transaksi, dan keamanan akun Anda.
         </p>
       </div>
 
@@ -48,12 +49,21 @@ export default function SettingsPage() {
         >
           Kategori
         </TabButton>
+
+        <TabButton
+          isActive={activeTab === "templates"}
+          onClick={() => setActiveTab("templates")}
+          className="px-4 py-2.5 text-xs flex-1 min-w-[90px]"
+        >
+          Template
+        </TabButton>
       </div>
 
       {/* Content Area */}
       {activeTab === "profile" && <ProfileTab />}
       {activeTab === "categories" && <CategoriesTab />}
       {activeTab === "security" && <SecurityTab />}
+      {activeTab === "templates" && <TemplatesTab />}
     </div>
   );
 }

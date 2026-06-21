@@ -56,10 +56,10 @@ export function DeleteConfirmationModal({
       }
     >
       <div className="space-y-4 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger/10 text-danger mb-2">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-md bg-danger/10 text-danger mb-2">
           <Icon className="w-6 h-6" />
         </div>
-        <div className="text-xs text-text-secondary leading-relaxed">
+        <div className="text-body text-text-secondary leading-relaxed">
           {children}
         </div>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAuditLogs, getAdminUsers } from "@/app/admin/actions";
+import { getAuditLogs } from "@/app/admin/actions/audit-logs";
+import { getAdminUsers } from "@/app/admin/actions/users";
 import { FileText, Shield, User, Check, AlertCircle } from "lucide-react";
 import { AuditLogFilters } from "./components/AuditLogFilters";
 import { AuditLogStats } from "./components/AuditLogStats";

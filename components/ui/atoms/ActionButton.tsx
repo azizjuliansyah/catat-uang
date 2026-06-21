@@ -32,7 +32,7 @@ export function ActionButton({
   ...props
 }: ActionButtonProps) {
   const baseClasses =
-    "inline-flex items-center justify-center rounded-lg transition-all duration-200 cursor-pointer select-none active:scale-[0.95] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0";
+    "inline-flex items-center justify-center rounded-md transition-all duration-150 ease cursor-pointer select-none active:scale-[0.95] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0";
 
   const variantClasses = {
     ghost:

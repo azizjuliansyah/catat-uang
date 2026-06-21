@@ -80,11 +80,11 @@ export const DatePeriodFilter = ({
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full flex items-center justify-between gap-2
-          border border-border hover:border-border-strong outline-none transition-all duration-200 font-sans
-          bg-surface-input focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer
-          ${size === "sm" ? "px-3 py-1.5 text-xs min-h-[36px] rounded-lg" : ""}
-          ${size === "md" ? "px-3.5 py-2.5 text-xs min-h-[44px] rounded-xl" : ""}
-          ${size === "lg" ? "px-4 py-3 text-sm min-h-[52px] rounded-xl" : ""}
+          border border-border hover:border-border-strong outline-none transition-all duration-150 ease font-sans
+          bg-surface-input focus:border-border-focus cursor-pointer
+          ${size === "sm" ? "px-3 py-1.5 text-xs min-h-[36px] rounded-md" : ""}
+          ${size === "md" ? "px-3 py-2 text-sm min-h-[44px] rounded-md" : ""}
+          ${size === "lg" ? "px-4 py-2.5 text-sm min-h-[52px] rounded-md" : ""}
         `}
       >
         <span className="flex-grow text-left truncate inline-flex items-center gap-2">
@@ -100,8 +100,7 @@ export const DatePeriodFilter = ({
         <div
           className={`
             absolute z-50 w-72 mt-2
-            bg-surface-card border border-border rounded-2xl
-            shadow-xl shadow-black/20
+            bg-surface-card border border-border rounded-lg
             p-3
             animate-fade-in
             ${size === "sm" ? "left-0" : "right-0 md:left-0"}
@@ -122,12 +121,12 @@ export const DatePeriodFilter = ({
                   }}
                   className={`
                     flex items-center justify-between gap-3 cursor-pointer w-full text-left
-                    ${size === "sm" ? "py-1.5 px-3 text-xs rounded-lg" : "py-2 px-3.5 text-xs rounded-xl"}
-                    ${isActive 
-                      ? "bg-primary/10 text-primary font-semibold hover:text-primary hover:bg-primary/10" 
+                    ${size === "sm" ? "py-1.5 px-3 text-xs rounded-md" : "py-2 px-3 text-sm rounded-md"}
+                    ${isActive
+                      ? "bg-primary/10 text-primary font-semibold hover:text-primary hover:bg-primary/10"
                       : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
                     }
-                    transition-colors duration-150
+                    transition-colors duration-150 ease
                   `}
                 >
                   <span>{opt.label}</span>
@@ -146,7 +145,7 @@ export const DatePeriodFilter = ({
                     type="date"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="w-full px-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-[11px] outline-none transition-all cursor-pointer focus-glow h-8"
+                    className="w-full px-2 bg-surface-input border border-border focus:border-border-focus rounded-md text-text-primary text-[11px] outline-none transition-all duration-150 ease cursor-pointer h-8"
                   />
                 </div>
                 <div className="space-y-1">
@@ -155,7 +154,7 @@ export const DatePeriodFilter = ({
                     type="date"
                     value={customEndDate}
                     onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="w-full px-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-lg text-text-primary text-[11px] outline-none transition-all cursor-pointer focus-glow h-8"
+                    className="w-full px-2 bg-surface-input border border-border focus:border-border-focus rounded-md text-text-primary text-[11px] outline-none transition-all duration-150 ease cursor-pointer h-8"
                   />
                 </div>
               </div>

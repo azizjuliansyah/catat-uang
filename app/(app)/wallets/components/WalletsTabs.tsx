@@ -1,5 +1,4 @@
 import { WalletItem } from "../types";
-import { TabButton } from "@/components/ui/molecules/TabButton";
 
 interface WalletsTabsProps {
   activeTab: "active" | "archived";
@@ -12,22 +11,37 @@ export function WalletsTabs({ activeTab, onTabChange, wallets }: WalletsTabsProp
   const archivedCount = wallets.filter(w => w.is_archived).length;
 
   return (
-    <div className="border-b border-border flex gap-4">
-      <TabButton
-        isActive={activeTab === "active"}
+    <div className="flex gap-1 border-b border-border">
+      <button
         onClick={() => onTabChange("active")}
-        className="pb-3 text-xs font-bold border-b-2 transition-all cursor-pointer uppercase tracking-wider px-0 py-0 min-h-0 bg-transparent"
+        className={`
+          px-4 py-3 text-sm font-medium transition-all duration-150 ease relative
+          ${activeTab === "active"
+            ? "text-text-primary"
+            : "text-text-secondary hover:text-text-primary"
+          }
+        `}
       >
         Aktif ({activeCount})
-      </TabButton>
-      <TabButton
-        isActive={activeTab === "archived"}
+        {activeTab === "active" && (
+          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+        )}
+      </button>
+      <button
         onClick={() => onTabChange("archived")}
-        className="pb-3 text-xs font-bold border-b-2 transition-all cursor-pointer uppercase tracking-wider px-0 py-0 min-h-0 bg-transparent"
+        className={`
+          px-4 py-3 text-sm font-medium transition-all duration-150 ease relative
+          ${activeTab === "archived"
+            ? "text-text-primary"
+            : "text-text-secondary hover:text-text-primary"
+          }
+        `}
       >
         Terarsip ({archivedCount})
-      </TabButton>
+        {activeTab === "archived" && (
+          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+        )}
+      </button>
     </div>
   );
 }
-

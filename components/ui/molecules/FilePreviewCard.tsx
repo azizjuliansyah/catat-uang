@@ -41,7 +41,7 @@ export function FilePreviewCard({
 
   return (
     <div
-      className={`border rounded-xl p-3 flex items-center justify-between transition-all relative overflow-hidden ${
+      className={`border rounded-lg p-3 flex items-center justify-between transition-all duration-150 ease relative overflow-hidden ${
         isDeleted
           ? "bg-danger/5 border-danger/20 opacity-70"
           : "bg-surface-input border-border hover:border-border-strong"
@@ -53,17 +53,17 @@ export function FilePreviewCard({
             <img
               src={imageSrc}
               alt={displayName}
-              className={`w-10 h-10 rounded object-cover border transition-all ${
+              className={`w-10 h-10 rounded-md object-cover border transition-all ${
                 isDeleted ? "border-danger/30 filter grayscale sepia" : "border-border"
               }`}
             />
           ) : (
-            <div className="w-10 h-10 rounded bg-surface-card border border-border flex items-center justify-center text-text-secondary shrink-0">
+            <div className="w-10 h-10 rounded-md bg-surface-card border border-border flex items-center justify-center text-text-secondary shrink-0">
               <ImageIcon className="w-5 h-5" />
             </div>
           )}
           {isDeleted && (
-            <div className="absolute inset-0 bg-danger/25 rounded flex items-center justify-center">
+            <div className="absolute inset-0 bg-danger/25 rounded-md flex items-center justify-center">
               <X className="w-4 h-4 text-danger-strong" />
             </div>
           )}

@@ -114,7 +114,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               key={t.id}
               role={isCritical ? "alert" : "status"}
               aria-live={isCritical ? "assertive" : "polite"}
-              className={`flex items-start bg-surface-card border ${style.border} rounded-xl shadow-xl overflow-hidden animate-fade-in`}
+              className={`flex items-start bg-surface-card border ${style.border} rounded-lg overflow-hidden animate-fade-in`}
             >
               <div className={`w-1.5 self-stretch ${style.accent}`} />
               <div className="flex-1 p-3.5 flex gap-3 items-start">

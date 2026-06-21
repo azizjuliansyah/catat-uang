@@ -73,8 +73,8 @@ export default function WalletsPage() {
   }
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Header section */}
+    <div className="space-y-8 font-sans">
+      {/* [1] Page Header + Summary Card */}
       <WalletsHeader
         activeWalletsTotal={state.activeWalletsTotal}
         wallets={wallets}
@@ -82,35 +82,36 @@ export default function WalletsPage() {
         onAddClick={() => state.setIsAddModalOpen(true)}
       />
 
-      {/* Tabs Switcher */}
+      {/* [2] Filter Bar (Tabs) */}
       <WalletsTabs
         activeTab={state.activeTab}
         onTabChange={state.setActiveTab}
         wallets={wallets}
       />
 
-      {/* Grid List of Wallets */}
+      {/* [3] Content Grid */}
       {loading ? (
         <WalletsSkeleton />
       ) : state.filteredWallets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-border rounded-2xl text-center">
-          <div className="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center text-text-secondary/40 mb-3">
-            <DefaultWalletIcon className="w-6 h-6" />
+        <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-border rounded-lg bg-surface-card/50 text-center max-w-md mx-auto">
+          <div className="w-14 h-14 rounded-lg bg-surface-hover flex items-center justify-center text-text-muted mb-4">
+            <DefaultWalletIcon className="w-7 h-7" />
           </div>
-          <h3 className="text-sm font-bold text-text-primary">Tidak ada dompet ditemukan</h3>
-          <p className="text-xs text-text-secondary mt-1 max-w-sm">
+          <h3 className="text-section-title text-text-primary font-display mb-2">
+            Tidak ada dompet ditemukan
+          </h3>
+          <p className="text-body text-text-secondary max-w-sm mb-6">
             {state.activeTab === "active"
               ? "Tambahkan dompet pertama Anda untuk mulai mencatat dan mengelola keuangan Anda."
               : "Belum ada dompet yang Anda arsipkan."}
           </p>
           {state.activeTab === "active" && (
             <Button
-              variant="ghost"
-              size="sm"
+              variant="secondary"
+              size="md"
               onClick={() => state.setIsAddModalOpen(true)}
-              className="mt-4 text-xs text-primary font-bold hover:underline cursor-pointer min-h-0 py-1 px-2"
             >
-              Tambah dompet baru →
+              Tambah Dompet Baru
             </Button>
           )}
         </div>

@@ -10,7 +10,7 @@ import { Plus, Edit2, Trash2, FolderMinus, Sparkles } from "lucide-react";
 import { CategoryModal } from "./modals/CategoryModal";
 import { DeleteCategoryModal } from "./modals/DeleteCategoryModal";
 import { useToast } from "@/components/ui/molecules/Toast";
-import { applyCategoryTemplates } from "@/app/admin/actions";
+import { applyCategoryTemplates } from "@/app/admin/actions/category-templates";
 
 interface Category {
   id: string;

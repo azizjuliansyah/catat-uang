@@ -1,210 +1,54 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { Button } from "@/components/ui/atoms/Button";
 import { TabButton } from "@/components/ui/molecules/TabButton";
 import { ArrowLeft, Calendar, Wallet as WalletIcon, CreditCard, FileText } from "lucide-react";
 import { CategoryGridSelector } from "../components/CategoryGridSelector";
 import { ReceiptManager } from "../components/ReceiptManager";
-import { getNowDateTimeString } from "@/lib/utils/date";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";
 
+import { useNewTransactionState } from "./hooks/useNewTransactionState";
+import { useNewTransactionHandlers } from "./hooks/useNewTransactionHandlers";
+
 export default function NewTransactionPage() {
-  const supabase = createClient();
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const amountInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+  const state = useNewTransactionState();
+  const handlers = useNewTransactionHandlers(state, toast);
 
-  const { success: showSuccessToast, error: showErrorToast } = useToast();
   const {
-    user,
-    loadingUser,
+    fileInputRef,
+    amountInputRef,
     wallets,
-    loadingWallets,
     categories,
-    loadingCategories,
     paylaterPlatforms,
-    loadingPaylaterPlatforms,
-    refreshWallets,
-    refreshPaylaterPlatforms
-  } = useApp();
+    loading,
+    amount,
+    setAmount,
+    type,
+    setType,
+    sourceId,
+    setSourceId,
+    categoryId,
+    setCategoryId,
+    description,
+    setDescription,
+    transactionDate,
+    setTransactionDate,
+    receiptFile,
+    receiptPreview,
+    uploadingReceipt,
+    submitting,
+    router
+  } = state;
 
-  const loading = loadingUser || loadingWallets || loadingCategories || loadingPaylaterPlatforms;
-
-  // Form States
-  const [amount, setAmount] = useState("");
-  const [type, setType] = useState<"expense" | "income">("expense");
-  const [sourceId, setSourceId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [description, setDescription] = useState("");
-  const [transactionDate, setTransactionDate] = useState(() => {
-    return getNowDateTimeString(); // YYYY-MM-DDTHH:MM local
-  });
-
-  // Receipt Upload States
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
-  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
-  const [uploadingReceipt, setUploadingReceipt] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loadingUser && !user) {
-      router.push("/login");
-    }
-  }, [user, loadingUser, router]);
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  // Pre-select default wallet
-  useEffect(() => {
-    if (!loadingWallets && wallets.length > 0 && !sourceId) {
-      const activeWallets = wallets.filter((w) => !w.is_archived);
-      const defaultWallet = activeWallets.find((w) => w.is_default);
-      if (defaultWallet) {
-        setSourceId(`wallet:${defaultWallet.id}`);
-      } else if (activeWallets.length > 0) {
-        setSourceId(`wallet:${activeWallets[0].id}`);
-      }
-    }
-  }, [wallets, loadingWallets, sourceId]);
-
-  // Pre-select category when type changes
-  useEffect(() => {
-    const typeCategories = categories.filter((c) => c.type === type);
-    if (typeCategories.length > 0) {
-      const currentCat = categories.find((c) => c.id === categoryId);
-      if (!currentCat || currentCat.type !== type) {
-        setCategoryId(typeCategories[0].id);
-      }
-    } else {
-      setCategoryId("");
-    }
-  }, [type, categories, categoryId]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  // Handle Receipt Selection
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      showErrorToast("Ukuran file nota maksimal adalah 5MB");
-      return;
-    }
-
-    setReceiptFile(file);
-
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setReceiptPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setReceiptPreview(null);
-    }
-  }
-
-  // Remove Selected Receipt
-  function handleRemoveReceipt() {
-    setReceiptFile(null);
-    setReceiptPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  }
-
-  // Handle form submit
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user) return;
-
-    const numericAmount = parseFloat(amount.replace(/[^0-9]/g, ""));
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-      showErrorToast("Jumlah transaksi harus lebih besar dari 0");
-      amountInputRef.current?.focus();
-      return;
-    }
-
-    if (!sourceId) {
-      showErrorToast("Silakan pilih sumber dana");
-      return;
-    }
-
-    const isWallet = sourceId.startsWith("wallet:");
-    const actualWalletId = isWallet ? sourceId.replace("wallet:", "") : null;
-    const actualPaylaterId = !isWallet ? sourceId.replace("paylater:", "") : null;
-
-    setSubmitting(true);
-
-    try {
-      let finalReceiptUrl = null;
-
-      // 1. Upload receipt if file exists
-      if (receiptFile) {
-        setUploadingReceipt(true);
-        const fileExt = receiptFile.name.split(".").pop();
-        const filePath = `${user.id}/receipt-${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("receipts")
-          .upload(filePath, receiptFile, { upsert: true });
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from("receipts")
-          .getPublicUrl(filePath);
-
-        finalReceiptUrl = publicUrl;
-        setUploadingReceipt(false);
-      }
-
-      // 2. Create Transaction
-      const { error: insertError } = await supabase
-        .from("transactions")
-        .insert({
-          user_id: user.id,
-          wallet_id: actualWalletId,
-          paylater_id: actualPaylaterId,
-          category_id: categoryId || null,
-          amount: numericAmount,
-          type: type,
-          description: description.trim() || null,
-          transaction_date: new Date(transactionDate).toISOString(),
-          receipt_url: finalReceiptUrl
-        });
-
-      if (insertError) throw insertError;
-
-      showSuccessToast("Transaksi baru berhasil disimpan.");
-      await refreshWallets();
-      await refreshPaylaterPlatforms();
-      router.push("/transactions");
-    } catch (err: unknown) {
-      console.error("Error creating transaction:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      showErrorToast("Gagal menyimpan transaksi: " + message);
-      setSubmitting(false);
-    }
-  }
-
-  const getFormattedPreview = () => {
-    const rawVal = amount.replace(/[^0-9]/g, "");
-    if (!rawVal) return "Rp 0";
-    const num = parseInt(rawVal);
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(num);
-  };
+  const {
+    handleFileChange,
+    handleRemoveReceipt,
+    handleSubmit,
+    getFormattedPreview
+  } = handlers;
 
   if (loading) {
     return (
@@ -304,7 +148,7 @@ export default function NewTransactionPage() {
                   type="datetime-local"
                   value={transactionDate}
                   onChange={(e) => setTransactionDate(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer focus-glow"
+                  className="w-full pl-9 pr-3 py-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer focus-glow min-h-[44px]"
                   required
                 />
               </div>

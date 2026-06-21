@@ -81,9 +81,9 @@ export function InfoCard({
 
   if (isLoading) {
     return (
-      <div className="p-[1.5px] rounded-2xl bg-border/45 w-full">
-        <div className="bg-surface-card rounded-[15px] p-5 flex items-center gap-4 relative overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-surface-hover animate-pulse shrink-0" />
+      <div className="p-[1.5px] rounded-lg bg-border/45 w-full">
+        <div className="bg-surface-card rounded-md p-5 flex items-center gap-4 relative overflow-hidden">
+          <div className="w-10 h-10 rounded-md bg-surface-hover animate-pulse shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="h-3 w-16 bg-surface-hover rounded animate-pulse" />
             <div className="h-5 w-28 bg-surface-hover rounded animate-pulse mt-2" />
@@ -100,18 +100,14 @@ export function InfoCard({
   return (
     <div
       onClick={onClick}
-      className={`p-[1.5px] rounded-2xl bg-gradient-to-br transition-all duration-300 shadow-sm ${borderGradientClass} ${
+      className={`p-[1.5px] rounded-lg bg-gradient-to-br transition-all duration-150 ease ${borderGradientClass} ${
         onClick ? "cursor-pointer active:scale-[0.98]" : ""
       } ${className}`}
     >
-      <div className="bg-surface-card w-full h-full rounded-[15px] p-5 flex items-center gap-4 relative overflow-hidden group hover:-translate-y-0.5 transition-all duration-300">
-        {/* Glow decoration */}
-        <div className={`absolute inset-0 pointer-events-none opacity-[0.02] group-hover:opacity-[0.05] transition-opacity duration-300 ${bgGlowClass}`} />
-        <div className={`absolute -top-12 -left-12 w-24 h-24 rounded-full blur-2xl opacity-15 group-hover:opacity-30 transition-all duration-500 pointer-events-none ${bgGlowClass}`} />
-
+      <div className="bg-surface-card w-full h-full rounded-md p-5 flex items-center gap-4 relative overflow-hidden group">
         {/* Icon wrapper */}
         {icon && (
-          <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 ${iconStyleClass}`}>
+          <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-md flex items-center justify-center shrink-0 ${iconStyleClass}`}>
             {icon}
           </div>
         )}

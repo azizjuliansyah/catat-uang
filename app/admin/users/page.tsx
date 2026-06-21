@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getUsers, toggleSuspendUser, deleteUser, resetPassword } from "@/app/admin/actions";
+import { getUsers, toggleSuspendUser, deleteUser, resetPassword } from "@/app/admin/actions/users";
 import { Plus, Check, AlertCircle } from "lucide-react";
 import { UserFilters } from "./components/UserFilters";
 import { UserTable } from "./components/UserTable";

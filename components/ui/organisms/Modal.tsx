@@ -93,34 +93,34 @@ export function Modal({
       <Container
         ref={modalRef}
         onSubmit={onSubmit}
-        className={`bg-surface-card border border-border w-full sm:max-w-md md:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] font-sans ${className}`}
+        className={`bg-surface-card border border-border w-full sm:max-w-md md:max-w-lg rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[85vh] font-sans ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border/50 shrink-0">
-          <h3 id="modal-title" className="text-base font-bold text-text-primary tracking-tight font-display">
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+          <h3 id="modal-title" className="text-page-title text-text-primary font-display">
             {title}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary transition-colors p-1.5 rounded-lg hover:bg-surface-hover cursor-pointer"
+            className="text-text-secondary hover:text-text-primary transition-colors p-1.5 rounded-md hover:bg-surface-hover cursor-pointer"
             aria-label="Tutup Dialog"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-5 text-sm text-text-secondary leading-relaxed">
+        {/* Body - Scrollable with max-height */}
+        <div className="flex-1 overflow-y-auto scrollable px-4 py-4 text-body text-text-secondary max-h-[60vh]">
           {children}
         </div>
 
-        {/* Footer */}
+        {/* Footer - Fixed */}
         {footer && (
-          <div className="p-4 border-t border-border/50 bg-surface-card rounded-b-2xl flex items-center justify-end gap-3 shrink-0">
+          <div className="px-4 py-3 border-t border-border bg-surface-card flex items-center justify-end gap-2 shrink-0">
             {footer}
           </div>
         )}

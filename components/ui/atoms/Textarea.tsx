@@ -15,12 +15,12 @@ export function Textarea({
   ...props
 }: TextareaProps) {
   const baseClasses =
-    "w-full bg-surface-input border outline-none transition-all font-sans text-text-primary";
+    "w-full bg-surface border outline-none transition-all duration-150 ease font-sans text-text-primary";
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs min-h-[60px] rounded-lg",
-    md: "px-3.5 py-2.5 text-xs min-h-[80px] rounded-xl",
-    lg: "px-4 py-3 text-sm min-h-[120px] rounded-xl",
+    sm: "px-3 py-1.5 text-xs min-h-[60px] rounded-md",
+    md: "px-3 py-2 text-sm min-h-[80px] rounded-md",
+    lg: "px-4 py-2.5 text-sm min-h-[120px] rounded-md",
   };
 
   const resizeClasses = {
@@ -31,11 +31,11 @@ export function Textarea({
   };
 
   const stateClasses = hasError
-    ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
-    : "border-border focus:border-primary focus:ring-1 focus:ring-primary";
+    ? "border-danger focus:border-danger"
+    : "border-border focus:border-border-focus hover:border-border-strong";
 
   const disabledClasses = disabled
-    ? "opacity-50 cursor-not-allowed bg-surface-hover"
+    ? "opacity-50 cursor-not-allowed bg-surface-input"
     : "";
 
   return (

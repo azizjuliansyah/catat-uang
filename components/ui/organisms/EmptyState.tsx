@@ -21,15 +21,15 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-2xl bg-surface-card/20 max-w-md mx-auto ${className}`}
+      className={`flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-surface-card/50 max-w-md mx-auto ${className}`}
     >
-      <div className="w-14 h-14 rounded-xl bg-surface-hover/50 flex items-center justify-center mb-4 text-text-secondary/30">
+      <div className="w-14 h-14 rounded-lg bg-surface-hover flex items-center justify-center mb-4 text-text-tertiary">
         <Icon className="w-7 h-7" />
       </div>
-      <h4 className="text-base font-bold text-text-primary tracking-tight font-display mb-1.5">
+      <h4 className="text-section-title text-text-primary font-display mb-2">
         {title}
       </h4>
-      <p className="text-xs text-text-secondary leading-relaxed max-w-xs mb-5">
+      <p className="text-body text-text-secondary leading-relaxed max-w-xs mb-5">
         {description}
       </p>
       {actionLabel && onAction && (

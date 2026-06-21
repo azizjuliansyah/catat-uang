@@ -18,7 +18,7 @@ export function WalletsSkeleton() {
                 ))}
               </div>
             </div>
-            <div className="pt-2.5 border-t border-border/40 space-y-1.5">
+            <div className="pt-2.5 border-t border-border/50 space-y-1.5">
               <div className="h-3 w-16 bg-surface-hover rounded" />
               <div className="h-5 w-32 bg-surface-hover rounded" />
             </div>

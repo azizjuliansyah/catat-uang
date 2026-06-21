@@ -49,9 +49,9 @@ export function UploadZone({
     <div className={`relative ${className}`}>
       <div
         onClick={handleClick}
-        className="bg-surface-input border border-border border-dashed hover:border-border-strong rounded-xl p-4 text-center cursor-pointer hover:bg-surface-hover transition-colors flex flex-col items-center justify-center gap-1.5"
+        className="bg-surface-input border border-border border-dashed hover:border-border-strong rounded-lg p-4 text-center cursor-pointer hover:bg-surface-hover transition-colors duration-150 ease flex flex-col items-center justify-center gap-1.5"
       >
-        <div className="w-8 h-8 rounded-full bg-surface-card border border-border flex items-center justify-center text-text-secondary">
+        <div className="w-8 h-8 rounded-md bg-surface-card border border-border flex items-center justify-center text-text-secondary">
           <UploadCloud className="w-4 h-4" />
         </div>
         <div>

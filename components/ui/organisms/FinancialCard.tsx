@@ -16,18 +16,15 @@ export const FinancialCard = forwardRef<HTMLDivElement, FinancialCardProps>(
       borderWidth: "1px",
       borderStyle: isDragging ? "dashed" : "solid",
       borderColor: isDragging
-        ? "var(--color-primary)"
+        ? "var(--color-accent-primary)"
         : isHovered
         ? `${cardColor}45`
-        : "var(--color-border)",
+        : "var(--color-border-default)",
       background: isDragging
-        ? "var(--color-surface-hover)"
+        ? "var(--color-bg-subtle)"
         : isHovered
-        ? `radial-gradient(circle at 100% 0%, ${cardColor}15, transparent 55%), var(--color-surface-card)`
-        : `radial-gradient(circle at 100% 0%, ${cardColor}05, transparent 40%), var(--color-surface-card)`,
-      boxShadow: isHovered
-        ? `0 12px 30px -10px ${cardColor}1a`
-        : "none",
+        ? `radial-gradient(circle at 100% 0%, ${cardColor}15, transparent 55%), var(--color-bg-elevated)`
+        : `radial-gradient(circle at 100% 0%, ${cardColor}05, transparent 40%), var(--color-bg-elevated)`,
     };
 
     return (
@@ -42,24 +39,18 @@ export const FinancialCard = forwardRef<HTMLDivElement, FinancialCardProps>(
           setIsHovered(false);
           props.onMouseLeave?.(e);
         }}
-        className={`rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group transition-all duration-300 select-none ${
-          isDragging ? "opacity-40" : "hover:-translate-y-1"
+        className={`rounded-lg p-5 flex flex-col justify-between relative overflow-hidden group transition-all duration-150 ease select-none ${
+          isDragging ? "opacity-40" : ""
         } ${className}`}
         {...props}
       >
         {/* Left Accent Bar */}
         <div
-          className="absolute left-0 top-0 bottom-0 w-[3px] transition-all duration-300"
+          className="absolute left-0 top-0 bottom-0 w-[3px] transition-all duration-150 ease"
           style={{
             backgroundColor: cardColor,
             opacity: isHovered ? 0.9 : 0.4
           }}
-        />
-
-        {/* Ambient background decoration */}
-        <div
-          className="absolute -top-12 -left-12 w-24 h-24 rounded-full blur-2xl opacity-10 group-hover:opacity-20 transition-all duration-500 pointer-events-none"
-          style={{ backgroundColor: cardColor }}
         />
 
         {children}

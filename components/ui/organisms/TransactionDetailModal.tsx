@@ -105,7 +105,7 @@ export function TransactionDetailModal({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg"
+              className="w-14 h-14 rounded-lg flex items-center justify-center text-white"
               style={{ backgroundColor: categoryColor }}
             >
               <CatIcon className="w-7 h-7" />
@@ -133,7 +133,7 @@ export function TransactionDetailModal({
 
         {/* Description */}
         {transaction.description && (
-          <div className="bg-surface-card border border-border rounded-xl p-4">
+          <div className="bg-surface-card border border-border rounded-lg p-4">
             <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-2">
               Deskripsi
             </p>
@@ -146,7 +146,7 @@ export function TransactionDetailModal({
         {/* Details Grid */}
         <div className="grid grid-cols-2 gap-3">
           {/* Source */}
-          <div className="bg-surface-card border border-border rounded-xl p-3">
+          <div className="bg-surface-card border border-border rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
               {isPaylater ? (
                 <CreditCard className="w-4 h-4 text-primary" />
@@ -171,7 +171,7 @@ export function TransactionDetailModal({
           </div>
 
           {/* Category */}
-          <div className="bg-surface-card border border-border rounded-xl p-3">
+          <div className="bg-surface-card border border-border rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
               <Tag className="w-4 h-4 text-text-muted" />
               <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
@@ -192,7 +192,7 @@ export function TransactionDetailModal({
           </div>
 
           {/* Time */}
-          <div className="bg-surface-card border border-border rounded-xl p-3">
+          <div className="bg-surface-card border border-border rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-text-muted" />
               <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
@@ -208,7 +208,7 @@ export function TransactionDetailModal({
           </div>
 
           {/* Created At */}
-          <div className="bg-surface-card border border-border rounded-xl p-3">
+          <div className="bg-surface-card border border-border rounded-lg p-3">
             <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-2">
               Dibuat Pada
             </p>
@@ -220,7 +220,7 @@ export function TransactionDetailModal({
 
         {/* Receipt */}
         {transaction.receipt_url && (
-          <div className="bg-surface-card border border-border rounded-xl p-4">
+          <div className="bg-surface-card border border-border rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1.5">
                 <FileImage className="w-4 h-4" />

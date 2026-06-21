@@ -1,168 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  getCategoryTemplates,
-  createCategoryTemplate,
-  updateCategoryTemplate,
-  deleteCategoryTemplate,
-} from "@/app/admin/actions";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { TabButton } from "@/components/ui/molecules/TabButton";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
-import { FormField } from "@/components/ui/molecules/FormField";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { getIconComponent } from "@/lib/utils/icons";
-import { Plus, Edit2, Trash2, FolderMinus, Check, Search } from "lucide-react";
+import { Plus, Edit2, Trash2, FolderMinus, Search } from "lucide-react";
 
-interface CategoryTemplate {
-  id: string;
-  name: string;
-  type: "income" | "expense";
-  icon: string;
-  color: string;
-  created_at: string;
-}
-
-const PRESET_COLORS = [
-  { name: "Emerald", hex: "#10B981" },
-  { name: "Blue", hex: "#3B82F6" },
-  { name: "Indigo", hex: "#6366F1" },
-  { name: "Purple", hex: "#8B5CF6" },
-  { name: "Pink", hex: "#EC4899" },
-  { name: "Red", hex: "#EF4444" },
-  { name: "Orange", hex: "#F59E0B" },
-  { name: "Gray", hex: "#6B7280" }
-];
-
-const PRESET_ICONS = [
-  "Briefcase",
-  "TrendingUp",
-  "Utensils",
-  "Car",
-  "ShoppingBag",
-  "FileText",
-  "Film",
-  "HelpCircle"
-];
+import { useAdminCategoriesState } from "./hooks/useAdminCategoriesState";
+import { useAdminCategoriesHandlers } from "./hooks/useAdminCategoriesHandlers";
+import { CategoryTemplateModals } from "./components/CategoryTemplateModals";
 
 export default function AdminCategoriesPage() {
-  const { success: showSuccessToast, error: showErrorToast } = useToast();
-  
-  const [templates, setTemplates] = useState<CategoryTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [categoryType, setCategoryType] = useState<"expense" | "income">("expense");
-  const [searchTerm, setSearchTerm] = useState("");
+  const toast = useToast();
+  const state = useAdminCategoriesState();
+  const handlers = useAdminCategoriesHandlers(state, toast);
 
-  // Modals state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<CategoryTemplate | null>(null);
-  const [templateToDelete, setTemplateToDelete] = useState<CategoryTemplate | null>(null);
+  const {
+    templates,
+    loading,
+    categoryType,
+    setCategoryType,
+    searchTerm,
+    setSearchTerm,
+    setTemplateToDelete
+  } = state;
 
-  // Form states
-  const [formName, setFormName] = useState("");
-  const [formType, setFormType] = useState<"expense" | "income">("expense");
-  const [formIcon, setFormIcon] = useState("HelpCircle");
-  const [formColor, setFormColor] = useState("#10B981");
-  const [submitting, setSubmitting] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
-  async function fetchTemplates() {
-    try {
-      setLoading(true);
-      const data = await getCategoryTemplates();
-      setTemplates((data as unknown as CategoryTemplate[]) || []);
-    } catch (err: unknown) {
-      console.error("Error fetching templates:", err);
-      showErrorToast("Gagal memuat template kategori");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Open modal for Create
-  const handleCreateOpen = () => {
-    setEditingTemplate(null);
-    setFormName("");
-    setFormType(categoryType);
-    setFormIcon("HelpCircle");
-    setFormColor(categoryType === "expense" ? "#EF4444" : "#10B981");
-    setIsModalOpen(true);
-  };
-
-  // Open modal for Edit
-  const handleEditOpen = (template: CategoryTemplate) => {
-    setEditingTemplate(template);
-    setFormName(template.name);
-    setFormType(template.type);
-    setFormIcon(template.icon);
-    setFormColor(template.color);
-    setIsModalOpen(true);
-  };
-
-  // Handle submit (Create / Edit)
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formName.trim()) {
-      showErrorToast("Nama template kategori wajib diisi");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      if (editingTemplate) {
-        // Edit template
-        await updateCategoryTemplate(
-          editingTemplate.id,
-          formName.trim(),
-          formType,
-          formIcon,
-          formColor
-        );
-        showSuccessToast(`Template "${formName}" berhasil diperbarui!`);
-      } else {
-        // Create template
-        await createCategoryTemplate(
-          formName.trim(),
-          formType,
-          formIcon,
-          formColor
-        );
-        showSuccessToast(`Template "${formName}" berhasil ditambahkan!`);
-      }
-      setIsModalOpen(false);
-      await fetchTemplates();
-    } catch (err: unknown) {
-      console.error("Error saving template:", err);
-      const msg = err instanceof Error ? err.message : String(err);
-      showErrorToast("Gagal menyimpan template: " + msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Handle delete confirmation
-  const handleDeleteConfirm = async () => {
-    if (!templateToDelete) return;
-    setDeleting(true);
-    try {
-      await deleteCategoryTemplate(templateToDelete.id);
-      showSuccessToast(`Template "${templateToDelete.name}" berhasil dihapus!`);
-      setTemplateToDelete(null);
-      await fetchTemplates();
-    } catch (err: unknown) {
-      console.error("Error deleting template:", err);
-      const msg = err instanceof Error ? err.message : String(err);
-      showErrorToast("Gagal menghapus template: " + msg);
-    } finally {
-      setDeleting(false);
-    }
-  };
+  const {
+    handleCreateOpen,
+    handleEditOpen,
+    handleSubmit,
+    handleDeleteConfirm
+  } = handlers;
 
   // Filtered Templates
   const filteredTemplates = templates.filter((t) => {
@@ -292,180 +162,12 @@ export default function AdminCategoriesPage() {
         </div>
       )}
 
-      {/* Create / Edit Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingTemplate ? "Sunting Template Kategori" : "Buat Template Kategori Baru"}
-        onSubmit={handleSubmit}
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              fullWidth
-              onClick={() => setIsModalOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              isLoading={submitting}
-              fullWidth
-            >
-              Simpan
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <FormField
-            label="Nama Template"
-            required
-            type="text"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
-            placeholder="Contoh: Belanja Bulanan, Gaji, Makan Luar"
-          />
-
-          {/* Type Selection */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              Jenis Kategori
-              <span className="text-danger">*</span>
-            </label>
-            <div className="flex gap-2 bg-surface-input/30 border border-border p-1.5 rounded-xl">
-              <button
-                type="button"
-                onClick={() => {
-                  setFormType("expense");
-                  if (formColor === "#10B981") setFormColor("#EF4444");
-                }}
-                className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                  formType === "expense"
-                    ? "bg-danger text-white"
-                    : "text-text-secondary hover:bg-surface-hover"
-                }`}
-              >
-                Pengeluaran
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormType("income");
-                  if (formColor === "#EF4444") setFormColor("#10B981");
-                }}
-                className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                  formType === "income"
-                    ? "bg-success text-white"
-                    : "text-text-secondary hover:bg-surface-hover"
-                }`}
-              >
-                Pemasukan
-              </button>
-            </div>
-          </div>
-
-          {/* Icon Selection */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              Pilih Ikon
-              <span className="text-danger">*</span>
-            </label>
-            <div className="grid grid-cols-4 gap-2 bg-surface-input/30 border border-border p-3 rounded-xl max-h-40 overflow-y-auto">
-              {PRESET_ICONS.map((iconName) => {
-                const IconComp = getIconComponent(iconName);
-                return (
-                  <ActionButton
-                    key={iconName}
-                    icon={IconComp}
-                    title={iconName}
-                    variant="ghost"
-                    size="sm"
-                    isSelected={formIcon === iconName}
-                    selectedColor="var(--color-primary)"
-                    onClick={() => setFormIcon(iconName)}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Color Selection */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              Pilih Warna
-              <span className="text-danger">*</span>
-            </label>
-            <div className="flex flex-wrap gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
-              {PRESET_COLORS.map((col) => {
-                const isSelected = formColor.toLowerCase() === col.hex.toLowerCase();
-                return (
-                  <Button
-                    key={col.hex}
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setFormColor(col.hex)}
-                    className={`w-7 h-7 p-0 min-h-0 rounded-full transition-all cursor-pointer flex items-center justify-center border-2 border-transparent ${
-                      isSelected
-                        ? "border-text-primary scale-110 shadow-sm"
-                        : "hover:scale-105"
-                    }`}
-                    style={{ backgroundColor: col.hex }}
-                    title={col.name}
-                  >
-                    {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={templateToDelete !== null}
-        onClose={() => setTemplateToDelete(null)}
-        title="Hapus Template Kategori"
-        isDestructive
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              fullWidth
-              onClick={() => setTemplateToDelete(null)}
-            >
-              Batal
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              isLoading={deleting}
-              fullWidth
-              onClick={handleDeleteConfirm}
-            >
-              Hapus
-            </Button>
-          </>
-        }
-      >
-        <p className="text-xs text-text-secondary">
-          Apakah Anda yakin ingin menghapus template kategori{" "}
-          <span className="font-bold text-text-primary">
-            "{templateToDelete?.name}"
-          </span>
-          ? Aksi ini tidak dapat dibatalkan.
-        </p>
-      </Modal>
+      {/* Modals component */}
+      <CategoryTemplateModals
+        state={state}
+        handleSubmit={handleSubmit}
+        handleDeleteConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

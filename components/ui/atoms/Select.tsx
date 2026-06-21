@@ -14,21 +14,21 @@ export function Select({
   ...props
 }: SelectProps) {
   const baseClasses =
-    "w-full bg-surface-input border outline-none transition-all cursor-pointer font-sans";
+    "w-full bg-surface border outline-none transition-all duration-150 ease cursor-pointer font-sans";
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs min-h-[36px] rounded-lg",
-    md: "px-3.5 py-2.5 text-xs min-h-[44px] rounded-xl",
-    lg: "px-4 py-3 text-sm min-h-[52px] rounded-xl",
+    sm: "px-3 py-1.5 text-xs min-h-[36px] rounded-md",
+    md: "px-3 py-2 text-sm min-h-[44px] rounded-md",
+    lg: "px-4 py-2.5 text-sm min-h-[52px] rounded-md",
   };
 
   const stateClasses = hasError
-    ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger text-text-primary"
-    : "border-border focus:border-primary focus:ring-1 focus:ring-primary text-text-primary";
+    ? "border-danger focus:border-danger text-text-primary"
+    : "border-border focus:border-border-focus text-text-primary hover:border-border-strong";
 
   const disabledClasses = disabled
-    ? "opacity-50 cursor-not-allowed bg-surface-hover"
-    : "hover:border-border-strong";
+    ? "opacity-50 cursor-not-allowed bg-surface-input"
+    : "";
 
   return (
     <select

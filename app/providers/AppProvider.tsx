@@ -42,6 +42,20 @@ export interface PaylaterPlatformItem {
   updated_at: string;
 }
 
+export interface TransactionTemplateItem {
+  id: string;
+  user_id: string;
+  name: string;
+  amount: number;
+  type: "income" | "expense";
+  category_id: string | null;
+  wallet_id: string | null;
+  paylater_id: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
@@ -60,10 +74,13 @@ interface AppContextType {
   loadingCategories: boolean;
   paylaterPlatforms: PaylaterPlatformItem[];
   loadingPaylaterPlatforms: boolean;
+  templates: TransactionTemplateItem[];
+  loadingTemplates: boolean;
   refreshUser: () => Promise<void>;
   refreshWallets: () => Promise<void>;
   refreshCategories: () => Promise<void>;
   refreshPaylaterPlatforms: () => Promise<void>;
+  refreshTemplates: () => Promise<void>;
   isInstallable: boolean;
   isInstalled: boolean;
   triggerInstallPrompt: () => Promise<boolean>;
@@ -81,6 +98,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [paylaterPlatforms, setPaylaterPlatforms] = useState<PaylaterPlatformItem[]>([]);
   const [loadingPaylaterPlatforms, setLoadingPaylaterPlatforms] = useState(false);
+  const [templates, setTemplates] = useState<TransactionTemplateItem[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   // PWA Installation state
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -213,6 +232,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshTemplates = async () => {
+    try {
+      setLoadingTemplates(true);
+      const { data, error } = await supabase
+        .from("transaction_templates")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (!error && data) {
+        setTemplates(data as TransactionTemplateItem[]);
+      }
+    } catch (err) {
+      console.error("Error in refreshTemplates:", err);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
   // On mount: fetch user and set up auth listener
   useEffect(() => {
     refreshUser();
@@ -225,6 +262,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setWallets([]);
         setCategories([]);
         setPaylaterPlatforms([]);
+        setTemplates([]);
       }
       setLoadingUser(false);
     });
@@ -240,6 +278,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refreshWallets();
       refreshCategories();
       refreshPaylaterPlatforms();
+      refreshTemplates();
     }
   }, [user]);
 
@@ -254,10 +293,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         loadingCategories,
         paylaterPlatforms,
         loadingPaylaterPlatforms,
+        templates,
+        loadingTemplates,
         refreshUser,
         refreshWallets,
         refreshCategories,
         refreshPaylaterPlatforms,
+        refreshTemplates,
         isInstallable,
         isInstalled,
         triggerInstallPrompt,

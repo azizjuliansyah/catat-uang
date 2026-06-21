@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getUserDetails, getUserAuditLogs, toggleSuspendUser, deleteUser, resetPassword } from "@/app/admin/actions";
+import { getUserAuditLogs } from "@/app/admin/actions/audit-logs";
+import { getUserDetails, toggleSuspendUser, deleteUser, resetPassword } from "@/app/admin/actions/users";
 import { ArrowLeft, User, Check, AlertCircle } from "lucide-react";
 import { UserDetailCard } from "../components/UserDetailCard";
 import { UserAuditLogs } from "../components/UserAuditLogs";

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createUser } from "@/app/admin/actions";
+import { createUser } from "@/app/admin/actions/users";
 import { Button } from "@/components/ui/atoms/Button";
 import {
   ArrowLeft,

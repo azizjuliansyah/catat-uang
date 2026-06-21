@@ -82,17 +82,17 @@ const SelectTrigger = ({ children }: SelectTriggerProps) => {
     useSelectContext();
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs min-h-[36px] rounded-lg",
-    md: "px-3.5 py-2.5 text-xs min-h-[44px] rounded-xl",
-    lg: "px-4 py-3 text-sm min-h-[52px] rounded-xl",
+    sm: "px-3 py-1.5 text-xs min-h-[36px] rounded-xl",
+    md: "px-3 py-2 text-sm min-h-[44px] rounded-xl",
+    lg: "px-4 py-2.5 text-sm min-h-[52px] rounded-xl",
   };
 
   const stateClasses = hasError
-    ? "border-danger focus:border-danger focus:ring-2 focus:ring-danger/20"
-    : "border-border hover:border-border-strong focus:border-primary focus:ring-2 focus:ring-primary/20";
+    ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
+    : "border-border hover:border-border-strong focus:border-primary focus:ring-1 focus:ring-primary";
 
   const disabledClasses = disabled
-    ? "opacity-50 cursor-not-allowed bg-surface-hover"
+    ? "opacity-50 cursor-not-allowed bg-surface-input"
     : "cursor-pointer bg-surface-input";
 
   return (
@@ -102,7 +102,7 @@ const SelectTrigger = ({ children }: SelectTriggerProps) => {
       onClick={() => !disabled && setIsOpen(!isOpen)}
       className={`
         w-full flex items-center justify-between gap-2
-        border outline-none transition-all duration-200
+        border outline-none transition-all duration-150 ease font-sans
         ${sizeClasses[size]}
         ${stateClasses}
         ${disabledClasses}
@@ -222,9 +222,9 @@ const SelectDropdown = ({ options }: SelectDropdownProps) => {
   };
 
   const optionSizeClasses = {
-    sm: "py-1.5 px-3 text-xs rounded-lg",
-    md: "py-2 px-3.5 text-xs rounded-xl",
-    lg: "py-2.5 px-4 text-sm rounded-xl",
+    sm: "py-1.5 px-3 text-xs rounded-md",
+    md: "py-2 px-3 text-sm rounded-md",
+    lg: "py-2.5 px-4 text-sm rounded-md",
   };
 
   if (!isOpen || disabled || !isMounted || !triggerRect) return null;
@@ -246,7 +246,7 @@ const SelectDropdown = ({ options }: SelectDropdownProps) => {
     <div
       ref={dropdownRef}
       style={portalStyle}
-      className="bg-surface-card border border-border rounded-2xl shadow-xl shadow-black/20 p-3 animate-fade-in"
+      className="bg-surface-card border border-border rounded-lg p-3 animate-fade-in"
       onKeyDown={handleKeyDown}
     >
       <div className={`${sizeClasses[size]} overflow-y-auto flex flex-col gap-1`}>
@@ -373,16 +373,16 @@ export const CustomSelect = ({
           name={name}
           className={`
             w-full flex items-center justify-between gap-2
-            border outline-none transition-all duration-200 font-sans
-            ${size === "sm" ? "px-3 py-1.5 text-xs min-h-[36px] rounded-lg" : ""}
-            ${size === "md" ? "px-3.5 py-2.5 text-xs min-h-[44px] rounded-xl" : ""}
-            ${size === "lg" ? "px-4 py-3 text-sm min-h-[52px] rounded-xl" : ""}
+            border outline-none transition-all duration-150 ease font-sans
+            ${size === "sm" ? "px-3 py-1.5 text-xs min-h-[36px] rounded-xl" : ""}
+            ${size === "md" ? "px-3 py-2 text-sm min-h-[44px] rounded-xl" : ""}
+            ${size === "lg" ? "px-4 py-2.5 text-sm min-h-[52px] rounded-xl" : ""}
             ${hasError
-              ? "border-danger focus:border-danger focus:ring-2 focus:ring-danger/20"
-              : "border-border hover:border-border-strong focus:border-primary focus:ring-2 focus:ring-primary/20"
+              ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
+              : "border-border hover:border-border-strong focus:border-primary focus:ring-1 focus:ring-primary"
             }
             ${disabled
-              ? "opacity-50 cursor-not-allowed bg-surface-hover"
+              ? "opacity-50 cursor-not-allowed bg-surface-input"
               : "cursor-pointer bg-surface-input"
             }
           `}

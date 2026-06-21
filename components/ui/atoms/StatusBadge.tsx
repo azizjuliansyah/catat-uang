@@ -24,8 +24,8 @@ export function StatusBadge({
   className = "",
 }: StatusBadgeProps) {
   const sizeClasses = {
-    sm: "px-1.5 py-0.5 text-[8px]",
-    md: "px-2 py-1 text-[10px]",
+    sm: "px-1.5 py-0.5 text-[10px]",
+    md: "px-2 py-1 text-xs",
   };
 
   const statusConfig: Record<
@@ -98,7 +98,7 @@ export function StatusBadge({
 
   return (
     <span
-      className={`inline-block rounded font-bold uppercase tracking-wider border ${sizeClasses[size]} ${config.bg} ${config.color} ${config.border} ${className}`}
+      className={`inline-block rounded-md font-semibold uppercase tracking-wide border transition-all duration-150 ${sizeClasses[size]} ${config.bg} ${config.color} ${config.border} ${className}`}
     >
       {config.label}
     </span>
