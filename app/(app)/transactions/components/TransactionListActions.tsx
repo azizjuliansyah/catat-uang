@@ -2,11 +2,7 @@
 
 import { Button } from "@/components/ui/atoms/Button";
 import { Eye, Edit2, Trash2 } from "lucide-react";
-
-interface Transaction {
-  id: string;
-  [key: string]: any;
-}
+import { Transaction } from "../types";
 
 interface TransactionListActionsProps {
   transaction: Transaction;

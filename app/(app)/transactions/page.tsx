@@ -1,9 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useApp } from "@/app/providers/AppProvider";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
 import { Button } from "@/components/ui/atoms/Button";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { ArrowRightLeft, Plus, Sparkles } from "lucide-react";
 import { TransactionsFilters } from "./components/TransactionsFilters";
 import { TransactionsStats } from "./components/TransactionsStats";
@@ -14,6 +16,8 @@ import { RunTemplatesModal } from "./components/RunTemplatesModal";
 import { useTransactionsState } from "./hooks/useTransactionsState";
 import { useTransactionsHandlers } from "./hooks/useTransactionsHandlers";
 import { TransactionsModals } from "./components/TransactionsModals";
+import { formatIDR, formatDateLong } from "./utils";
+import { Transaction } from "./types";
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -66,59 +70,66 @@ export default function TransactionsPage() {
     uniqueDates,
   } = useTransactionsState(transactions);
 
-  const formatIDR = (val: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(val);
+  // Modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+  const [transactionToView, setTransactionToView] = useState<Transaction | null>(null);
+
+  // Modal handlers
+  const handleDetail = (tx: Transaction) => {
+    setTransactionToView(tx);
+    setIsDetailModalOpen(true);
   };
 
-  const formatDateLong = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("id-ID", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  const handleEdit = (tx: Transaction) => {
+    setTransactionToEdit(tx);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseDetail = () => {
+    setIsDetailModalOpen(false);
+    setTransactionToView(null);
+  };
+
+  const handleCloseEdit = () => {
+    setIsEditModalOpen(false);
+    setTransactionToEdit(null);
+  };
+
+  const handleCloseCreate = () => {
+    setIsCreateModalOpen(false);
   };
 
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary flex items-center gap-2 font-display">
-            <ArrowRightLeft className="w-6 h-6 text-primary" />
-            Daftar Transaksi
-          </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Lihat, cari, filter, dan kelola semua catatan keuangan Anda.
-          </p>
-        </div>
-
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsRunTemplatesOpen(true)}
-            className="flex-1 sm:flex-initial"
-          >
-            <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
-            Jalankan Template
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => router.push("/transactions/new")}
-            className="flex-1 sm:flex-initial"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            Transaksi Baru
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        icon={ArrowRightLeft}
+        title="Daftar Transaksi"
+        description="Lihat, cari, filter, dan kelola semua catatan keuangan Anda."
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsRunTemplatesOpen(true)}
+            >
+              <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
+              Jalankan Template
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Transaksi Baru
+            </Button>
+          </>
+        }
+      />
 
       {/* Filter and Search Bar */}
       <TransactionsFilters
@@ -161,6 +172,8 @@ export default function TransactionsPage() {
           formatIDR={formatIDR}
           setReceiptModalUrl={setReceiptModalUrl}
           setTransactionToDelete={setTransactionToDelete}
+          onDetail={handleDetail}
+          onEdit={handleEdit}
         />
       ) : (
         <EmptyState
@@ -184,6 +197,16 @@ export default function TransactionsPage() {
         receiptModalUrl={receiptModalUrl}
         onCloseReceipt={() => setReceiptModalUrl(null)}
         formatIDR={formatIDR}
+        isCreateOpen={isCreateModalOpen}
+        onCloseCreate={handleCloseCreate}
+        onCreateSuccess={fetchTransactions}
+        isEditOpen={isEditModalOpen}
+        onCloseEdit={handleCloseEdit}
+        onEditSuccess={fetchTransactions}
+        transactionToEdit={transactionToEdit}
+        isDetailOpen={isDetailModalOpen}
+        onCloseDetail={handleCloseDetail}
+        transactionToView={transactionToView}
       />
 
       {/* Run Templates Modal */}
