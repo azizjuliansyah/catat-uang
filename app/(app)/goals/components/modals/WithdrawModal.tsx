@@ -1,7 +1,7 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
-import { Button } from "@/components/ui/atoms/Button";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { SavingGoal } from "../../types";
 import { formatIDR } from "../../utils";
 import { Wallet } from "lucide-react";
@@ -42,26 +42,11 @@ export function WithdrawModal({
       title={`Tarik Dana Target: ${selectedGoal?.name}`}
       onSubmit={onSubmit}
       footer={
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            fullWidth
-            onClick={onClose}
-          >
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            isLoading={isSubmitting}
-            fullWidth
-          >
-            Simpan Penarikan
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={isSubmitting}
+          submitText="Simpan Penarikan"
+        />
       }
     >
       <div className="space-y-4">

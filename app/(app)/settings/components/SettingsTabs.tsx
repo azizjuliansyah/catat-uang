@@ -1,0 +1,55 @@
+"use client";
+
+import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
+import { User, Shield, FolderOpen, ClipboardCopy } from "lucide-react";
+
+interface SettingsTabsProps {
+  activeTab: "profile" | "categories" | "security" | "templates";
+  onTabChange: (tab: "profile" | "categories" | "security" | "templates") => void;
+}
+
+export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
+  return (
+    <TabButtonGroup variant="pill" className="h-10 items-center gap-1 self-start max-w-md flex-wrap">
+      <TabButton
+        isActive={activeTab === "profile"}
+        onClick={() => onTabChange("profile")}
+        variant="pill"
+        className="px-2 py-0 h-full text-xs flex-1 min-w-[90px]"
+      >
+        <User className="w-3.5 h-3.5 mr-1.5 inline" />
+        Profil
+      </TabButton>
+
+      <TabButton
+        isActive={activeTab === "security"}
+        onClick={() => onTabChange("security")}
+        variant="pill"
+        className="px-2 py-0 h-full text-xs flex-1 min-w-[90px]"
+      >
+        <Shield className="w-3.5 h-3.5 mr-1.5 inline" />
+        Keamanan
+      </TabButton>
+
+      <TabButton
+        isActive={activeTab === "categories"}
+        onClick={() => onTabChange("categories")}
+        variant="pill"
+        className="px-2 py-0 h-full text-xs flex-1 min-w-[90px]"
+      >
+        <FolderOpen className="w-3.5 h-3.5 mr-1.5 inline" />
+        Kategori
+      </TabButton>
+
+      <TabButton
+        isActive={activeTab === "templates"}
+        onClick={() => onTabChange("templates")}
+        variant="pill"
+        className="px-2 py-0 h-full text-xs flex-1 min-w-[90px]"
+      >
+        <ClipboardCopy className="w-3.5 h-3.5 mr-1.5 inline" />
+        Template
+      </TabButton>
+    </TabButtonGroup>
+  );
+}

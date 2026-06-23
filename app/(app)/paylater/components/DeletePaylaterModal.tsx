@@ -5,26 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { DeleteConfirmationModal } from "@/components/ui/organisms/DeleteConfirmationModal";
 import { Trash2 } from "lucide-react";
-
-interface PaylaterPlatformItem {
-  id: string;
-  user_id: string;
-  name: string;
-  limit_amount: number;
-  balance: number;
-  billing_cycle_date: number;
-  due_date_offset: number;
-  icon: string;
-  color: string;
-  is_archived: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { deletePaylaterPlatform } from "../services";
+import { PaylaterPlatform } from "../types";
+import { getErrorMessage } from "../utils";
 
 interface DeletePaylaterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  platformToDelete: PaylaterPlatformItem | null;
+  platformToDelete: PaylaterPlatform | null;
   onDeleteSuccess: () => void;
 }
 
@@ -38,22 +26,12 @@ export function DeletePaylaterModal({
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   const [deleting, setDeleting] = useState(false);
 
-  function getErrorMessage(err: unknown): string {
-    if (err instanceof Error) return err.message;
-    return String(err);
-  }
-
   async function handleDelete() {
     if (!platformToDelete) return;
 
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from("paylater_platforms")
-        .delete()
-        .eq("id", platformToDelete.id);
-
-      if (error) throw error;
+      await deletePaylaterPlatform(supabase, platformToDelete.id);
 
       showSuccessToast(`Platform "${platformToDelete.name}" berhasil dihapus.`);
       onDeleteSuccess();

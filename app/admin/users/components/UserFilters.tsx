@@ -1,4 +1,5 @@
-import { Search } from "lucide-react";
+import { SearchInput } from "@/components/ui/atoms/SearchInput";
+import CustomSelect from "@/components/ui/atoms/CustomSelect";
 
 interface UserFiltersProps {
   searchTerm: string;
@@ -9,6 +10,18 @@ interface UserFiltersProps {
   setRoleFilter: (val: "all" | "admin" | "user") => void;
 }
 
+const statusOptions = [
+  { value: "all", label: "Semua Status" },
+  { value: "active", label: "Aktif" },
+  { value: "suspended", label: "Ditangguhkan" },
+];
+
+const roleOptions = [
+  { value: "all", label: "Semua Peran" },
+  { value: "admin", label: "Admin" },
+  { value: "user", label: "User" },
+];
+
 export function UserFilters({
   searchTerm,
   setSearchTerm,
@@ -18,40 +31,38 @@ export function UserFilters({
   setRoleFilter
 }: UserFiltersProps) {
   return (
-    <div className="bg-surface-card border border-border rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 font-sans">
-      {/* Search */}
-      <div className="relative flex-1 sm:max-w-xs">
-        <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        <input
-          type="text"
-          placeholder="Cari email atau nama..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-9 pr-4 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none rounded-xl text-xs text-text-primary transition-all focus-glow h-10"
-        />
-      </div>
+    <div className="bg-surface-card border border-border rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+      {/* Search Box */}
+      <SearchInput
+        placeholder="Cari email atau nama..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        showClearButton={!!searchTerm}
+        onClear={() => setSearchTerm("")}
+      />
 
       {/* Status & Role Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch gap-3">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "suspended")}
-          className="px-3 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none rounded-xl text-xs text-text-primary cursor-pointer focus-glow h-10"
-        >
-          <option value="all">Semua Status</option>
-          <option value="active">Aktif</option>
-          <option value="suspended">Ditangguhkan</option>
-        </select>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        <div className="w-full sm:w-36">
+          <CustomSelect
+            options={statusOptions}
+            value={statusFilter}
+            onChange={(val) => setStatusFilter((val || "all") as "all" | "active" | "suspended")}
+            placeholder="Semua Status"
+            size="sm"
+          />
+        </div>
 
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value as "all" | "admin" | "user")}
-          className="px-3 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none rounded-xl text-xs text-text-primary cursor-pointer focus-glow h-10"
-        >
-          <option value="all">Semua Peran</option>
-          <option value="admin">Admin</option>
-          <option value="user">User</option>
-        </select>
+        <div className="w-full sm:w-36">
+          <CustomSelect
+            options={roleOptions}
+            value={roleFilter}
+            onChange={(val) => setRoleFilter((val || "all") as "all" | "admin" | "user")}
+            placeholder="Semua Peran"
+            size="sm"
+          />
+        </div>
       </div>
     </div>
   );

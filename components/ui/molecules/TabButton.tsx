@@ -1,6 +1,6 @@
 import React from "react";
 
-interface TabButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface TabButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isActive?: boolean;
   variant?: "underline" | "pill" | "pill-colored";
   color?: string;

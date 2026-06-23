@@ -1,48 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Modal } from "@/components/ui/organisms/Modal";
-import { Button } from "@/components/ui/atoms/Button";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
-import { getIconComponent } from "@/lib/utils/icons";
-import { Check } from "lucide-react";
-
-interface PaylaterPlatformItem {
-  id: string;
-  user_id: string;
-  name: string;
-  limit_amount: number;
-  balance: number;
-  billing_cycle_date: number;
-  due_date_offset: number;
-  icon: string;
-  color: string;
-  is_archived: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-const PRESETS = {
-  colors: [
-    { name: "Blue", hex: "#0C5CAB" },
-    { name: "Green", hex: "#10B981" },
-    { name: "Purple", hex: "#8B5CF6" },
-    { name: "Red", hex: "#EF4444" },
-    { name: "Orange", hex: "#F59E0B" },
-    { name: "Cyan", hex: "#06B6D4" },
-    { name: "Gray", hex: "#6B7280" }
-  ],
-  icons: ["CreditCard", "Smartphone", "Building", "Wallet", "Banknote", "Coins", "Star"]
-};
+import { IconSelector } from "@/components/ui/molecules/IconSelector";
+import { ColorPicker } from "@/components/ui/molecules/ColorPicker";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
+import { createPaylaterPlatform, updatePaylaterPlatform } from "../services";
+import { PaylaterPlatform } from "../types";
+import { getErrorMessage, PAYLATER_PRESETS } from "../utils";
 
 interface PaylaterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  editingPlatform: PaylaterPlatformItem | null;
+  editingPlatform: PaylaterPlatform | null;
   onSaveSuccess: () => void;
 }
 
@@ -52,7 +25,7 @@ export function PaylaterModal({
   editingPlatform,
   onSaveSuccess
 }: PaylaterModalProps) {
-  const supabase = createClient();
+  const supabase = require("@/lib/supabase/client").createClient();
   const { user } = useApp();
   const { success: showSuccessToast, error: showErrorToast } = useToast();
 
@@ -84,11 +57,6 @@ export function PaylaterModal({
     }
   }, [isOpen, editingPlatform]);
 
-  function getErrorMessage(err: unknown): string {
-    if (err instanceof Error) return err.message;
-    return String(err);
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -119,38 +87,25 @@ export function PaylaterModal({
     setIsSubmitting(true);
     try {
       if (editingPlatform) {
-        // Edit platform
-        const { error } = await supabase
-          .from("paylater_platforms")
-          .update({
-            name: name.trim(),
-            limit_amount: parsedLimit,
-            billing_cycle_date: billingCycle,
-            due_date_offset: dueOffset,
-            icon,
-            color,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", editingPlatform.id);
-
-        if (error) throw error;
+        await updatePaylaterPlatform(supabase, editingPlatform.id, {
+          name: name.trim(),
+          limit_amount: parsedLimit,
+          billing_cycle_date: billingCycle,
+          due_date_offset: dueOffset,
+          icon,
+          color,
+        });
         showSuccessToast(`Platform "${name}" berhasil diperbarui!`);
       } else {
-        // Add new platform
-        const { error } = await supabase
-          .from("paylater_platforms")
-          .insert({
-            user_id: user.id,
-            name: name.trim(),
-            limit_amount: parsedLimit,
-            balance: 0,
-            billing_cycle_date: billingCycle,
-            due_date_offset: dueOffset,
-            icon,
-            color
-          });
-
-        if (error) throw error;
+        await createPaylaterPlatform(supabase, {
+          user_id: user.id,
+          name: name.trim(),
+          limit_amount: parsedLimit,
+          billing_cycle_date: billingCycle,
+          due_date_offset: dueOffset,
+          icon,
+          color,
+        });
         showSuccessToast(`Platform "${name}" berhasil ditambahkan!`);
       }
 
@@ -171,29 +126,14 @@ export function PaylaterModal({
       title={editingPlatform ? "Sunting Platform Paylater" : "Buat Platform Paylater Baru"}
       onSubmit={handleSubmit}
       footer={
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            fullWidth
-            onClick={onClose}
-          >
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            isLoading={isSubmitting}
-            fullWidth
-          >
-            Simpan
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={isSubmitting}
+          submitText={editingPlatform ? "Simpan Perubahan" : "Buat Platform"}
+        />
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         <FormField
           label="Nama Platform"
           required
@@ -238,73 +178,20 @@ export function PaylaterModal({
           />
         </div>
 
-        {/* Icon Selector Grid */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary">Pilih Ikon</label>
-          <div className="grid grid-cols-7 gap-2">
-            {PRESETS.icons.map((iconName) => {
-              const IconComp = getIconComponent(iconName);
-              const isSelected = icon === iconName;
-              return (
-                <ActionButton
-                  key={iconName}
-                  icon={IconComp}
-                  title={iconName}
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIcon(iconName)}
-                  className={isSelected
-                    ? "!bg-primary !border-primary !text-white hover:!bg-primary-hover"
-                    : "bg-surface-input border border-border hover:border-border-strong"}
-                />
-              );
-            })}
-          </div>
-        </div>
+        <IconSelector
+          icons={PAYLATER_PRESETS.icons}
+          selected={icon}
+          onSelect={setIcon}
+          label="Pilih Ikon"
+        />
 
-        {/* Color Selector Picker */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary">Warna Tampilan</label>
-          <div className="flex flex-wrap gap-2 items-center">
-            {PRESETS.colors.map((c) => {
-              const isSelected = color.toLowerCase() === c.hex.toLowerCase();
-              return (
-                <Button
-                  key={c.hex}
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setColor(c.hex)}
-                  style={{ backgroundColor: c.hex }}
-                  className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer relative min-h-0 h-auto p-0 ${isSelected ? "border-white scale-110 shadow-lg" : "border-transparent"
-                    }`}
-                  title={c.name}
-                >
-                  {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-white absolute inset-0 m-auto" />
-                  )}
-                </Button>
-              );
-            })}
-
-            {/* Custom color input */}
-            <div className="flex items-center gap-1.5 ml-auto border border-border bg-surface-input px-2.5 py-1.5 rounded-xl">
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
-              />
-              <input
-                type="text"
-                value={color.toUpperCase()}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="#0C5CAB"
-                className="bg-transparent border-0 outline-none w-16 text-[10px] font-mono text-text-primary text-right"
-              />
-            </div>
-          </div>
-        </div>
+        <ColorPicker
+          colors={PAYLATER_PRESETS.colors}
+          selected={color}
+          onSelect={setColor}
+          label="Warna Tampilan"
+          allowCustom
+        />
       </div>
     </Modal>
   );

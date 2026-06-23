@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Layers, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
-import { TabButton } from "@/components/ui/molecules/TabButton";
-import CustomSelect from "@/components/ui/atoms/CustomSelect";
+import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
+import { SearchInput } from "@/components/ui/atoms/SearchInput";
+import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { DatePeriodFilter } from "@/components/ui/atoms/DatePeriodFilter";
 
 interface Wallet {
@@ -102,19 +103,16 @@ export function TransactionsFilters({
   const expenseVal = selectedExpenseCategory ? selectedCategoryId : "all";
 
   return (
-    <div className="bg-surface-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
+    <div className="bg-surface-card border border-border rounded-2xl p-4 space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search */}
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Cari deskripsi atau kategori..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all focus-glow"
-          />
-        </div>
+        <SearchInput
+          placeholder="Cari deskripsi atau kategori..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          showClearButton={!!searchTerm}
+          onClear={() => setSearchTerm("")}
+        />
 
         {/* Date Selector Dropdown */}
         <DatePeriodFilter
@@ -147,29 +145,35 @@ export function TransactionsFilters({
           {/* Type Filter */}
           <div className="space-y-2">
             <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
-            <div className="flex bg-surface-hover/30 p-1 border border-border rounded-xl h-10 items-center">
+            <TabButtonGroup variant="pill" className="h-10 items-center gap-1">
               <TabButton
                 isActive={selectedType === "all"}
                 onClick={() => setSelectedType("all")}
-                className="flex-1 py-0 h-full text-xs rounded-lg"
+                variant="pill"
+                className="px-2 py-0 h-full text-xs flex-1"
               >
+                <Layers className="w-3.5 h-3.5 mr-1.5 inline" />
                 Semua
               </TabButton>
               <TabButton
                 isActive={selectedType === "income"}
                 onClick={() => setSelectedType("income")}
-                className="flex-1 py-0 h-full text-xs rounded-lg"
+                variant="pill"
+                className="px-2 py-0 h-full text-xs flex-1"
               >
+                <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
                 Masuk
               </TabButton>
               <TabButton
                 isActive={selectedType === "expense"}
                 onClick={() => setSelectedType("expense")}
-                className="flex-1 py-0 h-full text-xs rounded-lg"
+                variant="pill"
+                className="px-2 py-0 h-full text-xs flex-1"
               >
+                <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
                 Keluar
               </TabButton>
-            </div>
+            </TabButtonGroup>
           </div>
 
           {/* Wallet Filter */}

@@ -8,7 +8,8 @@ import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
-import { PaylaterPlatform, PaylaterTransaction, PaylaterPayment } from "../types";
+import { fetchPaylaterDetail } from "../../services";
+import { PaylaterPlatform, PaylaterTransaction, PaylaterPayment } from "../../types";
 
 export function usePaylaterDetailState() {
   const supabase = createClient();
@@ -35,43 +36,18 @@ export function usePaylaterDetailState() {
     if (!id || !user) return;
     setLoading(true);
     try {
-      // Fetch platform details
-      const { data: platformData, error: platformError } = await supabase
-        .from("paylater_platforms")
-        .select("*")
-        .eq("id", id)
-        .eq("user_id", user.id)
-        .single();
+      const { platform: platformData, transactions: transactionsData, payments: paymentsData } =
+        await fetchPaylaterDetail(supabase, id, user.id);
 
-      if (platformError || !platformData) {
+      if (!platformData) {
         showErrorToast("Platform Paylater tidak ditemukan.");
         router.push("/paylater");
         return;
       }
 
       setPlatform(platformData);
-
-      // Fetch transactions using this paylater (only expense transactions that add to balance)
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from("transactions")
-        .select("id, amount, type, description, transaction_date, receipt_url, categories(id, name, icon, color)")
-        .eq("paylater_id", id)
-        .eq("type", "expense")
-        .order("transaction_date", { ascending: false });
-
-      if (transactionsError) throw transactionsError;
-      setTransactions((transactionsData as unknown as PaylaterTransaction[]) || []);
-
-      // Fetch payment history
-      const { data: paymentsData, error: paymentsError } = await supabase
-        .from("paylater_payments")
-        .select("id, amount, payment_date, created_at, transaction_id, wallets(id, name)")
-        .eq("paylater_id", id)
-        .order("payment_date", { ascending: false })
-        .order("created_at", { ascending: false });
-
-      if (paymentsError) throw paymentsError;
-      setPayments((paymentsData as unknown as PaylaterPayment[]) || []);
+      setTransactions(transactionsData);
+      setPayments(paymentsData);
 
     } catch (err: unknown) {
       console.error(err);

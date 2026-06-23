@@ -60,16 +60,32 @@ export const formatDateTimeLong = (dateStr: string | null | undefined): string =
   if (!dateStr) return "-";
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return "-";
-  
+
   const datePart = d.toLocaleDateString("id-ID", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric"
   });
-  
+
   const hours = String(d.getHours()).padStart(2, "0");
   const minutes = String(d.getMinutes()).padStart(2, "0");
-  
+
   return `${datePart} • ${hours}:${minutes}`;
+};
+
+/**
+ * Formats a date string to display long date only (e.g., "Rabu, 10 Juni 2026")
+ */
+export const formatDateLong = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return "-";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "-";
+
+  return d.toLocaleDateString("id-ID", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
 };

@@ -3,7 +3,7 @@
  * Lists paylater transactions and supports multi-selection for payment
  */
 
-import { PaylaterPlatform, PaylaterTransaction } from "../types";
+import { PaylaterPlatform, PaylaterTransaction } from "../../types";
 import { FileText, Receipt, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { formatIDR } from "@/lib/utils/format";

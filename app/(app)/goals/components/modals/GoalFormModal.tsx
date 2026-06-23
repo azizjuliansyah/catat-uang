@@ -1,9 +1,8 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
-import { Button } from "@/components/ui/atoms/Button";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
+import { IconSelector } from "@/components/ui/molecules/IconSelector";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { SavingGoal, GOAL_ICONS } from "../../types";
-import { getIconComponent } from "@/lib/utils/icons";
 import { getDefaultTargetDate } from "../../utils";
 
 interface GoalFormModalProps {
@@ -44,26 +43,11 @@ export function GoalFormModal({
       title={isEdit ? "Edit Target Rencana Tabungan" : "Tambah Target Baru"}
       onSubmit={onSubmit}
       footer={
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="flex-1"
-          >
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            isLoading={isSubmitting}
-            className="flex-1"
-          >
-            Simpan Target
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={isSubmitting}
+          submitText="Simpan Target"
+        />
       }
     >
       <div className="space-y-4">
@@ -93,28 +77,13 @@ export function GoalFormModal({
           onChange={(e) => onFormTargetDateChange(e.target.value)}
         />
 
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary">Pilih Ikon Target</label>
-          <div className="grid grid-cols-6 gap-2">
-            {GOAL_ICONS.map((iconName) => {
-              const IconComp = getIconComponent(iconName);
-              const isSelected = formIcon === iconName;
-              return (
-                <ActionButton
-                  key={iconName}
-                  icon={IconComp}
-                  title={iconName}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onFormIconChange(iconName)}
-                  className={isSelected
-                    ? "!bg-primary !border-primary !text-white hover:!bg-primary-hover"
-                    : "bg-surface-input border border-border hover:border-border-strong"}
-                />
-              );
-            })}
-          </div>
-        </div>
+        <IconSelector
+          icons={GOAL_ICONS}
+          selected={formIcon}
+          onSelect={onFormIconChange}
+          label="Pilih Ikon Target"
+          columns={6}
+        />
       </div>
     </Modal>
   );

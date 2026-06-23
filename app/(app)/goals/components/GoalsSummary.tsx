@@ -1,7 +1,6 @@
 import { SavingGoal } from "../types";
 import { formatIDR } from "../utils";
 import { InfoCard } from "@/components/ui/molecules/InfoCard";
-import { Target, PiggyBank, Trophy } from "lucide-react";
 
 interface GoalsSummaryProps {
   goals: SavingGoal[];
@@ -23,26 +22,23 @@ export function GoalsSummary({ goals }: GoalsSummaryProps) {
       <InfoCard
         title="Target Aktif Berjalan"
         value={formatIDR(totalTargetOngoing)}
-        icon={<Target className="w-5 h-5" />}
         variant="primary"
+        description="Total target semua tabungan"
       />
 
       <InfoCard
         title="Total Dana Terkumpul"
         value={formatIDR(totalCollected)}
-        icon={<PiggyBank className="w-5 h-5" />}
         variant="success"
-        valueClassName="text-success"
+        description="Seluruh dana di tabungan"
       />
 
       <InfoCard
         title="Target Berhasil Dicapai"
         value={`${completedGoalsCount} Target`}
-        icon={<Trophy className="w-5 h-5" />}
-        variant="warning"
-        valueClassName="text-warning"
+        variant="success"
+        description="Tabungan yang sudah tercapai"
       />
     </div>
   );
 }
-

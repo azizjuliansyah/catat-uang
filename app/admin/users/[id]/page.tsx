@@ -1,170 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getUserAuditLogs } from "@/app/admin/actions/audit-logs";
-import { getUserDetails, toggleSuspendUser, deleteUser, resetPassword } from "@/app/admin/actions/users";
-import { ArrowLeft, User, Check, AlertCircle } from "lucide-react";
+import { User } from "lucide-react";
+import { useUserDetailState } from "./hooks/useUserDetailState";
 import { UserDetailCard } from "../components/UserDetailCard";
 import { UserAuditLogs } from "../components/UserAuditLogs";
 import { UserModals } from "../components/UserModals";
-
-interface UserDetails {
-  id: string;
-  email: string;
-  name: string | null;
-  role: "admin" | "user";
-  status: "active" | "suspended";
-  created_at: string;
-  updated_at: string;
-}
-
-interface AuditLog {
-  id: string;
-  actor_id: string;
-  action: string;
-  details: Record<string, unknown>;
-  created_at: string;
-  users?: {
-    email: string;
-  } | null;
-}
-
-// Minimal structure matching UserModals expected type
-interface ModalUserCompat {
-  id: string;
-  email: string;
-  name: string | null;
-  role: "admin" | "user";
-  status: "active" | "suspended";
-  created_at: string;
-}
+import { DetailPageHeader, CardSkeleton } from "@/components/ui/molecules";
+import { ModalUserCompat } from "./types";
 
 export default function UserDetailPage() {
-  const router = useRouter();
-  const params = useParams();
-  const userId = params.id as string;
-
-  const [user, setUser] = useState<UserDetails | null>(null);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingLogs, setLoadingLogs] = useState(true);
-
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  // Modal states
-  const [suspendModalOpen, setSuspendModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [resetPasswordModalOpen, setResetPasswordModalOpen] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
-
-  useEffect(() => {
-    Promise.all([fetchUserDetails(), fetchUserAuditLogs()]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
-
-  const showToast = (message: string, isSuccess = true) => {
-    if (isSuccess) {
-      setSuccessMsg(message);
-      setTimeout(() => setSuccessMsg(null), 3000);
-    } else {
-      setErrorMsg(message);
-      setTimeout(() => setErrorMsg(null), 4000);
-    }
-  };
-
-  async function fetchUserDetails() {
-    try {
-      setLoading(true);
-      const data = await getUserDetails(userId);
-      setUser(data as UserDetails);
-    } catch (err: unknown) {
-      console.error("Error fetching user:", err);
-      setErrorMsg("Gagal memuat detail pengguna");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchUserAuditLogs() {
-    try {
-      setLoadingLogs(true);
-      const data = await getUserAuditLogs(userId);
-      setAuditLogs(data as AuditLog[]);
-    } catch (err: unknown) {
-      console.error("Error fetching audit logs:", err);
-    } finally {
-      setLoadingLogs(false);
-    }
-  }
-
-  const handleToggleSuspend = async () => {
-    if (!user) return;
-
-    try {
-      setActionLoading(true);
-      const newStatus = await toggleSuspendUser(user.id, user.status, user.email);
-
-      showToast(
-        newStatus === "suspended"
-          ? "Pengguna berhasil ditangguhkan"
-          : "Pengguna berhasil diaktifkan kembali"
-      );
-
-      setSuspendModalOpen(false);
-      await Promise.all([fetchUserDetails(), fetchUserAuditLogs()]);
-    } catch (err: unknown) {
-      console.error("Error toggling suspend:", err);
-      showToast("Gagal mengubah status pengguna", false);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!user) return;
-
-    try {
-      setActionLoading(true);
-      const tempPassword = await resetPassword(user.id, user.email);
-
-      setGeneratedPassword(tempPassword);
-      showToast("Password berhasil di-reset");
-      setResetPasswordModalOpen(false);
-      await fetchUserAuditLogs();
-    } catch (err: unknown) {
-      console.error("Error resetting password:", err);
-      showToast("Gagal mereset password", false);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDeleteUser = async () => {
-    if (!user) return;
-
-    try {
-      setActionLoading(true);
-      await deleteUser(user.id, user.email);
-
-      showToast("Pengguna berhasil dihapus");
-      setTimeout(() => router.push("/admin/users"), 1500);
-    } catch (err: unknown) {
-      console.error("Error deleting user:", err);
-      showToast("Gagal menghapus pengguna", false);
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  const {
+    user,
+    auditLogs,
+    loading,
+    loadingLogs,
+    suspendModalOpen,
+    setSuspendModalOpen,
+    deleteModalOpen,
+    setDeleteModalOpen,
+    resetPasswordModalOpen,
+    setResetPasswordModalOpen,
+    actionLoading,
+    generatedPassword,
+    handleToggleSuspend,
+    handleResetPassword,
+    handleDeleteUser,
+  } = useUserDetailState();
 
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="h-8 w-48 bg-surface-card rounded-md animate-pulse" />
-        <div className="h-64 bg-surface-card border border-border rounded-2xl animate-pulse" />
+        <CardSkeleton showIcon={false} showMetric={false} showActions={false} lines={4} />
       </div>
     );
   }
@@ -186,34 +53,23 @@ export default function UserDetailPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 font-sans">
-      {/* Toast */}
-      {successMsg && (
-        <div className="fixed top-4 right-4 z-50 bg-success/15 border border-success/30 text-success px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg">
-          <Check className="w-4 h-4" />
-          <span className="text-sm font-semibold">{successMsg}</span>
-        </div>
-      )}
-      {errorMsg && (
-        <div className="fixed top-4 right-4 z-50 bg-danger/15 border border-danger/30 text-danger px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg">
-          <AlertCircle className="w-4 h-4" />
-          <span className="text-sm font-semibold">{errorMsg}</span>
-        </div>
-      )}
-
+    <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link
-          href="/admin/users"
-          className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-hover rounded-xl transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight font-display">Detail Pengguna</h1>
-          <p className="text-xs text-text-secondary mt-1">Informasi lengkap dan riwayat aksi pengguna.</p>
-        </div>
-      </div>
+      <DetailPageHeader
+        backHref="/admin/users"
+        title="Detail Pengguna"
+        subtitle="Informasi lengkap dan riwayat aksi pengguna."
+        badges={[
+          {
+            label: user.role === "admin" ? "Admin" : "Pengguna",
+            variant: user.role === "admin" ? "primary" : "neutral",
+          },
+          {
+            label: user.status === "active" ? "Aktif" : "Ditangguhkan",
+            variant: user.status === "active" ? "success" : "danger",
+          },
+        ]}
+      />
 
       {/* User Info Card */}
       <UserDetailCard

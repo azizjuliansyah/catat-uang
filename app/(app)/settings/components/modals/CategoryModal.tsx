@@ -6,42 +6,13 @@ import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Modal } from "@/components/ui/organisms/Modal";
-import { Button } from "@/components/ui/atoms/Button";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { getIconComponent } from "@/lib/utils/icons";
 import { Check } from "lucide-react";
-
-interface Category {
-  id: string;
-  user_id: string;
-  name: string;
-  type: "income" | "expense";
-  icon: string;
-  color: string;
-  created_at: string;
-}
-
-const PRESET_COLORS = [
-  { name: "Emerald", hex: "#10B981" },
-  { name: "Blue", hex: "#3B82F6" },
-  { name: "Indigo", hex: "#6366F1" },
-  { name: "Purple", hex: "#8B5CF6" },
-  { name: "Pink", hex: "#EC4899" },
-  { name: "Red", hex: "#EF4444" },
-  { name: "Orange", hex: "#F59E0B" },
-  { name: "Gray", hex: "#6B7280" }
-];
-
-const PRESET_ICONS = [
-  "Briefcase",
-  "TrendingUp",
-  "Utensils",
-  "Car",
-  "ShoppingBag",
-  "FileText",
-  "Film",
-  "HelpCircle"
-];
+import { Category } from "../../types";
+import { createCategory, updateCategory } from "../../services";
+import { getErrorMessage, CATEGORY_PRESETS } from "../../utils";
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -82,11 +53,6 @@ export function CategoryModal({
     }
   }, [isOpen, editingCategory, categoryType]);
 
-  function getErrorMessage(err: unknown): string {
-    if (err instanceof Error) return err.message;
-    return String(err);
-  }
-
   async function handleCategorySubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -99,31 +65,19 @@ export function CategoryModal({
     setCatSubmitting(true);
     try {
       if (editingCategory) {
-        // Edit category
-        const { error } = await supabase
-          .from("categories")
-          .update({
-            name: catName.trim(),
-            icon: catIcon,
-            color: catColor
-          })
-          .eq("id", editingCategory.id);
-
-        if (error) throw error;
+        await updateCategory(supabase, editingCategory.id, {
+          name: catName,
+          icon: catIcon,
+          color: catColor
+        });
         showSuccessToast(`Kategori "${catName}" berhasil diperbarui!`);
       } else {
-        // Add new category
-        const { error } = await supabase
-          .from("categories")
-          .insert({
-            user_id: user.id,
-            name: catName.trim(),
-            type: categoryType,
-            icon: catIcon,
-            color: catColor
-          });
-
-        if (error) throw error;
+        await createCategory(supabase, user.id, {
+          name: catName,
+          type: categoryType,
+          icon: catIcon,
+          color: catColor
+        });
         showSuccessToast(`Kategori "${catName}" berhasil ditambahkan!`);
       }
 
@@ -144,26 +98,11 @@ export function CategoryModal({
       title={editingCategory ? "Sunting Kategori" : "Buat Kategori Baru"}
       onSubmit={handleCategorySubmit}
       footer={
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            fullWidth
-            onClick={onClose}
-          >
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            isLoading={catSubmitting}
-            fullWidth
-          >
-            Simpan
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={catSubmitting}
+          submitText="Simpan"
+        />
       }
     >
       <div className="space-y-4">
@@ -182,8 +121,8 @@ export function CategoryModal({
             Pilih Ikon
             <span className="text-danger">*</span>
           </label>
-          <div className="grid grid-cols-4 gap-2 bg-surface-input/30 border border-border p-3 rounded-xl max-h-40 overflow-y-auto">
-            {PRESET_ICONS.map((iconName) => {
+          <div className="grid grid-cols-4 gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
+            {CATEGORY_PRESETS.icons.map((iconName) => {
               const IconComp = getIconComponent(iconName);
               return (
                 <ActionButton
@@ -208,7 +147,7 @@ export function CategoryModal({
             <span className="text-danger">*</span>
           </label>
           <div className="flex flex-wrap gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
-            {PRESET_COLORS.map((col) => {
+            {CATEGORY_PRESETS.colors.map((col) => {
               const isSelected = catColor.toLowerCase() === col.hex.toLowerCase();
               return (
                 <Button
@@ -217,7 +156,7 @@ export function CategoryModal({
                   variant="ghost"
                   onClick={() => setCatColor(col.hex)}
                   className={`w-7 h-7 p-0 min-h-0 rounded-full transition-all cursor-pointer flex items-center justify-center border-2 border-transparent ${isSelected
-                      ? "border-text-primary scale-110 shadow-sm"
+                      ? "border-text-primary scale-110"
                       : "hover:scale-105"
                     }`}
                   style={{ backgroundColor: col.hex }}

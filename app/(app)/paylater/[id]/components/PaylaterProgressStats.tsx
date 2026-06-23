@@ -3,7 +3,7 @@
  * Displays remaining balance, limit, and progress bar
  */
 
-import { PaylaterPlatform, PaylaterBillingDates } from "../types";
+import { PaylaterPlatform, PaylaterBillingDates } from "../../types";
 import { Calendar } from "lucide-react";
 import { formatIDR } from "@/lib/utils/format";
 

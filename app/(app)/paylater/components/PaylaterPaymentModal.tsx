@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { Button } from "@/components/ui/atoms/Button";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { formatIDR } from "@/lib/utils/format";
 import { Wallet } from "lucide-react";
 import { getIconComponent } from "@/lib/utils/icons";
@@ -216,21 +217,12 @@ export function PaylaterPaymentModal({
       title={`Bayar Tagihan ${platform?.name || ""}`}
       onSubmit={handleSubmit}
       footer={
-        <>
-          <Button type="button" variant="ghost" size="sm" fullWidth onClick={onClose}>
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            isLoading={isSubmitting}
-            disabled={activeSelectedIds.size === 0 || totalAmount <= 0}
-            fullWidth
-          >
-            Bayar {totalAmount > 0 ? formatIDR(totalAmount) : ""}
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={isSubmitting}
+          disabled={activeSelectedIds.size === 0 || totalAmount <= 0}
+          submitText={totalAmount > 0 ? `Bayar ${formatIDR(totalAmount)}` : "Bayar"}
+        />
       }
     >
       <div className="space-y-4">
@@ -285,7 +277,7 @@ export function PaylaterPaymentModal({
                 Belum ada transaksi untuk platform ini.
               </div>
             ) : (
-              <div className="space-y-1.5 max-h-52 overflow-y-auto pr-0.5">
+              <div className="space-y-1.5 pr-0.5">
                 {fetchedTransactions.map((txn) => {
                   const CategoryIcon = txn.categories ? getIconComponent(txn.categories.icon) : null;
                   const isSelected = internalSelectedIds.has(txn.id);

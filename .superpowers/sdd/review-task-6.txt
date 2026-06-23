@@ -1,0 +1,168 @@
+diff --git a/app/(app)/transactions/components/TransactionListGroup.tsx b/app/(app)/transactions/components/TransactionListGroup.tsx
+index ec74958..a2ea11e 100644
+--- a/app/(app)/transactions/components/TransactionListGroup.tsx
++++ b/app/(app)/transactions/components/TransactionListGroup.tsx
+@@ -1,26 +1,21 @@
+ "use client";
+ 
+-import { useState } from "react";
+ import {
+   Wallet as WalletIcon,
+   Tag,
+   FileImage,
+-  Edit2,
+-  Trash2,
+   HelpCircle,
+-  Clock,
+-  Eye
++  Clock
+ } from "lucide-react";
+ import { Button } from "@/components/ui/atoms/Button";
+-import { ActionButton } from "@/components/ui/atoms/ActionButton";
+-import { TransactionDetailModal } from "@/components/ui/organisms/TransactionDetailModal";
++import { TransactionListActions } from "./TransactionListActions";
+ import { getIconComponent } from "@/lib/utils/icons";
+ 
+ interface Transaction {
+   id: string;
+   user_id: string;
+   wallet_id: string | null;
+   paylater_id: string | null;
+   category_id: string | null;
+   amount: number;
+   type: "income" | "expense";
+@@ -45,50 +40,37 @@ interface Transaction {
+   } | null;
+ }
+ 
+ interface TransactionListGroupProps {
+   uniqueDates: string[];
+   groupedTransactions: { [date: string]: Transaction[] };
+   formatDateLong: (dateStr: string) => string;
+   formatIDR: (val: number) => string;
+   setReceiptModalUrl: (url: string | null) => void;
+   setTransactionToDelete: (tx: Transaction | null) => void;
++  onDetail: (tx: Transaction) => void;
++  onEdit: (tx: Transaction) => void;
+ }
+ 
+ export function TransactionListGroup({
+   uniqueDates,
+   groupedTransactions,
+   formatDateLong,
+   formatIDR,
+   setReceiptModalUrl,
+-  setTransactionToDelete
++  setTransactionToDelete,
++  onDetail,
++  onEdit
+ }: TransactionListGroupProps) {
+-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+-
+-  const openDetailModal = (tx: Transaction) => {
+-    setSelectedTransaction(tx);
+-    setIsDetailModalOpen(true);
+-  };
+-
+-  const handleEdit = (tx: Transaction) => {
+-    // Navigate to edit page
+-    window.location.href = `/transactions/${tx.id}`;
+-  };
+-
+-  const handleDelete = (tx: Transaction) => {
+-    setTransactionToDelete(tx);
+-  };
+ 
+   return (
+-    <>
+-      <div className="space-y-6">
++    <div className="space-y-6">
+         {uniqueDates.map((date) => {
+           const dayTransactions = groupedTransactions[date];
+           return (
+             <div key={date} className="space-y-3">
+               <h3 className="text-[10px] font-bold text-text-secondary tracking-wider uppercase px-1 font-display">
+                 {formatDateLong(date)}
+               </h3>
+ 
+               <div className="space-y-2">
+                 {dayTransactions.map((tx) => {
+@@ -98,22 +80,21 @@ export function TransactionListGroup({
+ 
+                   const categoryName = tx.categories?.name || null;
+                   const categoryColor = tx.categories?.color || null;
+                   const walletName = tx.wallets?.name || null;
+                   const paylaterName = tx.paylater_platforms?.name || null;
+                   const isPaylater = tx.paylater_id !== null;
+ 
+                   return (
+                     <div
+                       key={tx.id}
+-                      className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow transition-all group cursor-pointer"
+-                      onClick={() => openDetailModal(tx)}
++                      className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-4 flex items-center justify-between transition-all group"
+                     >
+                       <div className="flex items-center gap-4 min-w-0 flex-1">
+                         {/* Category Icon */}
+                         <div
+                           className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0"
+                           style={{
+                             backgroundColor: categoryColor || "#6B7280"
+                           }}
+                         >
+                           <CatIcon className="w-5 h-5" />
+@@ -166,45 +147,35 @@ export function TransactionListGroup({
+                                 title="Lihat Nota"
+                               >
+                                 <FileImage className="w-3 h-3" />
+                                 Nota
+                               </Button>
+                             )}
+                           </div>
+                         </div>
+                       </div>
+ 
+-                      {/* Amount & Eye Icon */}
+-                      <div className="flex items-center gap-4 ml-4 shrink-0">
++                      {/* Amount & Actions */}
++                      <div className="flex items-center gap-3 ml-4 shrink-0">
+                         <span className={`text-sm font-bold font-mono ${
+                           tx.type === "income" ? "text-income" : "text-expense"
+                         }`}>
+                           {tx.type === "income" ? "+" : "-"} {formatIDR(tx.amount)}
+                         </span>
+ 
+-                        <div className="flex items-center gap-1 text-text-secondary group-hover:text-text-primary transition-colors">
+-                          <Eye className="w-4 h-4" />
+-                        </div>
++                        <TransactionListActions
++                          transaction={tx}
++                          onDetail={onDetail}
++                          onEdit={onEdit}
++                          onDelete={(tx) => setTransactionToDelete(tx)}
++                        />
+                       </div>
+                     </div>
+                   );
+                 })}
+               </div>
+             </div>
+           );
+         })}
+       </div>
+-
+-      {/* Transaction Detail Modal */}
+-      <TransactionDetailModal
+-        isOpen={isDetailModalOpen}
+-        onClose={() => {
+-          setIsDetailModalOpen(false);
+-          setSelectedTransaction(null);
+-        }}
+-        transaction={selectedTransaction}
+-        onEdit={handleEdit}
+-        onDelete={handleDelete}
+-      />
+-    </>
+   );
+ }

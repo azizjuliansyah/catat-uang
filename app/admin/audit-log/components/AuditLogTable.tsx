@@ -2,6 +2,8 @@
 
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
+import { AuditLogSkeleton } from "./AuditLogSkeleton";
+import { EmptyState } from "@/components/ui/organisms/EmptyState";
 
 interface AuditLog {
   id: string;
@@ -63,26 +65,20 @@ export function AuditLogTable({
   };
 
   if (loading) {
-    return (
-      <div className="p-8 space-y-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-14 bg-surface-input rounded-lg animate-pulse" />
-        ))}
-      </div>
-    );
+    return <AuditLogSkeleton />;
   }
 
   if (filteredLogsCount === 0) {
     return (
-      <div className="p-12 text-center font-sans">
-        <FileText className="w-12 h-12 text-text-secondary mx-auto mb-3 opacity-50" />
-        <h3 className="text-sm font-semibold text-text-primary">Tidak ada log ditemukan</h3>
-        <p className="text-xs text-text-secondary mt-1">
-          {searchTerm || actionFilter !== "all" || adminFilter !== "all" || startDate || endDate
+      <EmptyState
+        icon={FileText}
+        title="Tidak ada log ditemukan"
+        description={
+          searchTerm || actionFilter !== "all" || adminFilter !== "all" || startDate || endDate
             ? "Coba ubah filter pencarian Anda."
-            : "Belum ada riwayat aksi yang tercatat."}
-        </p>
-      </div>
+            : "Belum ada riwayat aksi yang tercatat."
+        }
+      />
     );
   }
 

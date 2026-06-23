@@ -194,7 +194,6 @@ body {
 /* =====================================================
    CUSTOM SCROLLBAR (4px Minimal)
    ===================================================== */
-.scrollable,
 *::-webkit-scrollbar {
   width: 4px;
   height: 4px;

@@ -40,7 +40,7 @@ export default function SuspendedPage() {
         </div>
 
         {/* Details Card */}
-        <div className="bg-surface-card border border-border rounded-xl p-6 shadow-sm text-left space-y-4">
+        <div className="bg-surface-card border border-border rounded-xl p-6 text-left space-y-4">
           <p className="text-sm text-text-secondary leading-relaxed">
             Jika Anda merasa ini adalah kesalahan, atau ingin mengaktifkan kembali akun Anda, silakan hubungi tim administrator CatatUang melalui email di bawah.
           </p>

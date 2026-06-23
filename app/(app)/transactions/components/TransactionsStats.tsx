@@ -1,5 +1,4 @@
 import { InfoCard } from "@/components/ui/molecules/InfoCard";
-import { TrendingUp, TrendingDown, ArrowRightLeft } from "lucide-react";
 
 interface TransactionsStatsProps {
   totalIncome: number;
@@ -20,29 +19,25 @@ export function TransactionsStats({
       <InfoCard
         title="Total Pemasukan"
         value={formatIDR(totalIncome)}
-        icon={<TrendingUp className="w-5 h-5" />}
         variant="income"
-        valueClassName="text-income"
+        description="Semua transaksi masuk"
       />
 
       {/* Expense Card */}
       <InfoCard
         title="Total Pengeluaran"
         value={formatIDR(totalExpense)}
-        icon={<TrendingDown className="w-5 h-5" />}
         variant="expense"
-        valueClassName="text-expense"
+        description="Semua transaksi keluar"
       />
 
       {/* Net Flow Card */}
       <InfoCard
         title="Arus Bersih (Net)"
         value={formatIDR(netFlow)}
-        icon={<ArrowRightLeft className="w-5 h-5" />}
         variant={netFlow >= 0 ? "success" : "danger"}
-        valueClassName={netFlow >= 0 ? "text-success" : "text-danger"}
+        description={netFlow >= 0 ? "Surplus transaksi" : "Defisit transaksi"}
       />
     </div>
   );
 }
-

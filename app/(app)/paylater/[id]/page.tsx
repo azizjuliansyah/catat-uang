@@ -13,7 +13,7 @@ import { PaylaterPaymentList } from "./components/PaylaterPaymentList";
 import { PaylaterPaymentModal } from "../components/PaylaterPaymentModal";
 import { DeletePaylaterPaymentModal } from "../components/DeletePaylaterPaymentModal";
 
-import { formatDateTimeLong } from "@/lib/utils/date";
+import { getNextBillingDate } from "../utils";
 
 export default function PaylaterDetailPage() {
   const state = usePaylaterDetailState();
@@ -52,28 +52,7 @@ export default function PaylaterDetailPage() {
     );
   }
 
-  // Calculate next billing and due dates
-  const getNextBillingDate = () => {
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    const billingDay = platform.billing_cycle_date;
-
-    let thisMonthBilling = new Date(currentYear, currentMonth, billingDay);
-    if (thisMonthBilling < today) {
-      thisMonthBilling = new Date(currentYear, currentMonth + 1, billingDay);
-    }
-
-    const dueDate = new Date(thisMonthBilling);
-    dueDate.setDate(dueDate.getDate() + platform.due_date_offset);
-
-    return {
-      billing: formatDateTimeLong(thisMonthBilling.toISOString()),
-      due: formatDateTimeLong(dueDate.toISOString())
-    };
-  };
-
-  const nextDates = getNextBillingDate();
+  const nextDates = getNextBillingDate(platform);
 
   return (
     <div className="space-y-6 font-sans pb-12">

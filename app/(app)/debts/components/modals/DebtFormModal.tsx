@@ -2,11 +2,12 @@ import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
-import { TabButton } from "@/components/ui/molecules/TabButton";
+import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
 import { Plus, Trash2 } from "lucide-react";
 import { DebtPackage, DebtItem } from "../../types";
 import { ProofUploader } from "./ProofUploader";
 import { getNowDateTimeString } from "@/lib/utils/date";
+import { ModalFooter } from "@/components/ui";
 
 interface DebtFormModalProps {
   isOpen: boolean;
@@ -37,14 +38,14 @@ export function DebtFormModal({
   isSubmitting,
   editingDebt
 }: DebtFormModalProps) {
-  
+
   const handleAddRow = () => {
     setFormPackages((prev) => [
       ...prev,
-      { 
-        id: Math.random().toString(), 
-        totalAmount: "", 
-        dueDate: "", 
+      {
+        id: Math.random().toString(),
+        totalAmount: "",
+        dueDate: "",
         createdAt: getNowDateTimeString(),
         description: "",
         proofFiles: null,
@@ -69,7 +70,7 @@ export function DebtFormModal({
     if (files && files.length > 0) {
       const newPreviews: string[] = [];
       let loadedCount = 0;
-      
+
       const loadPreviews = () => {
         setFormPackages((prev) =>
           prev.map((p) =>
@@ -125,14 +126,11 @@ export function DebtFormModal({
       title={isEdit ? "Edit Catatan Hutang/Piutang" : "Tambah Catatan Baru"}
       onSubmit={onSubmit}
       footer={
-        <>
-          <Button type="button" variant="ghost" size="sm" fullWidth onClick={onClose}>
-            Batal
-          </Button>
-          <Button type="submit" variant="primary" size="sm" isLoading={isSubmitting} fullWidth>
-            Simpan
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={isSubmitting}
+          submitText="Simpan"
+        />
       }
     >
       <div className="space-y-4">
@@ -142,11 +140,10 @@ export function DebtFormModal({
             Jenis Catatan
             <span className="text-danger">*</span>
           </label>
-          <div className="grid grid-cols-2 gap-2 bg-surface-hover/30 border border-border p-1 rounded-xl">
+          <TabButtonGroup variant="pill-colored" uniformWidth>
             <TabButton
               isActive={formType === "owe"}
               onClick={() => setFormType("owe")}
-              variant="pill-colored"
               color="#f59e0b"
             >
               Hutang Saya (Owe)
@@ -154,12 +151,11 @@ export function DebtFormModal({
             <TabButton
               isActive={formType === "lend"}
               onClick={() => setFormType("lend")}
-              variant="pill-colored"
               color="#06b6d4"
             >
               Piutang Saya (Lend)
             </TabButton>
-          </div>
+          </TabButtonGroup>
         </div>
 
         {/* Nama Kontak */}
@@ -178,11 +174,11 @@ export function DebtFormModal({
             <span>Daftar Transaksi Hutang/Piutang</span>
             <span className="text-[10px] font-normal text-text-muted">Total: {formPackages.length} item</span>
           </label>
-          
-          <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+
+          <div className="space-y-4 pr-1">
             {formPackages.map((pkg, index) => {
               const canDelete = formPackages.length > 1 && (!isEdit || pkg.id !== editingDebt?.id);
-              
+
               return (
                 <div key={pkg.id} className="relative p-4 border border-border/80 bg-surface-card rounded-2xl space-y-4">
                   <div className="flex items-center justify-between">

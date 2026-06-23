@@ -50,7 +50,7 @@ export function DynamicColorIcon({
 
   return (
     <div
-      className={`rounded-md flex items-center justify-center shrink-0 transition-all duration-150 ease ${sizeClasses[size]} ${className}`}
+      className={`rounded-lg flex items-center justify-center shrink-0 transition-all duration-150 ease ${sizeClasses[size]} ${className}`}
       style={styles}
     >
       <Icon className={iconSizeClasses[size]} />

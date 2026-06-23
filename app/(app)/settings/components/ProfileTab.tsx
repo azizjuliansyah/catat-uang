@@ -8,6 +8,7 @@ import { FormField } from "@/components/ui/molecules/FormField";
 import { Button } from "@/components/ui/atoms/Button";
 import { SkeletonProfile } from "@/components/ui/organisms/SkeletonLoading";
 import { User, UploadCloud } from "lucide-react";
+import { updateUserAvatar, updateUserName } from "@/app/actions/users";
 
 export function ProfileTab() {
   const supabase = createClient();
@@ -38,9 +39,18 @@ export function ProfileTab() {
 
         if (prof) {
           setProfileName(prof.name || "");
-          setAvatarUrl(prof.avatar_url || "");
+          // Add cache-busting timestamp to avatar URL to prevent stale cached images
+          const url = prof.avatar_url || "";
+          const finalUrl = url ? (url.includes('?') ? url : `${url}?t=${Date.now()}`) : "";
+          setAvatarUrl(finalUrl);
+          // Debug: log avatar URL to verify it's being loaded
+          console.log("[ProfileTab] Loaded profile from DB:", prof);
+          console.log("[ProfileTab] prof.avatar_url:", prof.avatar_url);
+          console.log("[ProfileTab] finalUrl:", finalUrl);
+          console.log("[ProfileTab] Boolean check - url truthy:", !!url, "finalUrl truthy:", !!finalUrl);
         } else {
           setProfileName(user.user_metadata?.name || user.email || "");
+          console.log("[ProfileTab] No profile found in DB");
         }
       } catch (err) {
         console.error("Error loading profile:", err);
@@ -51,7 +61,25 @@ export function ProfileTab() {
     loadProfile();
   }, [user, supabase]);
 
+  // Debug: log avatarUrl changes
+  useEffect(() => {
+    console.log("[ProfileTab] avatarUrl state changed to:", avatarUrl, "Type:", typeof avatarUrl, "Truthy:", !!avatarUrl);
+  }, [avatarUrl]);
+
   function getErrorMessage(err: unknown): string {
+    // Handle Supabase error objects
+    if (err && typeof err === 'object') {
+      if ('message' in err && typeof err.message === 'string') return err.message;
+      if ('error' in err && typeof err.error === 'object' && err.error) {
+        if ('message' in err.error && typeof err.error.message === 'string') return err.error.message;
+      }
+      // Try to stringify the object
+      try {
+        return JSON.stringify(err);
+      } catch {
+        return 'Unknown error';
+      }
+    }
     if (err instanceof Error) return err.message;
     return String(err);
   }
@@ -67,21 +95,7 @@ export function ProfileTab() {
 
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from("users")
-        .update({
-          name: profileName.trim(),
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", user.id);
-
-      if (error) throw error;
-
-      // Update auth user metadata
-      await supabase.auth.updateUser({
-        data: { name: profileName.trim() }
-      });
-
+      await updateUserName(profileName.trim());
       await refreshUser();
       showSuccessToast("Profil berhasil diperbarui!");
     } catch (err: unknown) {
@@ -121,21 +135,21 @@ export function ProfileTab() {
         .from("avatars")
         .getPublicUrl(filePath);
 
-      // Update in users table
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user.id);
+      // Add cache-busting timestamp to prevent browser from showing old cached image
+      const avatarUrlWithCache = `${publicUrl}?t=${Date.now()}`;
 
-      if (updateError) throw updateError;
+      console.log("[ProfileTab] Upload - publicUrl:", publicUrl);
+      console.log("[ProfileTab] Upload - avatarUrlWithCache:", avatarUrlWithCache);
 
-      // Update auth user metadata
-      await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl }
-      });
+      // Update in users table via server action
+      await updateUserAvatar(avatarUrlWithCache);
 
+      // Update local state immediately
+      setAvatarUrl(avatarUrlWithCache);
+
+      // Refresh user metadata for sidebar
       await refreshUser();
-      setAvatarUrl(publicUrl);
+
       showSuccessToast("Foto profil berhasil diperbarui!");
     } catch (err: unknown) {
       console.error("Error uploading avatar:", err);
@@ -177,7 +191,7 @@ export function ProfileTab() {
   }
 
   return (
-    <div className="bg-surface-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
+    <div className="bg-surface-card border border-border rounded-2xl p-6 space-y-6">
       <h2 className="text-base font-bold text-text-primary font-display border-b border-border/40 pb-3">Profil Pengguna</h2>
       
       <form onSubmit={handleProfileSave} className="space-y-6">
@@ -187,11 +201,17 @@ export function ProfileTab() {
           
           <div className="flex flex-col md:flex-row items-center gap-6 p-4 border border-border/50 rounded-2xl bg-surface/30">
             {/* Photo Circular Preview */}
-            <div className="relative group shrink-0 w-24 h-24 rounded-full overflow-hidden border border-border bg-surface-input flex items-center justify-center text-text-secondary text-2xl font-bold font-mono">
+            <div className="relative group shrink-0 w-24 h-24 rounded-full overflow-hidden border border-border bg-surface-input flex items-center justify-center">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                profileName ? profileName[0].toUpperCase() : <User className="w-8 h-8" />
+                profileName ? (
+                  <span className="text-text-secondary text-2xl font-bold font-mono">
+                    {profileName[0].toUpperCase()}
+                  </span>
+                ) : (
+                  <User className="w-8 h-8 text-text-secondary" />
+                )
               )}
               {uploading && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

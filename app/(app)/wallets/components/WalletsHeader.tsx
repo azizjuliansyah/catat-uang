@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/atoms/Button";
-import { Plus, ArrowRightLeft } from "lucide-react";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
+import { Plus, ArrowRightLeft, Wallet } from "lucide-react";
 import { WalletItem } from "../types";
 import { formatIDR } from "../utils";
 
@@ -21,37 +22,35 @@ export function WalletsHeader({
   return (
     <div className="flex flex-col gap-6">
       {/* Page Title + Actions */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-page-title text-text-primary font-display">
-            Kelola Dompet
-          </h1>
-        </div>
+      <PageHeader
+        icon={Wallet}
+        title="Kelola Dompet"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onTransferClick}
+              disabled={activeCount < 2}
+            >
+              <ArrowRightLeft className="w-4 h-4 mr-1.5" />
+              Transfer
+            </Button>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={onTransferClick}
-            disabled={activeCount < 2}
-          >
-            <ArrowRightLeft className="w-4 h-4 mr-2" />
-            Transfer
-          </Button>
-
-          <Button
-            variant="primary"
-            size="md"
-            onClick={onAddClick}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Tambah Dompet
-          </Button>
-        </div>
-      </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onAddClick}
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Tambah Dompet
+            </Button>
+          </>
+        }
+      />
 
       {/* Summary Card */}
-      <div className="bg-surface-card border border-border rounded-lg p-6">
+      <div className="bg-surface-card border border-border rounded-2xl p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-label text-text-secondary uppercase tracking-wide">

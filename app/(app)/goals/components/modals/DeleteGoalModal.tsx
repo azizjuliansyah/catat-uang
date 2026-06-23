@@ -1,5 +1,5 @@
 import { Modal } from "@/components/ui/organisms/Modal";
-import { Button } from "@/components/ui/atoms/Button";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { SavingGoal } from "../../types";
 import { AlertCircle } from "lucide-react";
 
@@ -25,25 +25,14 @@ export function DeleteGoalModal({
       title="Hapus Target Tabungan?"
       isDestructive
       footer={
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="flex-1"
-          >
-            Batal
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={onConfirm}
-            isLoading={isSubmitting}
-            className="flex-1"
-          >
-            Hapus
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSubmit={onConfirm}
+          isSubmitting={isSubmitting}
+          cancelText="Batal"
+          submitText="Hapus"
+          variant="destructive"
+        />
       }
     >
       <div className="space-y-4 text-center">

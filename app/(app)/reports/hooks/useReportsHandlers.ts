@@ -4,6 +4,7 @@ import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { Transaction, DebtData } from "../types";
 import { exportToPDF, exportToExcel } from "../utils/exports";
+import { fetchReportTransactions, fetchReportDebts } from "../services";
 
 export function useReportsHandlers() {
   const supabase = createClient();
@@ -23,23 +24,8 @@ export function useReportsHandlers() {
   // Fetch transactions
   async function fetchTransactions(userId: string) {
     try {
-      const { data, error } = await supabase
-        .from("transactions")
-        .select(`
-          id,
-          amount,
-          type,
-          transaction_date,
-          description,
-          category_id,
-          categories (name, icon, color),
-          wallets (name)
-        `)
-        .eq("user_id", userId)
-        .order("transaction_date", { ascending: true });
-
-      if (error) throw error;
-      setTransactions((data as unknown as Transaction[]) || []);
+      const data = await fetchReportTransactions(supabase, userId);
+      setTransactions(data);
     } catch (err: unknown) {
       console.error("Error fetching transactions:", err);
       setErrorMsg("Gagal memuat data transaksi");
@@ -49,12 +35,8 @@ export function useReportsHandlers() {
   // Fetch debts
   async function fetchDebts() {
     try {
-      const { data, error } = await supabase
-        .from("debts")
-        .select("id, type, total_amount, paid_amount, status");
-
-      if (error) throw error;
-      setDebts((data as unknown as DebtData[]) || []);
+      const data = await fetchReportDebts(supabase);
+      setDebts(data);
     } catch (err: unknown) {
       console.error("Error fetching debts:", err);
     }
@@ -85,7 +67,6 @@ export function useReportsHandlers() {
     currentDebtsOwe: number;
     categoryBreakdown: any[];
     filteredTransactions: Transaction[];
-    formatIDR: (val: number) => string;
     formatPercentage: (val: number) => string;
   }) => {
     exportToPDF({

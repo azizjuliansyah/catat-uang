@@ -56,7 +56,7 @@ export function GoalDetailModals({ state, handlers }: GoalDetailModalsProps) {
       {/* Edit Goal Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-md p-6 shadow-xl">
+          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-md p-6">
             <h2 className="text-lg font-bold text-text-primary mb-4">Ubah Target Tabungan</h2>
             <form onSubmit={handleSaveGoal} className="space-y-4">
               <div>
@@ -126,7 +126,7 @@ export function GoalDetailModals({ state, handlers }: GoalDetailModalsProps) {
       {/* Top-up Modal */}
       {isTopupModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-md p-6 shadow-xl">
+          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-md p-6">
             <h2 className="text-lg font-bold text-text-primary mb-4">Top-up Tabungan</h2>
             <form onSubmit={handleTopup} className="space-y-4">
               <div>
@@ -199,7 +199,7 @@ export function GoalDetailModals({ state, handlers }: GoalDetailModalsProps) {
       {/* Withdraw Modal */}
       {isWithdrawModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-md p-6 shadow-xl">
+          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-md p-6">
             <h2 className="text-lg font-bold text-text-primary mb-4">Tarik Dana Tabungan</h2>
             <form onSubmit={handleWithdraw} className="space-y-4">
               <div>
@@ -276,7 +276,7 @@ export function GoalDetailModals({ state, handlers }: GoalDetailModalsProps) {
       {/* Delete Goal Modal */}
       {showDeleteGoalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-sm p-6 shadow-xl">
+          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-sm p-6">
             <h2 className="text-lg font-bold text-text-primary mb-2">Hapus Target Tabungan?</h2>
             <p className="text-sm text-text-secondary mb-6">
               Tindakan ini akan menghapus "{goal?.name}" dan tidak dapat dibatalkan.
@@ -306,7 +306,7 @@ export function GoalDetailModals({ state, handlers }: GoalDetailModalsProps) {
       {/* Delete Transaction Modal */}
       {transactionToDelete !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-sm p-6 shadow-xl">
+          <div className="bg-surface-card border border-border rounded-2xl w-full max-w-sm p-6">
             <h2 className="text-lg font-bold text-text-primary mb-2">Hapus Transaksi?</h2>
             <p className="text-sm text-text-secondary mb-6">
               Tindakan ini akan menghapus transaksi {transactionToDelete.type === "topup" ? "top-up" : "penarikan"} sebesar{" "}

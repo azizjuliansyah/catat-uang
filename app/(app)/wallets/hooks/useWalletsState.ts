@@ -4,6 +4,7 @@ import { getNowDateTimeString } from "@/lib/utils/date";
 
 export function useWalletsState(wallets: WalletItem[], user: any) {
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
+  const [searchTerm, setSearchTerm] = useState("");
   const [orderedWallets, setOrderedWallets] = useState<WalletItem[]>([]);
 
   // Modals state
@@ -69,12 +70,14 @@ export function useWalletsState(wallets: WalletItem[], user: any) {
     setOrderedWallets(sorted as WalletItem[]);
   }, [wallets, user]);
 
-  // Filter wallets based on tab
+  // Filter wallets based on tab and search query
   const filteredWallets = useMemo(() => {
-    return orderedWallets.filter(w =>
-      activeTab === "active" ? !w.is_archived : w.is_archived
-    );
-  }, [orderedWallets, activeTab]);
+    return orderedWallets.filter(w => {
+      const matchTab = activeTab === "active" ? !w.is_archived : w.is_archived;
+      const matchSearch = w.name.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchTab && matchSearch;
+    });
+  }, [orderedWallets, activeTab, searchTerm]);
 
   const activeWalletsTotal = useMemo(() => {
     return wallets
@@ -112,6 +115,8 @@ export function useWalletsState(wallets: WalletItem[], user: any) {
   return {
     activeTab,
     setActiveTab,
+    searchTerm,
+    setSearchTerm,
     orderedWallets,
     setOrderedWallets,
     filteredWallets,

@@ -2,14 +2,15 @@ import { useState } from "react";
 import { DebtItem } from "../types";
 import { isOverdue } from "../utils";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, User, Calendar, History, Coins, ExternalLink } from "lucide-react";
+import { Edit2, Trash2, User, Calendar, Coins } from "lucide-react";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { Button } from "@/components/ui/atoms/Button";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
+import { CardActions } from "@/components/ui/molecules/CardActions";
+import { ProgressBar } from "@/components/ui/atoms/ProgressBar";
 import { DynamicColorIcon } from "@/components/ui/atoms/DynamicColorIcon";
 import { FinancialCard } from "@/components/ui/organisms/FinancialCard";
-
-import Link from "next/link";
+import { DetailLink } from "@/components/ui/atoms/DetailLink";
+import { DateDisplay } from "@/components/ui/atoms/DateDisplay";
 
 interface DebtCardProps {
   item: DebtItem;
@@ -33,7 +34,7 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
       cardColor={cardColor}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="border border-solid"
+      className="border border-solid relative group"
     >
       {/* Top Info */}
       <div className="w-full">
@@ -60,22 +61,14 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <ActionButton
-              size="sm"
-              icon={Edit2}
-              title="Ubah Catatan"
-              onClick={() => onEdit(item)}
-            />
-            <ActionButton
-              size="sm"
-              icon={Trash2}
-              title="Hapus Catatan"
-              variant="danger"
-              onClick={() => onDelete(item)}
-            />
-          </div>
+          <CardActions
+            actions={[
+              { icon: Edit2, label: "Ubah Catatan", onClick: () => onEdit(item) },
+              { icon: Trash2, label: "Hapus Catatan", variant: "danger", onClick: () => onDelete(item) }
+            ]}
+            position="top-right"
+            revealOn="group-hover"
+          />
         </div>
 
         {/* Amounts */}
@@ -93,21 +86,12 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
         </div>
 
         {/* Progress bar */}
-        <div className="mt-3 relative z-10 w-full">
-          <div className="w-full h-1.5 bg-surface-input rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${progress}%`,
-                backgroundColor: item.status === "paid" ? "var(--color-success)" : cardColor
-              }}
-            />
-          </div>
-          <div className="flex justify-between items-center text-[10px] text-text-secondary mt-1 font-mono">
-            <span>Terbayar: {formatIDR(item.paid_amount)}</span>
-            <span>{progress.toFixed(0)}%</span>
-          </div>
-        </div>
+        <ProgressBar
+          value={progress}
+          color={item.status === "paid" ? "var(--color-success)" : cardColor}
+          label={`Terbayar: ${formatIDR(item.paid_amount)}`}
+          showPercentage
+        />
       </div>
 
       {/* Card Footer */}
@@ -125,26 +109,20 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
           )}
         </div>
 
-          <Link
-            href={`/debts/${item.id}`}
-            className="text-[10px] font-semibold text-primary hover:underline uppercase flex items-center gap-1"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Lihat Detail
-          </Link>
+        <DetailLink href={`/debts/${item.id}`} />
       </div>
 
       <div className="flex justify-end mt-1.5">
-          {item.status === "unpaid" && (
-            <Button
-              size="sm"
-              color={cardColor}
-              onClick={() => onPay(item)}
-            >
-              <Coins className="w-3.5 h-3.5" />
-              Bayar
-            </Button>
-          )}
+        {item.status === "unpaid" && (
+          <Button
+            size="sm"
+            color={cardColor}
+            onClick={() => onPay(item)}
+          >
+            <Coins className="w-3.5 h-3.5" />
+            Bayar
+          </Button>
+        )}
       </div>
     </FinancialCard>
   );

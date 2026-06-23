@@ -1,12 +1,13 @@
-import { useState } from "react";
-import Link from "next/link";
+"use client";
+
 import { getIconComponent } from "@/lib/utils/icons";
 import { WalletItem } from "../types";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, Archive, RotateCcw, GripVertical, ExternalLink, Star } from "lucide-react";
+import { Edit2, Trash2, Archive, RotateCcw, Star } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
+import { CardActions, CardAction } from "@/components/ui/molecules/CardActions";
+import { DetailLink } from "@/components/ui/atoms/DetailLink";
 
 interface WalletCardProps {
   wallet: WalletItem;
@@ -23,7 +24,6 @@ export function WalletCard({
   onDelete,
   onSetDefault
 }: WalletCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const {
     attributes,
     listeners,
@@ -31,59 +31,41 @@ export function WalletCard({
     transform,
     transition,
     isDragging
-  } = useSortable({ id: wallet.id });
+  } = useSortable({ id: wallet.id, disabled: wallet.is_archived });
 
   const WalletIcon = getIconComponent(wallet.icon);
 
   return (
     <div
       ref={setNodeRef}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
       }}
       className={`
-        bg-surface-card border rounded-lg p-5 relative overflow-hidden group
-        transition-all duration-150 ease
-        ${isDragging ? "border-dashed border-primary" : "border-border"}
-        ${isHovered ? "border-border-strong bg-surface-hover" : ""}
+        bg-surface-card border rounded-2xl p-4 relative overflow-hidden group
+        transition-all duration-150 ease flex flex-col justify-between
+        ${wallet.is_archived ? "" : "cursor-grab active:cursor-grabbing"}
+        ${isDragging ? "border-dashed border-primary" : "border-border hover:border-border-strong"}
       `}
+      {...(!wallet.is_archived ? { ...attributes, ...listeners } : {})}
     >
-      {/* Left accent bar */}
+      {/* Top Accent Line */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 transition-opacity duration-150 ease"
-        style={{
-          backgroundColor: wallet.color,
-          opacity: isHovered ? 0.8 : 0.3
-        }}
+        className="absolute top-0 left-0 right-0 h-1"
+        style={{ backgroundColor: wallet.color }}
       />
 
       {/* Card Header */}
       <div className="flex items-start justify-between relative z-10">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Drag Handle */}
-          {!wallet.is_archived && (
-            <ActionButton
-              icon={GripVertical}
-              title="Seret untuk mengurutkan"
-              className="cursor-grab active:cursor-grabbing"
-              {...attributes}
-              {...listeners}
-            />
-          )}
-
           {/* Icon */}
           <div
-            className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ backgroundColor: `${wallet.color}15` }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0"
+            style={{ backgroundColor: wallet.color }}
           >
-            <WalletIcon
-              className="w-5 h-5"
-              style={{ color: wallet.color }}
-            />
+            <WalletIcon className="w-5 h-5" />
           </div>
 
           {/* Name & Badge */}
@@ -100,44 +82,30 @@ export function WalletCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-          {!wallet.is_default && !wallet.is_archived && (
-            <ActionButton
-              size="sm"
-              icon={Star}
-              title="Setel Utama"
-              variant="primary"
-              onClick={() => onSetDefault(wallet)}
-            />
-          )}
-          <ActionButton
-            size="sm"
-            icon={Edit2}
-            title="Ubah Dompet"
-            onClick={() => onEdit(wallet)}
+        <div 
+          onPointerDown={(e) => e.stopPropagation()} 
+          onTouchStart={(e) => e.stopPropagation()} 
+          className="cursor-default"
+        >
+          <CardActions
+            actions={
+              [
+                !wallet.is_default && !wallet.is_archived && { icon: Star, label: "Setel Utama", variant: "primary" as const, onClick: () => onSetDefault(wallet) },
+                { icon: Edit2, label: "Ubah Dompet", onClick: () => onEdit(wallet) },
+                { icon: wallet.is_archived ? RotateCcw : Archive, label: wallet.is_archived ? "Aktifkan Kembali" : "Arsipkan Dompet", onClick: () => onArchive(wallet) },
+                !wallet.is_default && { icon: Trash2, label: "Hapus Dompet", variant: "danger" as const, onClick: () => onDelete(wallet) }
+              ].filter(Boolean) as CardAction[]
+            }
+            position="top-right"
+            revealOn="group-hover"
           />
-          <ActionButton
-            size="sm"
-            icon={wallet.is_archived ? RotateCcw : Archive}
-            title={wallet.is_archived ? "Aktifkan Kembali" : "Arsipkan Dompet"}
-            onClick={() => onArchive(wallet)}
-          />
-          {!wallet.is_default && (
-            <ActionButton
-              size="sm"
-              icon={Trash2}
-              title="Hapus Dompet"
-              variant="danger"
-              onClick={() => onDelete(wallet)}
-            />
-          )}
         </div>
       </div>
 
-      {/* Card Content */}
-      <div className="mt-5 pt-4 border-t border-border/50">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+      {/* Card Content & Footer */}
+      <div className="mt-2">
+        <div className="flex flex-col gap-2">
+          <div>
             <p className="text-caption text-text-secondary uppercase tracking-wide">
               Saldo saat ini
             </p>
@@ -146,13 +114,13 @@ export function WalletCard({
             </p>
           </div>
 
-          <Link
-            href={`/wallets/${wallet.id}`}
-            className="text-label font-semibold text-primary hover:underline flex items-center gap-1 transition-colors duration-150 ease"
+          <div 
+            className="pt-2 border-t border-border/60 flex justify-end" 
+            onPointerDown={(e) => e.stopPropagation()} 
+            onTouchStart={(e) => e.stopPropagation()}
           >
-            <ExternalLink className="w-3 h-3" />
-            Detail
-          </Link>
+            <DetailLink href={`/wallets/${wallet.id}`} label="Lihat Detail" />
+          </div>
         </div>
       </div>
     </div>

@@ -90,7 +90,7 @@ export function CreateTransactionModal({
         />
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-5">
         {/* Segment Type Selector */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
@@ -227,7 +227,7 @@ export function CreateTransactionModal({
           onRemove={handleRemoveReceipt}
           fileInputRef={fileInputRef}
         />
-      </form>
+      </div>
     </Modal>
   );
 }

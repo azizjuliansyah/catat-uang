@@ -2,6 +2,14 @@ import React from "react";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { WalletItem } from "../types";
 import { formatIDR } from "../utils";
+import {
+  addWallet,
+  updateWallet,
+  toggleArchiveWallet as toggleArchiveWalletSvc,
+  setDefaultWallet as setDefaultWalletSvc,
+  deleteWallet as deleteWalletSvc,
+  createTransfer
+} from "../services";
 
 interface UseWalletsHandlersProps {
   user: any;
@@ -111,11 +119,7 @@ export function useWalletsHandlers({
         is_archived: false
       };
 
-      const { error } = await supabase
-        .from("wallets")
-        .insert([newWallet]);
-
-      if (error) throw error;
+      await addWallet(supabase, newWallet);
 
       showSuccessToast("Dompet baru berhasil ditambahkan!");
       setIsAddModalOpen(false);
@@ -140,17 +144,12 @@ export function useWalletsHandlers({
 
     try {
       setEditSubmitting(true);
-      const { error } = await supabase
-        .from("wallets")
-        .update({
-          name: editName.trim(),
-          icon: editIcon,
-          color: editColor,
-          is_default: editIsDefault
-        })
-        .eq("id", editingWallet.id);
-
-      if (error) throw error;
+      await updateWallet(supabase, editingWallet.id, {
+        name: editName.trim(),
+        icon: editIcon,
+        color: editColor,
+        is_default: editIsDefault
+      });
 
       showSuccessToast("Perubahan dompet berhasil disimpan!");
       setIsEditModalOpen(false);
@@ -172,12 +171,7 @@ export function useWalletsHandlers({
         return;
       }
 
-      const { error } = await supabase
-        .from("wallets")
-        .update({ is_archived: nextArchived })
-        .eq("id", wallet.id);
-
-      if (error) throw error;
+      await toggleArchiveWalletSvc(supabase, wallet.id, nextArchived);
 
       showSuccessToast(nextArchived ? "Dompet berhasil diarsipkan" : "Dompet berhasil diaktifkan kembali");
       await fetchWallets();
@@ -195,12 +189,7 @@ export function useWalletsHandlers({
     }
 
     try {
-      const { error } = await supabase
-        .from("wallets")
-        .update({ is_default: true })
-        .eq("id", wallet.id);
-
-      if (error) throw error;
+      await setDefaultWalletSvc(supabase, wallet.id);
 
       showSuccessToast(`Dompet ${wallet.name} sekarang menjadi dompet utama!`);
       await fetchWallets();
@@ -221,12 +210,7 @@ export function useWalletsHandlers({
 
     try {
       setIsDeleteSubmitting(true);
-      const { error } = await supabase
-        .from("wallets")
-        .delete()
-        .eq("id", walletToDelete.id);
-
-      if (error) throw error;
+      await deleteWalletSvc(supabase, walletToDelete.id);
 
       showSuccessToast(`Dompet ${walletToDelete.name} berhasil dihapus`);
       setWalletToDelete(null);
@@ -277,11 +261,7 @@ export function useWalletsHandlers({
         transfer_date: new Date(tfDate).toISOString()
       };
 
-      const { error } = await supabase
-        .from("transfers")
-        .insert([newTransfer]);
-
-      if (error) throw error;
+      await createTransfer(supabase, newTransfer);
 
       showSuccessToast("Transfer saldo berhasil dilakukan!");
       setIsTransferModalOpen(false);

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { BarChart4, Table } from "lucide-react";
-import { TabButton } from "@/components/ui/molecules/TabButton";
+import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";
 import { DatePeriodFilter } from "@/components/ui/atoms/DatePeriodFilter";
 
@@ -76,7 +76,7 @@ export function PeriodFilter({
   const expenseVal = selectedExpenseCategory ? selectedCategoryId : "all";
 
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-surface-card border border-border p-4 rounded-2xl shadow-sm">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-surface-card border border-border p-4 rounded-2xl">
       {/* Filter inputs group */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 flex-grow">
         {/* Date Dropdown */}
@@ -116,11 +116,12 @@ export function PeriodFilter({
       </div>
 
       {/* View Mode Toggle */}
-      <div className="bg-surface-hover/30 border border-border p-1 rounded-xl flex gap-1 h-10 items-center self-stretch md:self-auto justify-center md:justify-start">
+      <TabButtonGroup variant="pill" className="h-10 items-center gap-1 self-stretch md:self-auto justify-center md:justify-start">
         <TabButton
           isActive={viewMode === "visual"}
           onClick={() => setViewMode("visual")}
-          className="flex-1 md:flex-none px-4 py-0 h-full text-xs rounded-lg whitespace-nowrap"
+          variant="pill"
+          className="flex-1 md:flex-none px-2 py-0 h-full text-xs rounded-lg whitespace-nowrap"
         >
           <BarChart4 className="w-3.5 h-3.5 mr-1.5 inline" />
           Grafik
@@ -128,12 +129,13 @@ export function PeriodFilter({
         <TabButton
           isActive={viewMode === "tabular"}
           onClick={() => setViewMode("tabular")}
-          className="flex-1 md:flex-none px-4 py-0 h-full text-xs rounded-lg whitespace-nowrap"
+          variant="pill"
+          className="flex-1 md:flex-none px-2 py-0 h-full text-xs rounded-lg whitespace-nowrap"
         >
           <Table className="w-3.5 h-3.5 mr-1.5 inline" />
           Tabular
         </TabButton>
-      </div>
+      </TabButtonGroup>
     </div>
   );
 }

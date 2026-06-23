@@ -1,51 +1,22 @@
 /**
  * PayLater Detail Page Types
- * Types for the paylater detail page
+ * Re-exports types from the main paylater types module
  */
 
-export interface PaylaterPlatform {
-  id: string;
-  user_id: string;
-  name: string;
-  limit_amount: number;
-  balance: number;
-  billing_cycle_date: number;
-  due_date_offset: number;
-  icon: string;
-  color: string;
-  is_archived: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import type {
+  PaylaterPlatform,
+  PaylaterTransaction,
+  PaylaterPayment,
+  PaylaterBillingDates,
+  PaylaterPresetColors,
+  PaylaterPresets
+} from "@/app/(app)/paylater/types";
 
-export interface PaylaterTransaction {
-  id: string;
-  amount: number;
-  type: "income" | "expense";
-  description: string | null;
-  transaction_date: string;
-  receipt_url: string | null;
-  categories: {
-    id: string;
-    name: string;
-    icon: string;
-    color: string;
-  } | null;
-}
-
-export interface PaylaterPayment {
-  id: string;
-  amount: number;
-  payment_date: string;
-  created_at: string;
-  transaction_id?: string | null;
-  wallets: {
-    id: string;
-    name: string;
-  } | null;
-}
-
-export interface PaylaterBillingDates {
-  billing: string;
-  due: string;
-}
+export type {
+  PaylaterPlatform,
+  PaylaterTransaction,
+  PaylaterPayment,
+  PaylaterBillingDates,
+  PaylaterPresetColors,
+  PaylaterPresets
+};

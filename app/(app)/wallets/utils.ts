@@ -1,5 +1,7 @@
+import { getTodayDateString } from "@/lib/utils/date";
+
 export { formatIDR } from "@/lib/utils/format";
 
 export const getTodayDate = () => {
-  return new Date().toISOString().split("T")[0];
+  return getTodayDateString();
 };

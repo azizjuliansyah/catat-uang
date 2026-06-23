@@ -99,7 +99,7 @@ export function PWAUpdatePrompt() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-4 fade-in duration-300">
-      <div className="bg-surface-card border border-border-strong rounded-lg shadow-lg p-4">
+      <div className="bg-surface-card border border-border-strong rounded-lg p-4">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
             <svg

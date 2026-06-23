@@ -1,15 +1,17 @@
 import { useState } from "react";
-import Link from "next/link";
 import { SavingGoal } from "../types";
 import { getIconComponent } from "@/lib/utils/icons";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, Plus, ArrowUpRight, Calendar, ExternalLink } from "lucide-react";
+import { Edit2, Trash2, Plus, ArrowUpRight, Calendar } from "lucide-react";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { Button } from "@/components/ui/atoms/Button";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
+import { CardActions } from "@/components/ui/molecules/CardActions";
+import { ProgressBar } from "@/components/ui/atoms/ProgressBar";
 import { DynamicColorIcon } from "@/components/ui/atoms/DynamicColorIcon";
 import { StatusBadge } from "@/components/ui/atoms/StatusBadge";
 import { FinancialCard } from "@/components/ui/organisms/FinancialCard";
+import { DetailLink } from "@/components/ui/atoms/DetailLink";
+import { DateDisplay } from "@/components/ui/atoms/DateDisplay";
 
 interface GoalCardProps {
   goal: SavingGoal;
@@ -45,7 +47,7 @@ export function GoalCard({
       cardColor={cardColor}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="border border-solid"
+      className="border border-solid relative group"
     >
       {/* Top Header Card */}
       <div className="w-full">
@@ -69,21 +71,14 @@ export function GoalCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <ActionButton
-              size="sm"
-              icon={Edit2}
-              title="Edit Target"
-              onClick={() => onEdit(goal)}
-            />
-            <ActionButton
-              size="sm"
-              icon={Trash2}
-              title="Hapus Target"
-              variant="danger"
-              onClick={() => onDelete(goal)}
-            />
-          </div>
+          <CardActions
+            actions={[
+              { icon: Edit2, label: "Edit Target", onClick: () => onEdit(goal) },
+              { icon: Trash2, label: "Hapus Target", variant: "danger", onClick: () => onDelete(goal) }
+            ]}
+            position="top-right"
+            revealOn="group-hover"
+          />
         </div>
 
         {/* Progress Ring / Bar Info */}
@@ -100,48 +95,25 @@ export function GoalCard({
           </div>
 
           {/* Horizontal Progress bar */}
-          <div>
-            <div className="w-full h-1.5 bg-surface-input rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${progress}%`,
-                  backgroundColor: cardColor
-                }}
-              />
-            </div>
-            <div className="flex justify-between items-center text-[10px] text-text-secondary mt-1 font-mono">
-              <span>Sisa: {formatIDR(remaining)}</span>
-              <span>{progress.toFixed(0)}%</span>
-            </div>
-          </div>
+          <ProgressBar
+            value={progress}
+            color={cardColor}
+            showPercentage
+            label={`Sisa: ${formatIDR(remaining)}`}
+          />
         </div>
       </div>
 
       {/* Bottom Actions - Target Date + Detail Button */}
       <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between relative z-10 w-full">
-        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <Calendar className="w-4 h-4 text-text-secondary shrink-0" />
-          <span className="text-[10px] font-semibold">
-            Target:{" "}
-            <span className="font-bold text-text-primary font-mono">
-              {formatDateTimeShort(goal.target_date)}
-            </span>
-          </span>
-        </div>
+        <DateDisplay date={goal.target_date} label="Target:" showIcon />
 
-        <Link
-          href={`/goals/${goal.id}`}
-          className="text-[10px] font-semibold text-primary hover:underline uppercase flex items-center gap-1"
-        >
-          <ExternalLink className="w-3 h-3" />
-          Lihat Detail
-        </Link>
+        <DetailLink href={`/goals/${goal.id}`} />
       </div>
 
       {/* Quick Actions Row */}
       <div className="mt-3 flex items-center justify-end gap-2 relative z-10 w-full">
-      
+
         {/* Withdraw Button - show if has funds AND not already withdrawn */}
         {hasFunds && !isWithdrawn && (
           <Button

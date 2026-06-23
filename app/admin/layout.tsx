@@ -39,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   const navItems = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Kelola Pengguna", href: "/admin/users", icon: Users },
     { name: "Template Kategori", href: "/admin/categories", icon: Tags },
     { name: "Audit Log", href: "/admin/audit-log", icon: FileText },
@@ -62,9 +62,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="hidden md:flex flex-col w-60 bg-surface-card border-r border-border shrink-0 fixed inset-y-0 left-0 z-30">
         {/* Branding */}
         <div className="h-16 flex items-center px-6 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-warning flex items-center justify-center text-zinc-950 font-bold text-lg">
-              A
+          <div className="flex items-center">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/icon-192x192.png" alt="CatatUang" className="w-full h-full object-contain" />
             </div>
             <span className="font-semibold text-lg text-text-primary tracking-tight">
               Catat<span className="text-warning font-bold">Uang</span>{" "}
@@ -80,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href));
+              (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
             const Icon = item.icon;
             return (
               <a
@@ -139,9 +139,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex flex-col flex-1 md:pl-60 min-w-0">
         {/* Mobile Header */}
         <header className="flex md:hidden items-center justify-between h-16 px-4 border-b border-border/50 sticky top-0 z-20 glassmorphism">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-warning flex items-center justify-center text-zinc-950 font-bold text-base shadow-lg shadow-warning/25">
-              A
+          <div className="flex items-center">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/icon-192x192.png" alt="CatatUang" className="w-full h-full object-contain" />
             </div>
             <span className="font-bold text-base text-text-primary tracking-tight font-display">
               Catat<span className="text-warning">Uang</span>{" "}
@@ -167,11 +167,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="flex md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-border/50 items-center justify-around px-2 z-40 shadow-xl glassmorphism pb-[env(safe-area-inset-bottom,0)]">
+        <nav className="flex md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-border/50 items-center justify-around px-2 z-40 glassmorphism pb-[env(safe-area-inset-bottom,0)]">
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href));
+              (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
             const Icon = item.icon;
             return (
               <a

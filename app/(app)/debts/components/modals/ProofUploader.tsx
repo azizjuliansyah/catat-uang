@@ -59,7 +59,7 @@ export function ProofUploader({
 
       {/* Grid containing both existing and new files */}
       {(hasExisting || hasNew) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-1">
           {/* Existing Files */}
           {existingProofUrls?.map((url, index) => {
             const deleted = isExistingDeleted(url);

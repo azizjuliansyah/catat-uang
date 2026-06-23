@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal } from "@/components/ui/organisms/Modal";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { FormField } from "@/components/ui/molecules/FormField";
-import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { getIconComponent } from "@/lib/utils/icons";
 import { Check } from "lucide-react";
@@ -67,26 +67,11 @@ export function CategoryTemplateModals({
         title={editingTemplate ? "Sunting Template Kategori" : "Buat Template Kategori Baru"}
         onSubmit={handleSubmit}
         footer={
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              fullWidth
-              onClick={() => setIsModalOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              isLoading={submitting}
-              fullWidth
-            >
-              Simpan
-            </Button>
-          </>
+          <ModalFooter
+            onCancel={() => setIsModalOpen(false)}
+            isSubmitting={submitting}
+            submitText="Simpan"
+          />
         }
       >
         <div className="space-y-4">
@@ -143,7 +128,7 @@ export function CategoryTemplateModals({
               Pilih Ikon
               <span className="text-danger">*</span>
             </label>
-            <div className="grid grid-cols-4 gap-2 bg-surface-input/30 border border-border p-3 rounded-xl max-h-40 overflow-y-auto">
+            <div className="grid grid-cols-4 gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
               {PRESET_ICONS.map((iconName) => {
                 const IconComp = getIconComponent(iconName);
                 return (
@@ -179,7 +164,7 @@ export function CategoryTemplateModals({
                     onClick={() => setFormColor(col.hex)}
                     className={`w-7 h-7 p-0 min-h-0 rounded-full transition-all cursor-pointer flex items-center justify-center border-2 border-transparent ${
                       isSelected
-                        ? "border-text-primary scale-110 shadow-sm"
+                        ? "border-text-primary scale-110"
                         : "hover:scale-105"
                     }`}
                     style={{ backgroundColor: col.hex }}
@@ -203,27 +188,14 @@ export function CategoryTemplateModals({
         title="Hapus Template Kategori"
         isDestructive
         footer={
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              fullWidth
-              onClick={() => setTemplateToDelete(null)}
-            >
-              Batal
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              isLoading={deleting}
-              fullWidth
-              onClick={handleDeleteConfirm}
-            >
-              Hapus
-            </Button>
-          </>
+          <ModalFooter
+            onCancel={() => setTemplateToDelete(null)}
+            onSubmit={handleDeleteConfirm}
+            isSubmitting={deleting}
+            cancelText="Batal"
+            submitText="Hapus"
+            variant="destructive"
+          />
         }
       >
         <p className="text-xs text-text-secondary">

@@ -6,11 +6,13 @@ import { useApp, TransactionTemplateItem } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Modal } from "@/components/ui/organisms/Modal";
-import { Button } from "@/components/ui/atoms/Button";
-import { TabButton } from "@/components/ui/molecules/TabButton";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
+import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";
 import { CategoryGridSelector } from "@/app/(app)/transactions/components/CategoryGridSelector";
-import { Wallet as WalletIcon, CreditCard, FileText } from "lucide-react";
+import { Wallet as WalletIcon, CreditCard, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import { createTemplate, updateTemplate } from "../../services";
+import { getErrorMessage, formatIDR } from "../../utils";
 
 interface TemplateModalProps {
   isOpen: boolean;
@@ -74,21 +76,12 @@ export function TemplateModal({
     }
   }, [type, sourceId, wallets]);
 
-  function getErrorMessage(err: unknown): string {
-    if (err instanceof Error) return err.message;
-    return String(err);
-  }
-
   // Format currency preview
   const getFormattedPreview = () => {
     if (!amount) return "Rp. 0";
     const val = parseFloat(amount);
     if (isNaN(val)) return "Rp. 0";
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0
-    }).format(val);
+    return formatIDR(val);
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -121,32 +114,28 @@ export function TemplateModal({
       const isWallet = sourceId.startsWith("wallet:");
       const cleanedId = sourceId.split(":")[1];
 
-      const payload = {
-        user_id: user.id,
-        name: name.trim(),
-        type,
-        amount: parsedAmount,
-        category_id: categoryId,
-        wallet_id: isWallet ? cleanedId : null,
-        paylater_id: !isWallet ? cleanedId : null,
-        description: description.trim() || null,
-        updated_at: new Date().toISOString()
-      };
-
       if (editingTemplate) {
-        const { error } = await supabase
-          .from("transaction_templates")
-          .update(payload)
-          .eq("id", editingTemplate.id);
-
-        if (error) throw error;
+        await updateTemplate(supabase, editingTemplate.id, {
+          name: name.trim(),
+          type,
+          amount: parsedAmount,
+          category_id: categoryId,
+          wallet_id: isWallet ? cleanedId : null,
+          paylater_id: !isWallet ? cleanedId : null,
+          description: description.trim() || null,
+          updated_at: new Date().toISOString(),
+        });
         showSuccessToast(`Template "${name}" berhasil diperbarui!`);
       } else {
-        const { error } = await supabase
-          .from("transaction_templates")
-          .insert(payload);
-
-        if (error) throw error;
+        await createTemplate(supabase, user.id, {
+          name: name.trim(),
+          type,
+          amount: parsedAmount,
+          category_id: categoryId,
+          wallet_id: isWallet ? cleanedId : null,
+          paylater_id: !isWallet ? cleanedId : null,
+          description: description.trim() || null,
+        });
         showSuccessToast(`Template "${name}" berhasil ditambahkan!`);
       }
 
@@ -165,7 +154,7 @@ export function TemplateModal({
     { value: "header-wallets", label: "Dompet / Rekening", disabled: true },
     ...wallets.filter((w) => !w.is_archived).map((w) => ({
       value: `wallet:${w.id}`,
-      label: `${w.name} (${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(w.balance)})`,
+      label: `${w.name} (${formatIDR(w.balance)})`,
       icon: <WalletIcon className="w-4 h-4 text-text-secondary" />
     })),
     ...(type === "expense" && paylaterPlatforms.filter((p) => !p.is_archived).length > 0
@@ -173,7 +162,7 @@ export function TemplateModal({
           { value: "header-paylater", label: "Paylater (Kredit)", disabled: true },
           ...paylaterPlatforms.filter((p) => !p.is_archived).map((p) => ({
             value: `paylater:${p.id}`,
-            label: `${p.name} (Outstanding: ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.balance)})`,
+            label: `${p.name} (Outstanding: ${formatIDR(p.balance)})`,
             icon: <CreditCard className="w-4 h-4 text-text-secondary" />
           }))
         ]
@@ -187,26 +176,11 @@ export function TemplateModal({
       title={editingTemplate ? "Sunting Template Transaksi" : "Buat Template Transaksi Baru"}
       onSubmit={handleSubmit}
       footer={
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            fullWidth
-            onClick={onClose}
-          >
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            isLoading={submitting}
-            fullWidth
-          >
-            Simpan Template
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={submitting}
+          submitText="Simpan Template"
+        />
       }
     >
       <div className="space-y-4">
@@ -223,15 +197,17 @@ export function TemplateModal({
         {/* Transaction Type */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
-          <div className="grid grid-cols-2 gap-2 bg-surface-hover/30 border border-border p-1 rounded-xl">
+          <TabButtonGroup variant="pill" uniformWidth className="h-10 items-center gap-1">
             <TabButton
               isActive={type === "expense"}
               onClick={() => {
                 setType("expense");
                 setCategoryId("");
               }}
-              className={`py-2 text-xs rounded-lg ${type === "expense" ? "bg-expense/10 text-expense" : ""}`}
+              variant="pill"
+              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "expense" ? "bg-expense/10 text-expense" : ""}`}
             >
+              <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
               Pengeluaran
             </TabButton>
             <TabButton
@@ -240,11 +216,13 @@ export function TemplateModal({
                 setType("income");
                 setCategoryId("");
               }}
-              className={`py-2 text-xs rounded-lg ${type === "income" ? "bg-income/10 text-income" : ""}`}
+              variant="pill"
+              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "income" ? "bg-income/10 text-income" : ""}`}
             >
+              <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
               Pemasukan
             </TabButton>
-          </div>
+          </TabButtonGroup>
         </div>
 
         {/* Amount */}

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatIDR } from "@/lib/utils/format";
+
 interface CashflowData {
   month: string;
   income: number;
@@ -17,20 +19,18 @@ interface CategoryBreakdown {
 interface ReportsTablesProps {
   cashflowData: CashflowData[];
   categoryBreakdown: CategoryBreakdown[];
-  formatIDR: (val: number) => string;
   formatPercentage: (val: number) => string;
 }
 
 export function ReportsTables({
   cashflowData,
   categoryBreakdown,
-  formatIDR,
   formatPercentage
 }: ReportsTablesProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Cashflow Tabular data */}
-      <div className="bg-surface-card border border-border rounded-2xl p-5 shadow-sm">
+      <div className="bg-surface-card border border-border rounded-2xl p-5">
         <h3 className="text-xs font-bold text-text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
           Tabel Data Arus Kas Bulanan
         </h3>
@@ -66,7 +66,7 @@ export function ReportsTables({
       </div>
 
       {/* Category breakdown Tabular data */}
-      <div className="bg-surface-card border border-border rounded-2xl p-5 shadow-sm">
+      <div className="bg-surface-card border border-border rounded-2xl p-5">
         <h3 className="text-xs font-bold text-text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
           Tabel Distribusi Kategori Pengeluaran
         </h3>

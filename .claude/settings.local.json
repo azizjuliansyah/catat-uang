@@ -16,7 +16,25 @@
       "PowerShell(cd \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\"; $env:NODE_ENV=\"development\"; node node_modules/.bin/next dev 2>&1 | Select-Object -First 10)",
       "Bash(mkdir -p \"D:/Data_Aziz/ngoding/code/nextjs/catat-uang/app/login\")",
       "Bash(mv \"D:/Data_Aziz/ngoding/code/nextjs/catat-uang/app/auth/login/page.tsx\" \"D:/Data_Aziz/ngoding/code/nextjs/catat-uang/app/login/page.tsx\")",
-      "Bash(xargs grep -l \"/auth/login\")"
+      "Bash(xargs grep -l \"/auth/login\")",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "mcp__plugin_supabase_supabase__list_tables",
+      "mcp__plugin_supabase_supabase__execute_sql",
+      "mcp__plugin_supabase_supabase__get_advisors",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__fill_form",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__wait_for",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(node -e ' *)",
+      "Bash(Select-String -Pattern \"useTransactionFormState\")",
+      "Bash(git diff *)",
+      "Bash(echo \"Exit code: $?\")"
     ]
   }
 }

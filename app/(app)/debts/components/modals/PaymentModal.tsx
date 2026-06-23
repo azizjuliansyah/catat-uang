@@ -1,7 +1,7 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
-import { Button } from "@/components/ui/atoms/Button";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { DebtItem } from "../../types";
 import { formatIDR } from "../../utils";
 import { ProofUploader } from "./ProofUploader";
@@ -53,14 +53,11 @@ export function PaymentModal({
       title={payingDebt?.type === "lend" ? `Catat Pelunasan: ${payingDebt?.name}` : `Bayar Cicilan: ${payingDebt?.name}`}
       onSubmit={onSubmit}
       footer={
-        <>
-          <Button type="button" variant="ghost" size="sm" fullWidth onClick={onClose}>
-            Batal
-          </Button>
-          <Button type="submit" variant="primary" size="sm" isLoading={isSubmitting} fullWidth>
-            Simpan Pembayaran
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={isSubmitting}
+          submitText="Simpan Pembayaran"
+        />
       }
     >
       <div className="space-y-4">
@@ -101,28 +98,7 @@ export function PaymentModal({
         <ProofUploader
           proofFiles={payProofFiles}
           proofPreviews={payProofPreviews}
-          onFilesChange={(files) => {
-            if (files && files.length > 0) {
-              const newPreviews: string[] = [];
-              let loadedCount = 0;
-
-              files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  newPreviews.push(reader.result as string);
-                  loadedCount++;
-                  if (loadedCount === files.length) {
-                    setPayProofPreviews(newPreviews);
-                  }
-                };
-                reader.readAsDataURL(file);
-              });
-              setPayProofFiles(files);
-            } else {
-              setPayProofFiles(null);
-              setPayProofPreviews(null);
-            }
-          }}
+          onFilesChange={setPayProofFiles}
         />
       </div>
     </Modal>

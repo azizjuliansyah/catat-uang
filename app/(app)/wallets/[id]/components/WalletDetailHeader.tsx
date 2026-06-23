@@ -31,7 +31,7 @@ export function WalletDetailHeader({ wallet }: WalletDetailHeaderProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
         <div className="flex items-center gap-4">
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shrink-0"
             style={{ backgroundColor: wallet.color }}
           >
             <WalletIconComponent className="w-7 h-7" />

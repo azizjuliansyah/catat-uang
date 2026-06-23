@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal } from "./Modal";
-import { Button } from "../atoms/Button";
+import { ModalFooter } from "../molecules/ModalFooter";
 import { AlertCircle, LucideIcon } from "lucide-react";
 
 interface DeleteConfirmationModalProps {
@@ -33,26 +33,15 @@ export function DeleteConfirmationModal({
         onConfirm();
       }}
       footer={
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="flex-1"
-          >
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="destructive"
-            size="sm"
-            isLoading={isSubmitting}
-            className="flex-1"
-          >
-            Hapus
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSubmit={onConfirm}
+          isSubmitting={isSubmitting}
+          cancelText="Batal"
+          submitText="Hapus"
+          variant="destructive"
+          fullWidth={true}
+        />
       }
     >
       <div className="space-y-4 text-center">

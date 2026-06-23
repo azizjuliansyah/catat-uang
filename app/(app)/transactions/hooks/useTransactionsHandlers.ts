@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { Transaction } from "../types";
-import { getDateRange } from "./useTransactionsState";
+import { fetchTransactions as fetchTransactionsSvc, deleteTransaction as deleteTransactionSvc } from "../services";
 
 export function useTransactionsHandlers(
   dateRangeType: string,
@@ -22,28 +22,8 @@ export function useTransactionsHandlers(
     if (!user) return;
     setLoading(true);
     try {
-      let query = supabase
-        .from("transactions")
-        .select(`
-          *,
-          wallets (name, icon, color),
-          paylater_platforms (name, color),
-          categories (name, icon, color)
-        `)
-        .eq("user_id", user.id);
-
-      const { startDate, endDate } = getDateRange(dateRangeType, customStartDate, customEndDate);
-      const startISO = new Date(`${startDate}T00:00:00`).toISOString();
-      const endISO = new Date(`${endDate}T23:59:59.999`).toISOString();
-      query = query.gte("transaction_date", startISO).lte("transaction_date", endISO);
-
-      query = query
-        .order("transaction_date", { ascending: false })
-        .order("created_at", { ascending: false });
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setTransactions((data as unknown as Transaction[]) || []);
+      const data = await fetchTransactionsSvc(supabase, user.id, dateRangeType, customStartDate, customEndDate);
+      setTransactions(data);
     } catch (err: unknown) {
       console.error("Error fetching transactions:", err);
       const message = err instanceof Error ? err.message : String(err);
@@ -56,12 +36,7 @@ export function useTransactionsHandlers(
   async function handleDeleteTransaction(transactionToDelete: Transaction, onSuccess: () => void) {
     setDeletingId(transactionToDelete.id);
     try {
-      const { error } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("id", transactionToDelete.id);
-
-      if (error) throw error;
+      await deleteTransactionSvc(supabase, transactionToDelete.id);
 
       showSuccessToast("Transaksi berhasil dihapus.");
       setTransactions((prev) => prev.filter((t) => t.id !== transactionToDelete.id));

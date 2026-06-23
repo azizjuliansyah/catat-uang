@@ -94,8 +94,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 z-10">
         {/* Branding/Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 text-primary mb-4 animate-pulse">
-            <TrendingUp className="w-6 h-6" />
+          <div className="inline-flex items-center justify-center w-24 h-24">
+            <img src="/icon-192x192.png" alt="CatatUang" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-semibold tracking-tight text-text-primary font-sans">
             Catat<span className="text-primary font-bold">Uang</span>
@@ -106,7 +106,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-surface-card border border-border rounded-xl p-6 sm:p-8 shadow-sm backdrop-blur-sm relative">
+        <div className="bg-surface-card border border-border rounded-xl p-6 sm:p-8 backdrop-blur-sm relative">
           <form onSubmit={handleLogin} className="space-y-6">
             {errorMsg && (
               <div className="p-3 text-sm text-danger bg-danger/10 border border-danger/20 rounded-md">
@@ -186,7 +186,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               isLoading={loading}
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md text-sm font-medium transition-all shadow-md active:scale-[0.98]"
+              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md text-sm font-medium transition-all active:scale-[0.98]"
             >
               Masuk
             </Button>

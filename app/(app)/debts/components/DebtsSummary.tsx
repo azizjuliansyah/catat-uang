@@ -1,6 +1,5 @@
 import { DebtItem } from "../types";
 import { formatIDR } from "../utils";
-import { TrendingDown, TrendingUp } from "lucide-react";
 import { InfoCard } from "@/components/ui/molecules/InfoCard";
 
 interface DebtsSummaryProps {
@@ -22,18 +21,17 @@ export function DebtsSummary({ debts }: DebtsSummaryProps) {
       <InfoCard
         title="Hutang Saya (Owe)"
         value={formatIDR(totalDebtAmount)}
-        icon={<TrendingDown className="w-5 h-5" />}
-        variant="owe"
+        variant="danger"
+        description="Total hutang belum lunas"
       />
 
       {/* Lend card */}
       <InfoCard
         title="Piutang Saya (Lend)"
         value={formatIDR(totalLendAmount)}
-        icon={<TrendingUp className="w-5 h-5" />}
-        variant="lend"
+        variant="success"
+        description="Total piutang belum ditagih"
       />
     </div>
   );
 }
-

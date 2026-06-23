@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { Modal } from "@/components/ui/organisms/Modal";
-import { Button } from "@/components/ui/atoms/Button";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { getIconComponent } from "@/lib/utils/icons";
 import { Sparkles, Calendar, CheckSquare, Square, Wallet as WalletIcon, CreditCard, FolderMinus, Loader2 } from "lucide-react";
 
@@ -134,22 +134,12 @@ export function RunTemplatesModal({
       onSubmit={handleRunTemplates}
       className="sm:max-w-lg"
       footer={
-        <>
-          <Button type="button" variant="ghost" size="sm" onClick={onClose} fullWidth>
-            Batal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            isLoading={running}
-            disabled={selectedIds.length === 0}
-            fullWidth
-          >
-            <Sparkles className="w-4 h-4 mr-1.5" />
-            Jalankan ({selectedIds.length})
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={running}
+          disabled={selectedIds.length === 0}
+          submitText={`Jalankan (${selectedIds.length})`}
+        />
       }
     >
       <div className="space-y-4">
@@ -217,7 +207,7 @@ export function RunTemplatesModal({
                     onClick={() => toggleSelect(template.id)}
                     className={`border rounded-xl p-3.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-all ${
                       isSelected
-                        ? "bg-primary/5 border-primary/50 shadow-sm"
+                        ? "bg-primary/5 border-primary/50"
                         : "bg-surface-card border-border hover:border-border-strong"
                     }`}
                   >
@@ -233,7 +223,7 @@ export function RunTemplatesModal({
 
                       {/* Category Icon */}
                       <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0"
                         style={{ backgroundColor: category?.color || "#94a3b8" }}
                       >
                         {CategoryIconComponent ? (

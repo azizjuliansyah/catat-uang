@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { formatIDR } from "@/lib/utils/format";
 import { NewTransactionState } from "./useNewTransactionState";
 
 export function useNewTransactionHandlers(
@@ -141,12 +142,7 @@ export function useNewTransactionHandlers(
     const rawVal = amount.replace(/[^0-9]/g, "");
     if (!rawVal) return "Rp 0";
     const num = parseInt(rawVal);
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(num);
+    return formatIDR(num);
   };
 
   return {

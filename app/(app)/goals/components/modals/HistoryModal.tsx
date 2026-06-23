@@ -40,7 +40,7 @@ export function HistoryModal({
       }
     >
       <div className="space-y-4">
-        <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+        <div className="space-y-2 pr-1">
           {loadingHistory ? (
             <div className="text-center py-8 text-xs text-text-secondary">Memuat riwayat...</div>
           ) : transactionsHistory.length === 0 ? (

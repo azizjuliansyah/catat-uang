@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, ArrowRightLeft } from "lucide-react";
+import { InfoCard } from "@/components/ui/molecules/InfoCard";
 import { formatIDR } from "@/lib/utils/format";
 
 interface WalletDetailStatsProps {
@@ -12,44 +12,31 @@ export function WalletDetailStats({
   totalExpense,
   netFlow
 }: WalletDetailStatsProps) {
+  const formattedNetFlow = `${netFlow >= 0 ? "+" : "-"}${formatIDR(Math.abs(netFlow))}`;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div className="bg-surface-card border border-border p-5 rounded-2xl">
-        <div className="flex items-center gap-2 mb-2">
-          <TrendingUp className="w-4 h-4 text-success" />
-          <p className="text-[10px] font-extrabold text-text-secondary uppercase tracking-wider">
-            Total Pemasukan
-          </p>
-        </div>
-        <p className="text-xl font-bold text-success font-mono">{formatIDR(totalIncome)}</p>
-      </div>
+      <InfoCard
+        title="Total Pemasukan"
+        value={formatIDR(totalIncome)}
+        variant="income"
+        description="Pemasukan pada dompet ini"
+      />
 
-      <div className="bg-surface-card border border-border p-5 rounded-2xl">
-        <div className="flex items-center gap-2 mb-2">
-          <TrendingDown className="w-4 h-4 text-danger" />
-          <p className="text-[10px] font-extrabold text-text-secondary uppercase tracking-wider">
-            Total Pengeluaran
-          </p>
-        </div>
-        <p className="text-xl font-bold text-danger font-mono">{formatIDR(totalExpense)}</p>
-      </div>
+      <InfoCard
+        title="Total Pengeluaran"
+        value={formatIDR(totalExpense)}
+        variant="expense"
+        description="Pengeluaran pada dompet ini"
+      />
 
-      <div className="bg-surface-card border border-border p-5 rounded-2xl">
-        <div className="flex items-center gap-2 mb-2">
-          <ArrowRightLeft className="w-4 h-4 text-text-muted" />
-          <p className="text-[10px] font-extrabold text-text-secondary uppercase tracking-wider">
-            Aliran Bersih
-          </p>
-        </div>
-        <p
-          className={`text-xl font-bold font-mono ${
-            netFlow >= 0 ? "text-success" : "text-danger"
-          }`}
-        >
-          {netFlow >= 0 ? "+" : ""}
-          {formatIDR(Math.abs(netFlow))}
-        </p>
-      </div>
+      <InfoCard
+        title="Aliran Bersih"
+        value={formattedNetFlow}
+        variant={netFlow >= 0 ? "success" : "danger"}
+        description={netFlow >= 0 ? "Surplus saldo dompet" : "Defisit saldo dompet"}
+      />
     </div>
   );
 }
+

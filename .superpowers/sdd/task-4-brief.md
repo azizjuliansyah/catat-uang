@@ -1,0 +1,272 @@
+### Task 4: Create EditTransactionModal
+
+**Files:**
+- Create: `app/(app)/transactions/components/EditTransactionModal.tsx`
+
+**Interfaces:**
+- Consumes: `useTransactionFormState`, `useTransactionFormHandlers`
+- Props: `isOpen`, `onClose`, `onSuccess`, `transaction`
+
+**Purpose:** Modal form for editing existing transactions with pre-filled data.
+
+- [ ] **Step 1: Write the file**
+
+```typescript
+// app/(app)/transactions/components/EditTransactionModal.tsx
+"use client";
+
+import { Modal } from "@/components/ui/organisms/Modal";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
+import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
+import { Calendar, Wallet as WalletIcon, CreditCard, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import { CategoryGridSelector } from "./CategoryGridSelector";
+import { ReceiptManager } from "./ReceiptManager";
+import CustomSelect from "@/components/ui/atoms/CustomSelect";
+import { formatIDR } from "@/lib/utils/format";
+import { useTransactionFormState } from "../hooks/useTransactionFormState";
+import { useTransactionFormHandlers } from "../hooks/useTransactionFormHandlers";
+import { useToast } from "@/components/ui/molecules/Toast";
+
+interface Transaction {
+  id: string;
+  amount: number;
+  type: "income" | "expense";
+  wallet_id: string | null;
+  paylater_id: string | null;
+  category_id: string | null;
+  description: string | null;
+  transaction_date: string;
+  receipt_url: string | null;
+}
+
+interface EditTransactionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  transaction: Transaction | null;
+}
+
+export function EditTransactionModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  transaction
+}: EditTransactionModalProps) {
+  const toast = useToast();
+  const state = useTransactionFormState("edit", transaction || undefined);
+  const handlers = useTransactionFormHandlers(state, toast, onSuccess);
+
+  const {
+    fileInputRef,
+    amountInputRef,
+    wallets,
+    categories,
+    paylaterPlatforms,
+    loading,
+    amount,
+    setAmount,
+    type,
+    setType,
+    sourceId,
+    setSourceId,
+    categoryId,
+    setCategoryId,
+    description,
+    setDescription,
+    transactionDate,
+    setTransactionDate,
+    receiptFile,
+    receiptPreview,
+    uploadingReceipt,
+    submitting
+  } = state;
+
+  const {
+    handleFileChange,
+    handleRemoveReceipt,
+    handleSubmit,
+    getFormattedPreview
+  } = handlers;
+
+  if (loading || !transaction) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title="Sunting Transaksi">
+        <div className="space-y-6 animate-pulse">
+          <div className="h-6 w-32 bg-border/40 rounded" />
+          <div className="h-96 bg-surface-hover rounded" />
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Sunting Transaksi"
+      onSubmit={handleSubmit}
+      className="max-w-2xl"
+      footer={
+        <ModalFooter
+          onCancel={onClose}
+          onSubmit={(e) => {
+            e?.preventDefault();
+            handleSubmit(e as React.FormEvent);
+          }}
+          isSubmitting={submitting || uploadingReceipt}
+          submitText="Simpan Perubahan"
+        />
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Segment Type Selector */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
+          <TabButtonGroup variant="pill" uniformWidth className="h-10 items-center gap-1">
+            <TabButton
+              isActive={type === "expense"}
+              onClick={() => setType("expense")}
+              variant="pill"
+              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "expense" ? "bg-expense/10 text-expense" : ""}`}
+            >
+              <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
+              Pengeluaran
+            </TabButton>
+            <TabButton
+              isActive={type === "income"}
+              onClick={() => setType("income")}
+              variant="pill"
+              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "income" ? "bg-income/10 text-income" : ""}`}
+            >
+              <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
+              Pemasukan
+            </TabButton>
+          </TabButtonGroup>
+        </div>
+
+        {/* Amount Field */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+            Jumlah Uang (Rupiah)
+            <span className="text-danger">*</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm font-bold text-text-secondary select-none">
+              Rp.
+            </span>
+            <input
+              ref={amountInputRef}
+              type="text"
+              value={amount ? parseInt(amount).toLocaleString("id-ID") : ""}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^0-9]/g, "");
+                setAmount(raw);
+              }}
+              placeholder="0"
+              className="w-full pl-11 pr-4 py-3 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-base font-bold font-mono outline-none transition-all"
+              required
+            />
+          </div>
+          <p className="text-xs text-text-muted mt-1.5">
+            Terformat: {getFormattedPreview()}
+          </p>
+        </div>
+
+        {/* Date and Wallet Selection */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Transaction Date */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+              Tanggal Transaksi
+              <span className="text-danger">*</span>
+            </label>
+            <div className="relative">
+              <Calendar className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="datetime-local"
+                value={transactionDate}
+                onChange={(e) => setTransactionDate(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Source/Target Wallet */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+              Sumber Dana
+              <span className="text-danger">*</span>
+            </label>
+            <CustomSelect
+              value={sourceId}
+              onChange={setSourceId}
+              options={[
+                { value: "header-wallets", label: "Dompet / Rekening", disabled: true },
+                ...wallets.filter((w) => !w.is_archived).map((w) => ({
+                  value: `wallet:${w.id}`,
+                  label: `${w.name} (${formatIDR(w.balance)})`,
+                  icon: <WalletIcon className="w-4 h-4 text-text-secondary" />
+                })),
+                ...(paylaterPlatforms.filter((p) => !p.is_archived).length > 0
+                  ? [
+                      { value: "header-paylater", label: "Paylater (Kredit)", disabled: true },
+                      ...paylaterPlatforms.filter((p) => !p.is_archived).map((p) => ({
+                        value: `paylater:${p.id}`,
+                        label: `${p.name} (Outstanding: ${formatIDR(p.balance)})`,
+                        icon: <CreditCard className="w-4 h-4 text-text-secondary" />
+                      }))
+                    ]
+                  : [])
+              ]}
+              placeholder="Pilih Sumber Dana"
+            />
+          </div>
+        </div>
+
+        {/* Category Selection */}
+        <CategoryGridSelector
+          categories={categories}
+          categoryId={categoryId}
+          setCategoryId={setCategoryId}
+          type={type}
+        />
+
+        {/* Description */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-text-secondary">Deskripsi / Catatan (Opsional)</label>
+          <div className="relative">
+            <FileText className="w-4 h-4 text-text-secondary absolute left-3 top-3 pointer-events-none" />
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Contoh: Beli makan siang nasi goreng kambing"
+              rows={3}
+              className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Receipt Upload */}
+        <ReceiptManager
+          receiptFile={receiptFile}
+          receiptPreview={receiptPreview}
+          onFileChange={handleFileChange}
+          onRemove={handleRemoveReceipt}
+          fileInputRef={fileInputRef}
+        />
+      </form>
+    </Modal>
+  );
+}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add app/(app)/transactions/components/EditTransactionModal.tsx
+git commit -m "feat: add EditTransactionModal component"
+```
+
+---
+

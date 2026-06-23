@@ -11,6 +11,8 @@ import {
   Shield,
   ChevronRight
 } from "lucide-react";
+import { UsersSkeleton } from "./UsersSkeleton";
+import { EmptyState } from "@/components/ui/organisms/EmptyState";
 
 interface User {
   id: string;
@@ -47,28 +49,20 @@ export function UserTable({
   };
 
   if (loading) {
-    return (
-      <div className="p-8 space-y-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-12 bg-surface-input rounded-lg animate-pulse" />
-        ))}
-      </div>
-    );
+    return <UsersSkeleton />;
   }
 
   if (users.length === 0) {
     return (
-      <div className="p-12 text-center font-sans">
-        <div className="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center text-text-secondary mx-auto mb-3">
-          <Mail className="w-6 h-6" />
-        </div>
-        <h3 className="text-sm font-semibold text-text-primary">Tidak ada pengguna ditemukan</h3>
-        <p className="text-xs text-text-secondary mt-1">
-          {searchTerm || statusFilter !== "all" || roleFilter !== "all"
+      <EmptyState
+        icon={Mail}
+        title="Tidak ada pengguna ditemukan"
+        description={
+          searchTerm || statusFilter !== "all" || roleFilter !== "all"
             ? "Coba ubah filter pencarian Anda."
-            : "Belum ada pengguna terdaftar."}
-        </p>
-      </div>
+            : "Belum ada pengguna terdaftar."
+        }
+      />
     );
   }
 
@@ -81,7 +75,7 @@ export function UserTable({
             <th className="px-4 py-3 font-medium">Peran</th>
             <th className="px-4 py-3 font-medium">Status</th>
             <th className="px-4 py-3 font-medium">Terdaftar</th>
-            <th className="px-4 py-3 font-medium text-right">Aksi</th>
+            <th className="px-4 py-3 font-medium text-center">Aksi</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border text-text-primary">
@@ -121,7 +115,7 @@ export function UserTable({
                 {formatDate(user.created_at)}
               </td>
               <td className="px-4 py-3">
-                <div className="flex items-center justify-end gap-1">
+                <div className="flex items-center justify-center gap-1">
                   <Button
                     variant="ghost"
                     onClick={() => onActionClick(user, "suspend")}

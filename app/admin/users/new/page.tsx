@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createUser } from "@/app/admin/actions/users";
+import { createUser } from "@/app/admin/users/actions";
 import { Button } from "@/components/ui/atoms/Button";
 import {
   ArrowLeft,
@@ -87,13 +87,13 @@ export default function NewUserPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Toast Messages */}
       {successMsg && (
-        <div className="fixed top-4 right-4 z-50 bg-success/15 border border-success/30 text-success px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg">
+        <div className="fixed top-4 right-4 z-50 bg-success/15 border border-success/30 text-success px-4 py-3 rounded-xl flex items-center gap-2">
           <Check className="w-4 h-4" />
           <span className="text-sm font-semibold">{successMsg}</span>
         </div>
       )}
       {errorMsg && (
-        <div className="fixed top-4 right-4 z-50 bg-danger/15 border border-danger/30 text-danger px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg">
+        <div className="fixed top-4 right-4 z-50 bg-danger/15 border border-danger/30 text-danger px-4 py-3 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span className="text-sm font-semibold">{errorMsg}</span>
         </div>
@@ -198,7 +198,7 @@ export default function NewUserPage() {
                 onClick={() => setFormRole("user")}
                 className={`py-2.5 text-sm font-semibold rounded-lg transition-all min-h-0 h-auto ${
                   formRole === "user"
-                    ? "bg-surface-card text-text-primary border border-border shadow-sm"
+                    ? "bg-surface-card text-text-primary border border-border"
                     : "text-text-secondary hover:text-text-primary hover:bg-transparent"
                 }`}
               >
@@ -209,7 +209,7 @@ export default function NewUserPage() {
                 onClick={() => setFormRole("admin")}
                 className={`py-2.5 text-sm font-semibold rounded-lg transition-all min-h-0 h-auto ${
                   formRole === "admin"
-                    ? "bg-surface-card text-text-primary border border-border shadow-sm"
+                    ? "bg-surface-card text-text-primary border border-border"
                     : "text-text-secondary hover:text-text-primary hover:bg-transparent"
                 }`}
               >

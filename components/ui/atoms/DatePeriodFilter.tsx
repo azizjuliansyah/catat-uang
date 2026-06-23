@@ -82,9 +82,9 @@ export const DatePeriodFilter = ({
           w-full flex items-center justify-between gap-2
           border border-border hover:border-border-strong outline-none transition-all duration-150 ease font-sans
           bg-surface-input focus:border-border-focus cursor-pointer
-          ${size === "sm" ? "px-3 py-1.5 text-xs min-h-[36px] rounded-md" : ""}
-          ${size === "md" ? "px-3 py-2 text-sm min-h-[44px] rounded-md" : ""}
-          ${size === "lg" ? "px-4 py-2.5 text-sm min-h-[52px] rounded-md" : ""}
+          ${size === "sm" ? "px-3 py-1.5 text-xs h-10 rounded-xl" : ""}
+          ${size === "md" ? "px-3 py-2 text-sm min-h-[44px] rounded-xl" : ""}
+          ${size === "lg" ? "px-4 py-2.5 text-sm min-h-[52px] rounded-xl" : ""}
         `}
       >
         <span className="flex-grow text-left truncate inline-flex items-center gap-2">

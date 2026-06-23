@@ -2,21 +2,13 @@
 
 import { FileText, PieChart } from "lucide-react";
 
-interface AuditLog {
-  id: string;
-  actor_id: string;
-  action: string;
-  details: Record<string, unknown>;
-  created_at: string;
-  users?: {
-    email: string;
-  } | null;
-}
+import { AuditLog } from "../[id]/types";
 
 interface UserAuditLogsProps {
   auditLogs: AuditLog[];
   loadingLogs: boolean;
 }
+
 
 export function UserAuditLogs({ auditLogs, loadingLogs }: UserAuditLogsProps) {
   const formatDate = (dateStr: string) => {
@@ -41,7 +33,7 @@ export function UserAuditLogs({ auditLogs, loadingLogs }: UserAuditLogsProps) {
   };
 
   return (
-    <div className="bg-surface-card border border-border rounded-2xl shadow-sm font-sans">
+    <div className="bg-surface-card border border-border rounded-2xl font-sans">
       <div className="p-4 border-b border-border flex items-center gap-2">
         <FileText className="w-4 h-4 text-text-secondary" />
         <h3 className="text-sm font-semibold text-text-primary">Riwayat Aksi (Audit Log)</h3>

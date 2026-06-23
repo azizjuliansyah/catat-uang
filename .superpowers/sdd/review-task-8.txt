@@ -1,0 +1,296 @@
+diff --git a/app/(app)/transactions/components/TransactionListActions.tsx b/app/(app)/transactions/components/TransactionListActions.tsx
+index 468c3f1..7f6d7df 100644
+--- a/app/(app)/transactions/components/TransactionListActions.tsx
++++ b/app/(app)/transactions/components/TransactionListActions.tsx
+@@ -1,19 +1,15 @@
+ "use client";
+ 
+ import { Button } from "@/components/ui/atoms/Button";
+ import { Eye, Edit2, Trash2 } from "lucide-react";
+-
+-interface Transaction {
+-  id: string;
+-  [key: string]: any;
+-}
++import { Transaction } from "../types";
+ 
+ interface TransactionListActionsProps {
+   transaction: Transaction;
+   onDetail: (tx: Transaction) => void;
+   onEdit: (tx: Transaction) => void;
+   onDelete: (tx: Transaction) => void;
+ }
+ 
+ export function TransactionListActions({
+   transaction,
+diff --git a/app/(app)/transactions/components/TransactionListGroup.tsx b/app/(app)/transactions/components/TransactionListGroup.tsx
+index a2ea11e..e48e7f4 100644
+--- a/app/(app)/transactions/components/TransactionListGroup.tsx
++++ b/app/(app)/transactions/components/TransactionListGroup.tsx
+@@ -3,49 +3,21 @@
+ import {
+   Wallet as WalletIcon,
+   Tag,
+   FileImage,
+   HelpCircle,
+   Clock
+ } from "lucide-react";
+ import { Button } from "@/components/ui/atoms/Button";
+ import { TransactionListActions } from "./TransactionListActions";
+ import { getIconComponent } from "@/lib/utils/icons";
+-
+-interface Transaction {
+-  id: string;
+-  user_id: string;
+-  wallet_id: string | null;
+-  paylater_id: string | null;
+-  category_id: string | null;
+-  amount: number;
+-  type: "income" | "expense";
+-  description: string | null;
+-  transaction_date: string;
+-  receipt_url: string | null;
+-  created_at: string;
+-  wallets: {
+-    name: string;
+-    icon: string;
+-    color: string;
+-  } | null;
+-  paylater_platforms: {
+-    name: string;
+-    color: string;
+-    icon: string;
+-  } | null;
+-  categories: {
+-    name: string;
+-    icon: string;
+-    color: string;
+-  } | null;
+-}
++import { Transaction } from "../types";
+ 
+ interface TransactionListGroupProps {
+   uniqueDates: string[];
+   groupedTransactions: { [date: string]: Transaction[] };
+   formatDateLong: (dateStr: string) => string;
+   formatIDR: (val: number) => string;
+   setReceiptModalUrl: (url: string | null) => void;
+   setTransactionToDelete: (tx: Transaction | null) => void;
+   onDetail: (tx: Transaction) => void;
+   onEdit: (tx: Transaction) => void;
+diff --git a/app/(app)/transactions/page.tsx b/app/(app)/transactions/page.tsx
+index 90b9bb0..2cfb32c 100644
+--- a/app/(app)/transactions/page.tsx
++++ b/app/(app)/transactions/page.tsx
+@@ -1,26 +1,30 @@
+ "use client";
+ 
+ import { useRouter } from "next/navigation";
++import { useState } from "react";
+ import { useApp } from "@/app/providers/AppProvider";
+ import { EmptyState } from "@/components/ui/organisms/EmptyState";
+ import { Button } from "@/components/ui/atoms/Button";
++import { PageHeader } from "@/components/ui/molecules/PageHeader";
+ import { ArrowRightLeft, Plus, Sparkles } from "lucide-react";
+ import { TransactionsFilters } from "./components/TransactionsFilters";
+ import { TransactionsStats } from "./components/TransactionsStats";
+ import { TransactionListGroup } from "./components/TransactionListGroup";
+ import { TransactionsSkeleton } from "./components/TransactionsSkeleton";
+ import { RunTemplatesModal } from "./components/RunTemplatesModal";
+ 
+ import { useTransactionsState } from "./hooks/useTransactionsState";
+ import { useTransactionsHandlers } from "./hooks/useTransactionsHandlers";
+ import { TransactionsModals } from "./components/TransactionsModals";
++import { formatIDR, formatDateLong } from "./utils";
++import { Transaction } from "./types";
+ 
+ export default function TransactionsPage() {
+   const router = useRouter();
+   const { wallets, categories } = useApp();
+ 
+   // Temporary container for initial filter hook triggers
+   const stateHelper = useTransactionsState([]);
+ 
+   // Fetching & operations handlers hook
+   const {
+@@ -59,73 +63,80 @@ export default function TransactionsPage() {
+     setReceiptModalUrl,
+     isRunTemplatesOpen,
+     setIsRunTemplatesOpen,
+     totalIncome,
+     totalExpense,
+     netFlow,
+     groupedTransactions,
+     uniqueDates,
+   } = useTransactionsState(transactions);
+ 
+-  const formatIDR = (val: number) => {
+-    return new Intl.NumberFormat("id-ID", {
+-      style: "currency",
+-      currency: "IDR",
+-      minimumFractionDigits: 0,
+-      maximumFractionDigits: 0,
+-    }).format(val);
++  // Modal state
++  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
++  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
++  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
++  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
++  const [transactionToView, setTransactionToView] = useState<Transaction | null>(null);
++
++  // Modal handlers
++  const handleDetail = (tx: Transaction) => {
++    setTransactionToView(tx);
++    setIsDetailModalOpen(true);
++  };
++
++  const handleEdit = (tx: Transaction) => {
++    setTransactionToEdit(tx);
++    setIsEditModalOpen(true);
++  };
++
++  const handleCloseDetail = () => {
++    setIsDetailModalOpen(false);
++    setTransactionToView(null);
++  };
++
++  const handleCloseEdit = () => {
++    setIsEditModalOpen(false);
++    setTransactionToEdit(null);
+   };
+ 
+-  const formatDateLong = (dateStr: string) => {
+-    return new Date(dateStr).toLocaleDateString("id-ID", {
+-      weekday: "long",
+-      year: "numeric",
+-      month: "long",
+-      day: "numeric",
+-    });
++  const handleCloseCreate = () => {
++    setIsCreateModalOpen(false);
+   };
+ 
+   return (
+     <div className="space-y-6 font-sans">
+       {/* Header */}
+-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+-        <div>
+-          <h1 className="text-2xl font-bold tracking-tight text-text-primary flex items-center gap-2 font-display">
+-            <ArrowRightLeft className="w-6 h-6 text-primary" />
+-            Daftar Transaksi
+-          </h1>
+-          <p className="text-xs text-text-secondary mt-1">
+-            Lihat, cari, filter, dan kelola semua catatan keuangan Anda.
+-          </p>
+-        </div>
+-
+-        <div className="flex gap-2 w-full sm:w-auto">
+-          <Button
+-            variant="ghost"
+-            size="sm"
+-            onClick={() => setIsRunTemplatesOpen(true)}
+-            className="flex-1 sm:flex-initial"
+-          >
+-            <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
+-            Jalankan Template
+-          </Button>
+-          <Button
+-            variant="primary"
+-            size="sm"
+-            onClick={() => router.push("/transactions/new")}
+-            className="flex-1 sm:flex-initial"
+-          >
+-            <Plus className="w-4 h-4 mr-1.5" />
+-            Transaksi Baru
+-          </Button>
+-        </div>
+-      </div>
++      <PageHeader
++        icon={ArrowRightLeft}
++        title="Daftar Transaksi"
++        description="Lihat, cari, filter, dan kelola semua catatan keuangan Anda."
++        actions={
++          <>
++            <Button
++              variant="ghost"
++              size="sm"
++              onClick={() => setIsRunTemplatesOpen(true)}
++            >
++              <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
++              Jalankan Template
++            </Button>
++            <Button
++              variant="primary"
++              size="sm"
++              onClick={() => setIsCreateModalOpen(true)}
++            >
++              <Plus className="w-4 h-4 mr-1.5" />
++              Transaksi Baru
++            </Button>
++          </>
++        }
++      />
+ 
+       {/* Filter and Search Bar */}
+       <TransactionsFilters
+         searchTerm={searchTerm}
+         setSearchTerm={setSearchTerm}
+         dateRangeType={dateRangeType}
+         setDateRangeType={setDateRangeType}
+         customStartDate={customStartDate}
+         setCustomStartDate={setCustomStartDate}
+         customEndDate={customEndDate}
+@@ -154,20 +165,22 @@ export default function TransactionsPage() {
+       {loading ? (
+         <TransactionsSkeleton />
+       ) : uniqueDates.length > 0 ? (
+         <TransactionListGroup
+           uniqueDates={uniqueDates}
+           groupedTransactions={groupedTransactions}
+           formatDateLong={formatDateLong}
+           formatIDR={formatIDR}
+           setReceiptModalUrl={setReceiptModalUrl}
+           setTransactionToDelete={setTransactionToDelete}
++          onDetail={handleDetail}
++          onEdit={handleEdit}
+         />
+       ) : (
+         <EmptyState
+           icon={ArrowRightLeft}
+           title="Tidak ada transaksi"
+           description="Tidak ditemukan transaksi untuk filter saat ini. Coba pilih rentang tanggal lain atau ubah filter pencarian Anda."
+           className="w-full max-w-none"
+         />
+       )}
+ 
+@@ -177,20 +190,30 @@ export default function TransactionsPage() {
+         onCloseDelete={() => setTransactionToDelete(null)}
+         onConfirmDelete={() => {
+           if (transactionToDelete) {
+             handleDeleteTransaction(transactionToDelete, () => setTransactionToDelete(null));
+           }
+         }}
+         isDeleting={deletingId !== null}
+         receiptModalUrl={receiptModalUrl}
+         onCloseReceipt={() => setReceiptModalUrl(null)}
+         formatIDR={formatIDR}
++        isCreateOpen={isCreateModalOpen}
++        onCloseCreate={handleCloseCreate}
++        onCreateSuccess={fetchTransactions}
++        isEditOpen={isEditModalOpen}
++        onCloseEdit={handleCloseEdit}
++        onEditSuccess={fetchTransactions}
++        transactionToEdit={transactionToEdit}
++        isDetailOpen={isDetailModalOpen}
++        onCloseDetail={handleCloseDetail}
++        transactionToView={transactionToView}
+       />
+ 
+       {/* Run Templates Modal */}
+       <RunTemplatesModal
+         isOpen={isRunTemplatesOpen}
+         onClose={() => setIsRunTemplatesOpen(false)}
+         onSuccess={fetchTransactions}
+       />
+     </div>
+   );

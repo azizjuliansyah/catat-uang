@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   isDestructive?: boolean;
   className?: string;
@@ -93,7 +93,7 @@ export function Modal({
       <Container
         ref={modalRef}
         onSubmit={onSubmit}
-        className={`bg-surface-card border border-border w-full sm:max-w-md md:max-w-lg rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[85vh] font-sans ${className}`}
+        className={`bg-surface-card border border-border w-full sm:max-w-[500px] lg:max-w-[600px] rounded-t-xl sm:rounded-lg flex flex-col max-h-[90vh] sm:max-h-[85vh] font-sans shrink-0 overflow-hidden ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -114,13 +114,13 @@ export function Modal({
         </div>
 
         {/* Body - Scrollable with max-height */}
-        <div className="flex-1 overflow-y-auto scrollable px-4 py-4 text-body text-text-secondary max-h-[60vh]">
+        <div className="overflow-y-auto px-4 sm:px-6 py-4 text-body text-text-secondary w-full flex-1 min-h-0">
           {children}
         </div>
 
         {/* Footer - Fixed */}
         {footer && (
-          <div className="px-4 py-3 border-t border-border bg-surface-card flex items-center justify-end gap-2 shrink-0">
+          <div className="px-4 sm:px-6 py-3 border-t border-border/50 shrink-0">
             {footer}
           </div>
         )}

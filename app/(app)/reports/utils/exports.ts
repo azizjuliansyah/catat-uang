@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { formatIDR } from "@/lib/utils/format";
 
 interface Transaction {
   id: string;
@@ -35,7 +36,6 @@ interface ExportPDFProps {
   currentDebtsOwe: number;
   categoryBreakdown: CategoryBreakdown[];
   filteredTransactions: Transaction[];
-  formatIDR: (val: number) => string;
   formatPercentage: (val: number) => string;
   showSuccessToast: (msg: string) => void;
   showErrorToast: (msg: string) => void;
@@ -52,7 +52,6 @@ export async function exportToPDF({
   currentDebtsOwe,
   categoryBreakdown,
   filteredTransactions,
-  formatIDR,
   formatPercentage,
   showSuccessToast,
   showErrorToast,

@@ -14,6 +14,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { TrendingUp, HelpCircle } from "lucide-react";
+import { formatIDR } from "@/lib/utils/format";
 
 interface CashflowData {
   month: string;
@@ -32,7 +33,6 @@ interface CategoryBreakdown {
 interface ReportsChartsProps {
   cashflowData: CashflowData[];
   categoryBreakdown: CategoryBreakdown[];
-  formatIDR: (val: number) => string;
   chartColors: {
     income: string;
     expense: string;
@@ -44,13 +44,12 @@ interface ReportsChartsProps {
 export function ReportsCharts({
   cashflowData,
   categoryBreakdown,
-  formatIDR,
   chartColors
 }: ReportsChartsProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
       {/* Cashflow Chart */}
-      <div className="bg-surface-card border border-border rounded-2xl p-5 min-w-0 shadow-sm">
+      <div className="bg-surface-card border border-border rounded-2xl p-5 min-w-0">
         <h3 className="text-xs font-bold text-text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
           <TrendingUp className="w-4 h-4 text-primary" />
           Grafik Arus Kas Bulanan
@@ -82,7 +81,7 @@ export function ReportsCharts({
       </div>
 
       {/* Category Breakdown Chart */}
-      <div className="bg-surface-card border border-border rounded-2xl p-5 min-w-0 shadow-sm">
+      <div className="bg-surface-card border border-border rounded-2xl p-5 min-w-0">
         <h3 className="text-xs font-bold text-text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
           <HelpCircle className="w-4 h-4 text-primary" />
           Distribusi Kategori Pengeluaran

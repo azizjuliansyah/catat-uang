@@ -112,7 +112,7 @@ export function SecurityTab() {
   }
 
   return (
-    <div className="bg-surface-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
+    <div className="bg-surface-card border border-border rounded-2xl p-6 space-y-6">
       <h2 className="text-base font-bold text-text-primary font-display border-b border-border/40 pb-3 flex items-center gap-2">
         <Lock className="w-5 h-5 text-primary" />
         Keamanan & Password

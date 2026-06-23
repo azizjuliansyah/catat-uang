@@ -5,7 +5,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PaylaterPlatform, PaylaterBillingDates } from "../types";
+import { PaylaterPlatform, PaylaterBillingDates } from "../../types";
 import { getIconComponent } from "@/lib/utils/icons";
 import { ArrowLeft, Edit2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
@@ -52,7 +52,7 @@ export function PaylaterDetailHeader({ platform, nextBillingDates }: PaylaterDet
         />
         <div className="flex items-center gap-4 mt-1">
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md shrink-0"
+            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0"
             style={{ backgroundColor: platform.color }}
           >
             <IconComponent className="w-6 h-6" />

@@ -1,0 +1,170 @@
+diff --git a/app/(app)/transactions/components/TransactionsModals.tsx b/app/(app)/transactions/components/TransactionsModals.tsx
+index ebfad4e..eeb04fe 100644
+--- a/app/(app)/transactions/components/TransactionsModals.tsx
++++ b/app/(app)/transactions/components/TransactionsModals.tsx
+@@ -1,79 +1,111 @@
+ import React from "react";
+ import { Modal } from "@/components/ui/organisms/Modal";
+-import { Button } from "@/components/ui/atoms/Button";
+-import { Trash2 } from "lucide-react";
++import { DeleteConfirmationModal } from "@/components/ui/organisms/DeleteConfirmationModal";
++import { TransactionDetailModal } from "@/components/ui/organisms/TransactionDetailModal";
++import { CreateTransactionModal } from "./CreateTransactionModal";
++import { EditTransactionModal } from "./EditTransactionModal";
+ import { Transaction } from "../types";
+ 
+ interface TransactionsModalsProps {
++  // Create modal props
++  isCreateOpen: boolean;
++  onCloseCreate: () => void;
++  onCreateSuccess: () => void;
++
++  // Edit modal props
++  isEditOpen: boolean;
++  onCloseEdit: () => void;
++  onEditSuccess: () => void;
++  transactionToEdit: Transaction | null;
++
++  // Detail modal props
++  isDetailOpen: boolean;
++  onCloseDetail: () => void;
++  transactionToView: Transaction | null;
++
++  // Delete modal props
+   transactionToDelete: Transaction | null;
+   onCloseDelete: () => void;
+   onConfirmDelete: () => void;
+   isDeleting: boolean;
++
++  // Receipt modal props
+   receiptModalUrl: string | null;
+   onCloseReceipt: () => void;
+   formatIDR: (val: number) => string;
+ }
+ 
+ export function TransactionsModals({
++  isCreateOpen,
++  onCloseCreate,
++  onCreateSuccess,
++  isEditOpen,
++  onCloseEdit,
++  onEditSuccess,
++  transactionToEdit,
++  isDetailOpen,
++  onCloseDetail,
++  transactionToView,
+   transactionToDelete,
+   onCloseDelete,
+   onConfirmDelete,
+   isDeleting,
+   receiptModalUrl,
+   onCloseReceipt,
+   formatIDR,
+ }: TransactionsModalsProps) {
+   return (
+     <>
++      {/* Create Transaction Modal */}
++      <CreateTransactionModal
++        isOpen={isCreateOpen}
++        onClose={onCloseCreate}
++        onSuccess={onCreateSuccess}
++      />
++
++      {/* Edit Transaction Modal */}
++      {transactionToEdit && (
++        <EditTransactionModal
++          isOpen={isEditOpen}
++          onClose={onCloseEdit}
++          onSuccess={onEditSuccess}
++          transaction={transactionToEdit}
++        />
++      )}
++
++      {/* Detail Modal */}
++      <TransactionDetailModal
++        isOpen={isDetailOpen}
++        onClose={onCloseDetail}
++        transaction={transactionToView}
++      />
++
+       {/* Delete Transaction Modal */}
+-      <Modal
++      <DeleteConfirmationModal
+         isOpen={transactionToDelete !== null}
+         onClose={onCloseDelete}
+-        title="Hapus Transaksi?"
++        onConfirm={onConfirmDelete}
+         isDestructive
+-        footer={
+-          <>
+-            <Button variant="ghost" size="sm" onClick={onCloseDelete} className="flex-1">
+-              Batal
+-            </Button>
+-            <Button
+-              variant="destructive"
+-              size="sm"
+-              onClick={onConfirmDelete}
+-              isLoading={isDeleting}
+-              className="flex-1"
+-            >
+-              Hapus
+-            </Button>
+-          </>
++        title="Hapus Transaksi?"
++        message={
++          transactionToDelete ?
++            `Apakah Anda yakin ingin menghapus transaksi ${
++              transactionToDelete.description ||
++              transactionToDelete.categories?.name ||
++              "Pemasukan/Pengeluaran"
++            } sebesar ${formatIDR(transactionToDelete.amount)}? Saldo dompet akan disesuaikan secara otomatis.`
++          : ""
+         }
+-      >
+-        <div className="space-y-5 text-center">
+-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger/10 text-danger mb-2">
+-            <Trash2 className="w-6 h-6" />
+-          </div>
+-          <p className="text-xs text-text-secondary leading-relaxed">
+-            Apakah Anda yakin ingin menghapus transaksi{" "}
+-            <strong>
+-              {transactionToDelete?.description ||
+-                transactionToDelete?.categories?.name ||
+-                "Pemasukan/Pengeluaran"}
+-            </strong>{" "}
+-            sebesar{" "}
+-            <strong>
+-              {transactionToDelete ? formatIDR(transactionToDelete.amount) : ""}
+-            </strong>
+-            ? Saldo dompet akan disesuaikan secara otomatis.
+-          </p>
+-        </div>
+-      </Modal>
++        confirmText="Hapus"
++        isConfirming={isDeleting}
++      />
+ 
+       {/* Receipt Image Modal */}
+       <Modal
+         isOpen={receiptModalUrl !== null}
+         onClose={onCloseReceipt}
+         title="Nota Lampiran Transaksi"
+         className="sm:max-w-xl md:max-w-2xl"
+       >
+         <div className="flex flex-col items-center gap-4">
+           <div className="w-full max-h-[60vh] overflow-auto rounded-xl bg-black/40 flex items-center justify-center border border-border">
+@@ -82,10 +114,14 @@ export function TransactionsModals({
+               src={receiptModalUrl || ""}
+               alt="Nota Transaksi"
+               className="max-w-full max-h-[60vh] object-contain rounded"
+             />
+           </div>
+         </div>
+       </Modal>
+     </>
+   );
+ }
++
++// Re-export individual modals for convenience
++export { CreateTransactionModal } from "./CreateTransactionModal";
++export { EditTransactionModal } from "./EditTransactionModal";

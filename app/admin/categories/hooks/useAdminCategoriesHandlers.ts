@@ -4,7 +4,7 @@ import {
   createCategoryTemplate,
   updateCategoryTemplate,
   deleteCategoryTemplate,
-} from "@/app/admin/actions/category-templates";
+} from "../actions";
 import { CategoryTemplate } from "../types";
 import { AdminCategoriesState } from "./useAdminCategoriesState";
 

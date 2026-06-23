@@ -3,7 +3,7 @@
  * Lists paylater payment history records
  */
 
-import { PaylaterPlatform, PaylaterPayment } from "../types";
+import { PaylaterPlatform, PaylaterPayment } from "../../types";
 import { History, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";

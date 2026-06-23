@@ -1,7 +1,7 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
-import { Button } from "@/components/ui/atoms/Button";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { WalletItem } from "../../types";
 import { formatIDR } from "../../utils";
 import { Wallet } from "lucide-react";
@@ -51,14 +51,11 @@ export function TransferModal({
       title="Transfer Saldo Antar Dompet"
       onSubmit={onSubmit}
       footer={
-        <>
-          <Button type="button" variant="ghost" size="sm" fullWidth onClick={onClose}>
-            Batal
-          </Button>
-          <Button type="submit" variant="primary" size="sm" isLoading={isSubmitting} fullWidth>
-            Kirim Transfer
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          isSubmitting={isSubmitting}
+          submitText="Kirim Transfer"
+        />
       }
     >
       <div className="space-y-4">

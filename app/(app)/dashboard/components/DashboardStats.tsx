@@ -1,12 +1,4 @@
 import { InfoCard } from "@/components/ui/molecules/InfoCard";
-import {
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  ArrowDownRight,
-  CreditCard
-} from "lucide-react";
 
 interface DashboardStatsProps {
   totalBalance: number;
@@ -38,46 +30,41 @@ export function DashboardStats({
       <InfoCard
         title="Total Saldo"
         value={formatIDR(totalBalance)}
-        icon={<Wallet className="w-5 h-5" />}
         variant="primary"
+        description="Semua dompet aktif"
       />
 
       {/* Current Month Income */}
       <InfoCard
         title="Pemasukan Bulan Ini"
         value={formatIDR(currentMonthIncome)}
-        icon={<TrendingUp className="w-5 h-5" />}
         variant="income"
-        valueClassName="text-income"
+        description="Bulan berjalan"
       />
 
       {/* Current Month Expense */}
       <InfoCard
         title="Pengeluaran Bulan Ini"
         value={formatIDR(currentMonthExpense)}
-        icon={<TrendingDown className="w-5 h-5" />}
         variant="expense"
-        valueClassName="text-expense"
+        description="Bulan berjalan"
       />
 
       {/* Net Flow */}
       <InfoCard
         title="Arus Bersih (Net)"
         value={formatIDR(netCashflow)}
-        icon={netCashflow >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
         variant={netCashflow >= 0 ? "success" : "danger"}
-        valueClassName={netCashflow >= 0 ? "text-success" : "text-danger"}
+        description={netCashflow >= 0 ? "Surplus bulan ini" : "Defisit bulan ini"}
       />
 
       {/* Paylater Debt */}
       <InfoCard
         title="Hutang Paylater"
         value={formatIDR(totalPaylaterDebt)}
-        icon={<CreditCard className="w-5 h-5" />}
-        variant="owe"
-        valueClassName="text-feedback-error"
+        variant="danger"
+        description="Total tagihan aktif"
       />
     </div>
   );
 }
-

@@ -82,7 +82,7 @@ const SelectTrigger = ({ children }: SelectTriggerProps) => {
     useSelectContext();
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs min-h-[36px] rounded-xl",
+    sm: "px-3 py-1.5 text-xs h-10 rounded-xl",
     md: "px-3 py-2 text-sm min-h-[44px] rounded-xl",
     lg: "px-4 py-2.5 text-sm min-h-[52px] rounded-xl",
   };
@@ -374,7 +374,7 @@ export const CustomSelect = ({
           className={`
             w-full flex items-center justify-between gap-2
             border outline-none transition-all duration-150 ease font-sans
-            ${size === "sm" ? "px-3 py-1.5 text-xs min-h-[36px] rounded-xl" : ""}
+            ${size === "sm" ? "px-3 py-1.5 text-xs h-10 rounded-xl" : ""}
             ${size === "md" ? "px-3 py-2 text-sm min-h-[44px] rounded-xl" : ""}
             ${size === "lg" ? "px-4 py-2.5 text-sm min-h-[52px] rounded-xl" : ""}
             ${hasError

@@ -2,16 +2,7 @@
 
 import { Mail, Shield, UserCheck, UserX } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
-
-interface UserDetails {
-  id: string;
-  email: string;
-  name: string | null;
-  role: "admin" | "user";
-  status: "active" | "suspended";
-  created_at: string;
-  updated_at: string;
-}
+import { UserDetails } from "../[id]/types";
 
 interface UserDetailCardProps {
   user: UserDetails;
@@ -27,16 +18,21 @@ export function UserDetailCard({
   setDeleteModalOpen
 }: UserDetailCardProps) {
   return (
-    <div className="bg-surface-card border border-border rounded-2xl overflow-hidden shadow-sm font-sans">
+    <div className="bg-surface-card border border-border rounded-2xl overflow-hidden font-sans">
       <div className={`h-2 ${user.status === "active" ? "bg-success" : "bg-danger"}`} />
 
       <div className="p-6">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold ${
-              user.role === "admin" ? "bg-primary" : "bg-surface-input text-text-secondary"
-            }`}>
-              {user.name?.[0] || user.email[0].toUpperCase()}
+            {/* Avatar - shows photo if available, otherwise shows initial */}
+            <div className="shrink-0 w-24 h-24 rounded-full overflow-hidden border border-border bg-surface-input flex items-center justify-center">
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt={user.name || "User"} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-text-secondary text-2xl font-bold font-mono truncate">
+                  {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "?"}
+                </span>
+              )}
             </div>
             <div>
               <h2 className="text-xl font-bold text-text-primary">{user.name || "Pengguna"}</h2>
@@ -123,10 +119,10 @@ export function UserDetailCard({
                 Reset
               </Button>
               <Button
-                variant="ghost"
+                variant="destructive"
                 size="sm"
                 onClick={() => setDeleteModalOpen(true)}
-                className="px-3 py-1.5 min-h-0 h-auto text-danger hover:bg-danger/10 hover:text-danger rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                className="px-3 py-1.5 min-h-0 h-auto"
               >
                 Hapus
               </Button>

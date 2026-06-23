@@ -34,7 +34,7 @@ export function CategoryGridSelector({
         Pilih Kategori
         <span className="text-danger">*</span>
       </label>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-surface-input border border-border p-3 rounded-xl max-h-48 overflow-y-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-surface-input border border-border p-3 rounded-xl">
         {filteredCategories.map((cat) => {
           const IconComponent = getIconComponent(cat.icon);
           return (
@@ -50,7 +50,7 @@ export function CategoryGridSelector({
               }`}
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0"
                 style={{ backgroundColor: cat.color }}
               >
                 <IconComponent className="w-4 h-4" />

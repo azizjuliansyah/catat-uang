@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Modal } from "@/components/ui/organisms/Modal";
-import { Button } from "@/components/ui/atoms/Button";
+import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { formatIDR } from "@/lib/utils/format";
 
 interface PaylaterPayment {
@@ -47,28 +47,14 @@ export function DeletePaylaterPaymentModal({
       title="Hapus Pembayaran?"
       isDestructive
       footer={
-        <>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            fullWidth
-            onClick={onClose}
-            disabled={isDeleting}
-          >
-            Batal
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            isLoading={isDeleting}
-            fullWidth
-            onClick={handleConfirm}
-          >
-            Hapus
-          </Button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSubmit={handleConfirm}
+          isSubmitting={isDeleting}
+          cancelText="Batal"
+          submitText="Hapus"
+          variant="destructive"
+        />
       }
     >
       <div className="space-y-4">

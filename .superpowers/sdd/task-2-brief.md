@@ -1,0 +1,205 @@
+### Task 2: Create shared form handlers hook
+
+**Files:**
+- Create: `app/(app)/transactions/hooks/useTransactionFormHandlers.ts`
+
+**Interfaces:**
+- Consumes: `TransactionFormState` from `useTransactionFormState`
+- Produces: Handlers for file change, remove receipt, submit
+
+**Purpose:** Extract and adapt form submission logic to work with modals (no router navigation).
+
+- [ ] **Step 1: Write the file**
+
+```typescript
+// app/(app)/transactions/hooks/useTransactionFormHandlers.ts
+import { createClient } from "@/lib/supabase/client";
+import { formatIDR } from "@/lib/utils/format";
+import { TransactionFormState } from "./useTransactionFormState";
+
+export function useTransactionFormHandlers(
+  state: TransactionFormState,
+  toast: { success: (msg: string) => void; error: (msg: string) => void },
+  onSuccess: () => void
+) {
+  const supabase = createClient();
+
+  const {
+    amount,
+    setAmount,
+    type,
+    sourceId,
+    setSourceId,
+    categoryId,
+    description,
+    transactionDate,
+    receiptFile,
+    setReceiptFile,
+    setReceiptPreview,
+    setUploadingReceipt,
+    setSubmitting,
+    user,
+    refreshWallets,
+    refreshPaylaterPlatforms,
+    fileInputRef,
+    amountInputRef,
+    mode,
+    initialTransaction
+  } = state;
+
+  // Handle Receipt Selection
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Ukuran file nota maksimal adalah 5MB");
+      return;
+    }
+
+    setReceiptFile(file);
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReceiptPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setReceiptPreview(null);
+    }
+  }
+
+  // Remove Selected Receipt
+  function handleRemoveReceipt() {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  // Handle form submit (create or edit)
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+
+    const numericAmount = parseFloat(amount.replace(/[^0-9]/g, ""));
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      toast.error("Jumlah transaksi harus lebih besar dari 0");
+      amountInputRef.current?.focus();
+      return;
+    }
+
+    if (!sourceId) {
+      toast.error("Silakan pilih sumber dana");
+      return;
+    }
+
+    const isWallet = sourceId.startsWith("wallet:");
+    const actualWalletId = isWallet ? sourceId.replace("wallet:", "") : null;
+    const actualPaylaterId = !isWallet ? sourceId.replace("paylater:", "") : null;
+
+    setSubmitting(true);
+
+    try {
+      let finalReceiptUrl = mode === "edit" && initialTransaction?.receipt_url && !receiptFile
+        ? initialTransaction.receipt_url
+        : null;
+
+      // 1. Upload receipt if new file exists
+      if (receiptFile) {
+        setUploadingReceipt(true);
+        const fileExt = receiptFile.name.split(".").pop();
+        const filePath = `${user.id}/receipt-${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("receipts")
+          .upload(filePath, receiptFile, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("receipts")
+          .getPublicUrl(filePath);
+
+        finalReceiptUrl = publicUrl;
+        setUploadingReceipt(false);
+      }
+
+      // 2. Create or Update Transaction
+      if (mode === "create") {
+        const { error: insertError } = await supabase
+          .from("transactions")
+          .insert({
+            user_id: user.id,
+            wallet_id: actualWalletId,
+            paylater_id: actualPaylaterId,
+            category_id: categoryId || null,
+            amount: numericAmount,
+            type: type,
+            description: description.trim() || null,
+            transaction_date: new Date(transactionDate).toISOString(),
+            receipt_url: finalReceiptUrl
+          });
+
+        if (insertError) throw insertError;
+        toast.success("Transaksi baru berhasil disimpan.");
+      } else {
+        // Edit mode
+        const { error: updateError } = await supabase
+          .from("transactions")
+          .update({
+            wallet_id: actualWalletId,
+            paylater_id: actualPaylaterId,
+            category_id: categoryId || null,
+            amount: numericAmount,
+            type: type,
+            description: description.trim() || null,
+            transaction_date: new Date(transactionDate).toISOString(),
+            receipt_url: finalReceiptUrl
+          })
+          .eq("id", initialTransaction!.id);
+
+        if (updateError) throw updateError;
+        toast.success("Transaksi berhasil diperbarui.");
+      }
+
+      await refreshWallets();
+      await refreshPaylaterPlatforms();
+      onSuccess();
+    } catch (err: unknown) {
+      console.error("Error saving transaction:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error("Gagal menyimpan transaksi: " + message);
+    } finally {
+      setSubmitting(false);
+      setUploadingReceipt(false);
+    }
+  }
+
+  const getFormattedPreview = () => {
+    const rawVal = amount.replace(/[^0-9]/g, "");
+    if (!rawVal) return "Rp 0";
+    const num = parseInt(rawVal);
+    return formatIDR(num);
+  };
+
+  return {
+    handleFileChange,
+    handleRemoveReceipt,
+    handleSubmit,
+    getFormattedPreview
+  };
+}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add app/(app)/transactions/hooks/useTransactionFormHandlers.ts
+git commit -m "feat: add shared form handlers hook for transaction modals"
+```
+
+---
+

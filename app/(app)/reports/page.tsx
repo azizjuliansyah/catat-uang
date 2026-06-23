@@ -56,15 +56,6 @@ export default function ReportsPage() {
   } = useReportsState(transactions, debts, cachedWallets);
 
   // Format Helpers
-  const formatIDR = (val: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(val);
-  };
-
   const formatPercentage = (val: number) => {
     return val.toFixed(1) + "%";
   };
@@ -104,7 +95,6 @@ export default function ReportsPage() {
             currentDebtsOwe,
             categoryBreakdown,
             filteredTransactions,
-            formatIDR,
             formatPercentage,
           })
         }
@@ -129,21 +119,18 @@ export default function ReportsPage() {
         totalExpense={totalExpense}
         netCashflow={netCashflow}
         currentWalletsTotal={currentWalletsTotal}
-        formatIDR={formatIDR}
       />
 
       {viewMode === "visual" ? (
         <ReportsCharts
           cashflowData={cashflowData}
           categoryBreakdown={categoryBreakdown}
-          formatIDR={formatIDR}
           chartColors={CHART_COLORS}
         />
       ) : (
         <ReportsTables
           cashflowData={cashflowData}
           categoryBreakdown={categoryBreakdown}
-          formatIDR={formatIDR}
           formatPercentage={formatPercentage}
         />
       )}

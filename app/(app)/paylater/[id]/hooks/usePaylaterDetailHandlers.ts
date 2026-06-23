@@ -6,7 +6,8 @@
 import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
-import { PaylaterPayment } from "../types";
+import { deletePaylaterPayment } from "../../services";
+import { PaylaterPayment } from "../../types";
 
 interface UsePaylaterDetailHandlersProps {
   paymentToDelete: PaylaterPayment | null;
@@ -34,22 +35,7 @@ export function usePaylaterDetailHandlers({
   const handleDeletePayment = async () => {
     if (!paymentToDelete) return;
     try {
-      const txId = paymentToDelete.transaction_id;
-
-      const { error: deletePaymentError } = await supabase
-        .from("paylater_payments")
-        .delete()
-        .eq("id", paymentToDelete.id);
-
-      if (deletePaymentError) throw deletePaymentError;
-
-      if (txId) {
-        const { error: deleteTxError } = await supabase
-          .from("transactions")
-          .delete()
-          .eq("id", txId);
-        if (deleteTxError) throw deleteTxError;
-      }
+      await deletePaylaterPayment(supabase, paymentToDelete.id, paymentToDelete.transaction_id);
 
       showSuccessToast("Pembayaran berhasil dihapus");
       setPaymentToDelete(null);

@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { useApp } from "@/app/providers/AppProvider";
-import { TabButton } from "@/components/ui/molecules/TabButton";
+import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { getIconComponent } from "@/lib/utils/icons";
-import { Plus, Edit2, Trash2, FolderMinus, Wallet as WalletIcon, CreditCard, AlignLeft } from "lucide-react";
+import { Plus, Edit2, Trash2, FolderMinus, Wallet as WalletIcon, CreditCard, AlignLeft, TrendingDown, TrendingUp } from "lucide-react";
 import { TemplateModal } from "./modals/TemplateModal";
 import { DeleteTemplateModal } from "./modals/DeleteTemplateModal";
 import { TransactionTemplateItem } from "@/app/providers/AppProvider";
+import { formatIDR } from "../utils";
 
 export function TemplatesTab() {
   const {
@@ -30,34 +31,30 @@ export function TemplatesTab() {
 
   const filteredTemplates = templates.filter((t) => t.type === templateType);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
   return (
     <div className="space-y-6">
       {/* Subtabs Expense/Income Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-card border border-border rounded-2xl p-4 shadow-sm">
-        <div className="bg-surface-hover/30 border border-border p-1 rounded-xl flex gap-1 self-start">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-card border border-border rounded-2xl p-4">
+        <TabButtonGroup variant="pill" className="h-10 items-center gap-1 self-start">
           <TabButton
             isActive={templateType === "expense"}
             onClick={() => setTemplateType("expense")}
-            className="px-4 py-2 text-xs"
+            variant="pill"
+            className="px-2 py-0 h-full text-xs"
           >
+            <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
             Pengeluaran
           </TabButton>
           <TabButton
             isActive={templateType === "income"}
             onClick={() => setTemplateType("income")}
-            className="px-4 py-2 text-xs"
+            variant="pill"
+            className="px-2 py-0 h-full text-xs"
           >
+            <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
             Pemasukan
           </TabButton>
-        </div>
+        </TabButtonGroup>
 
         <div className="flex gap-2 self-stretch sm:self-auto">
           <Button
@@ -104,13 +101,13 @@ export function TemplatesTab() {
             return (
               <div
                 key={template.id}
-                className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow transition-all group relative overflow-hidden"
+                className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-5 flex flex-col justify-between transition-all group relative overflow-hidden"
               >
                 {/* Top portion */}
                 <div className="flex items-start justify-between gap-3 relative z-10">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0"
                       style={{ backgroundColor: category?.color || "#94a3b8" }}
                     >
                       {CategoryIconComponent ? (
@@ -154,7 +151,7 @@ export function TemplatesTab() {
                       Jumlah Uang
                     </span>
                     <span className="text-sm font-bold font-mono text-text-primary">
-                      {formatCurrency(template.amount)}
+                      {formatIDR(template.amount)}
                     </span>
                   </div>
 

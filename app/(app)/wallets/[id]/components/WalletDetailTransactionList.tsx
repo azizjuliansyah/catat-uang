@@ -34,7 +34,7 @@ export function WalletDetailTransactionList({
         </h3>
         <Link href="/transactions/new">
           <Button
-            variant="ghost"
+            variant="primary"
             size="sm"
             className="text-xs flex items-center gap-1.5 border border-border px-3"
           >
@@ -96,7 +96,7 @@ export function WalletDetailTransactionList({
                     return (
                       <div
                         key={tx.id}
-                        className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow transition-all cursor-pointer group"
+                        className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer group"
                         onClick={() => onTransactionClick(tx)}
                       >
                         <div className="flex items-center gap-4 min-w-0 flex-1">

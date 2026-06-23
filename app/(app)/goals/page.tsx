@@ -2,6 +2,7 @@
 
 import { Plus, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { useGoalsData } from "./hooks/useGoalsData";
 import { useGoalsState } from "./hooks/useGoalsState";
 import { useGoalsHandlers } from "./hooks/useGoalsHandlers";
@@ -9,6 +10,7 @@ import { useGoalsHandlers } from "./hooks/useGoalsHandlers";
 import { GoalsSummary } from "./components/GoalsSummary";
 import { GoalCard } from "./components/GoalCard";
 import { GoalsFilters } from "./components/GoalsFilters";
+import { GoalsEmptyState } from "./components/GoalsEmptyState";
 import { GoalsModals } from "./components/GoalsModals";
 import { GoalsSkeleton } from "./components/GoalsSkeleton";
 
@@ -91,16 +93,17 @@ export default function GoalsPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight font-display">Rencana Tabungan (Goals)</h1>
-          <p className="text-xs text-text-secondary mt-1">Rencanakan, tabung, dan capai impian finansial Anda secara terstruktur.</p>
-        </div>
-        <Button size="sm" onClick={state.openAddModal} className="self-stretch sm:self-auto">
-          <Plus className="w-4 h-4 mr-1.5" />
-          Tambah Target
-        </Button>
-      </div>
+      <PageHeader
+        icon={PiggyBank}
+        title="Rencana Tabungan (Goals)"
+        description="Rencanakan, tabung, dan capai impian finansial Anda secara terstruktur."
+        actions={
+          <Button size="sm" onClick={state.openAddModal}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            Tambah Target
+          </Button>
+        }
+      />
 
       {/* Filters and Search */}
       <GoalsFilters
@@ -117,26 +120,11 @@ export default function GoalsPage() {
       {loading ? (
         <GoalsSkeleton />
       ) : filteredGoals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-border rounded-2xl text-center">
-          <div className="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center text-text-secondary/40 mb-3">
-            <PiggyBank className="w-6 h-6" />
-          </div>
-          <h3 className="text-sm font-bold text-text-primary">Tidak ada target tabungan</h3>
-          <p className="text-xs text-text-secondary mt-1 max-w-sm">
-            {state.searchTerm
-              ? "Coba ganti kata kunci pencarian Anda."
-              : "Mulai buat target impian baru dan kelola tabungan Anda."}
-          </p>
-          {!state.searchTerm && state.statusFilter === "all" && (
-            <Button
-              onClick={state.openAddModal}
-              variant="ghost"
-              className="mt-4 inline-flex items-center gap-1 text-xs text-primary font-bold hover:underline cursor-pointer p-0 h-auto min-h-0 bg-transparent border-transparent"
-            >
-              Tambah target pertama Anda →
-            </Button>
-          )}
-        </div>
+        <GoalsEmptyState
+          searchTerm={state.searchTerm}
+          statusFilter={state.statusFilter}
+          onAddClick={state.openAddModal}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGoals.map((goal) => (

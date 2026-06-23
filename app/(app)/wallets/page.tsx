@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { DndContext, closestCenter, MouseSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import { Wallet as DefaultWalletIcon } from "lucide-react";
 import { useApp } from "@/app/providers/AppProvider";
 import { Button } from "@/components/ui/atoms/Button";
 
@@ -11,8 +10,9 @@ import { useWalletsState } from "./hooks/useWalletsState";
 import { useWalletsHandlers } from "./hooks/useWalletsHandlers";
 
 import { WalletsHeader } from "./components/WalletsHeader";
-import { WalletsTabs } from "./components/WalletsTabs";
+import { WalletsFilterBar } from "./components/WalletsFilterBar";
 import { WalletCard } from "./components/WalletCard";
+import { WalletsEmptyState } from "./components/WalletsEmptyState";
 import { AddWalletModal } from "./components/modals/AddWalletModal";
 import { EditWalletModal } from "./components/modals/EditWalletModal";
 import { TransferModal } from "./components/modals/TransferModal";
@@ -59,8 +59,14 @@ export default function WalletsPage() {
 
   // DND Sensors setup
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -73,7 +79,7 @@ export default function WalletsPage() {
   }
 
   return (
-    <div className="space-y-8 font-sans">
+    <div className="space-y-6 font-sans">
       {/* [1] Page Header + Summary Card */}
       <WalletsHeader
         activeWalletsTotal={state.activeWalletsTotal}
@@ -82,10 +88,12 @@ export default function WalletsPage() {
         onAddClick={() => state.setIsAddModalOpen(true)}
       />
 
-      {/* [2] Filter Bar (Tabs) */}
-      <WalletsTabs
+      {/* [2] Filter Bar (Tabs + Search) */}
+      <WalletsFilterBar
         activeTab={state.activeTab}
         onTabChange={state.setActiveTab}
+        searchTerm={state.searchTerm}
+        onSearchChange={state.setSearchTerm}
         wallets={wallets}
       />
 
@@ -93,28 +101,12 @@ export default function WalletsPage() {
       {loading ? (
         <WalletsSkeleton />
       ) : state.filteredWallets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-border rounded-lg bg-surface-card/50 text-center max-w-md mx-auto">
-          <div className="w-14 h-14 rounded-lg bg-surface-hover flex items-center justify-center text-text-muted mb-4">
-            <DefaultWalletIcon className="w-7 h-7" />
-          </div>
-          <h3 className="text-section-title text-text-primary font-display mb-2">
-            Tidak ada dompet ditemukan
-          </h3>
-          <p className="text-body text-text-secondary max-w-sm mb-6">
-            {state.activeTab === "active"
-              ? "Tambahkan dompet pertama Anda untuk mulai mencatat dan mengelola keuangan Anda."
-              : "Belum ada dompet yang Anda arsipkan."}
-          </p>
-          {state.activeTab === "active" && (
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => state.setIsAddModalOpen(true)}
-            >
-              Tambah Dompet Baru
-            </Button>
-          )}
-        </div>
+        <WalletsEmptyState
+          activeTab={state.activeTab}
+          onAddClick={() => state.setIsAddModalOpen(true)}
+          searchTerm={state.searchTerm}
+          onClearSearch={() => state.setSearchTerm("")}
+        />
       ) : (
         <DndContext
           sensors={sensors}
@@ -125,7 +117,7 @@ export default function WalletsPage() {
             items={state.filteredWallets.map(w => w.id)}
             strategy={rectSortingStrategy}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {state.filteredWallets.map((wallet) => (
                 <WalletCard
                   key={wallet.id}
