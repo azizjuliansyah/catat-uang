@@ -1,19 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import {
   Wallet as WalletIcon,
   Tag,
   FileImage,
-  Edit2,
-  Trash2,
   HelpCircle,
-  Clock,
-  Eye
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
-import { TransactionDetailModal } from "@/components/ui/organisms/TransactionDetailModal";
+import { TransactionListActions } from "./TransactionListActions";
 import { getIconComponent } from "@/lib/utils/icons";
 
 interface Transaction {
@@ -52,6 +47,8 @@ interface TransactionListGroupProps {
   formatIDR: (val: number) => string;
   setReceiptModalUrl: (url: string | null) => void;
   setTransactionToDelete: (tx: Transaction | null) => void;
+  onDetail: (tx: Transaction) => void;
+  onEdit: (tx: Transaction) => void;
 }
 
 export function TransactionListGroup({
@@ -60,28 +57,13 @@ export function TransactionListGroup({
   formatDateLong,
   formatIDR,
   setReceiptModalUrl,
-  setTransactionToDelete
+  setTransactionToDelete,
+  onDetail,
+  onEdit
 }: TransactionListGroupProps) {
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-
-  const openDetailModal = (tx: Transaction) => {
-    setSelectedTransaction(tx);
-    setIsDetailModalOpen(true);
-  };
-
-  const handleEdit = (tx: Transaction) => {
-    // Navigate to edit page
-    window.location.href = `/transactions/${tx.id}`;
-  };
-
-  const handleDelete = (tx: Transaction) => {
-    setTransactionToDelete(tx);
-  };
 
   return (
-    <>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {uniqueDates.map((date) => {
           const dayTransactions = groupedTransactions[date];
           return (
@@ -105,8 +87,7 @@ export function TransactionListGroup({
                   return (
                     <div
                       key={tx.id}
-                      className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow transition-all group cursor-pointer"
-                      onClick={() => openDetailModal(tx)}
+                      className="bg-surface-card border border-border hover:border-border-strong rounded-2xl p-4 flex items-center justify-between transition-all group"
                     >
                       <div className="flex items-center gap-4 min-w-0 flex-1">
                         {/* Category Icon */}
@@ -173,17 +154,20 @@ export function TransactionListGroup({
                         </div>
                       </div>
 
-                      {/* Amount & Eye Icon */}
-                      <div className="flex items-center gap-4 ml-4 shrink-0">
+                      {/* Amount & Actions */}
+                      <div className="flex items-center gap-3 ml-4 shrink-0">
                         <span className={`text-sm font-bold font-mono ${
                           tx.type === "income" ? "text-income" : "text-expense"
                         }`}>
                           {tx.type === "income" ? "+" : "-"} {formatIDR(tx.amount)}
                         </span>
 
-                        <div className="flex items-center gap-1 text-text-secondary group-hover:text-text-primary transition-colors">
-                          <Eye className="w-4 h-4" />
-                        </div>
+                        <TransactionListActions
+                          transaction={tx}
+                          onDetail={onDetail}
+                          onEdit={onEdit}
+                          onDelete={(tx) => setTransactionToDelete(tx)}
+                        />
                       </div>
                     </div>
                   );
@@ -193,18 +177,5 @@ export function TransactionListGroup({
           );
         })}
       </div>
-
-      {/* Transaction Detail Modal */}
-      <TransactionDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedTransaction(null);
-        }}
-        transaction={selectedTransaction}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-    </>
   );
 }
