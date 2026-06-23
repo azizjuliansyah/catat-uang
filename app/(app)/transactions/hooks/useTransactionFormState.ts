@@ -1,0 +1,169 @@
+// app/(app)/transactions/hooks/useTransactionFormState.ts
+import { useState, useEffect, useRef } from "react";
+import { useApp } from "@/app/providers/AppProvider";
+import { getNowDateTimeString } from "@/lib/utils/date";
+
+interface Transaction {
+  id: string;
+  amount: number;
+  type: "income" | "expense";
+  wallet_id: string | null;
+  paylater_id: string | null;
+  category_id: string | null;
+  description: string | null;
+  transaction_date: string;
+  receipt_url: string | null;
+}
+
+export function useTransactionFormState(
+  mode: "create" | "edit",
+  initialTransaction?: Transaction
+) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const amountInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    user,
+    loadingUser,
+    wallets,
+    loadingWallets,
+    categories,
+    loadingCategories,
+    paylaterPlatforms,
+    loadingPaylaterPlatforms,
+    refreshWallets,
+    refreshPaylaterPlatforms
+  } = useApp();
+
+  const loading = loadingUser || loadingWallets || loadingCategories || loadingPaylaterPlatforms;
+
+  // Initialize form based on mode
+  const [amount, setAmount] = useState(() => {
+    if (mode === "edit" && initialTransaction) {
+      return initialTransaction.amount.toString();
+    }
+    return "";
+  });
+
+  const [type, setType] = useState<"expense" | "income">(() => {
+    if (mode === "edit" && initialTransaction) {
+      return initialTransaction.type;
+    }
+    return "expense";
+  });
+
+  const [sourceId, setSourceId] = useState(() => {
+    if (mode === "edit" && initialTransaction) {
+      if (initialTransaction.wallet_id) {
+        return `wallet:${initialTransaction.wallet_id}`;
+      }
+      if (initialTransaction.paylater_id) {
+        return `paylater:${initialTransaction.paylater_id}`;
+      }
+    }
+    return "";
+  });
+
+  const [categoryId, setCategoryId] = useState(() => {
+    if (mode === "edit" && initialTransaction?.category_id) {
+      return initialTransaction.category_id;
+    }
+    return "";
+  });
+
+  const [description, setDescription] = useState(() => {
+    if (mode === "edit" && initialTransaction) {
+      return initialTransaction.description || "";
+    }
+    return "";
+  });
+
+  const [transactionDate, setTransactionDate] = useState(() => {
+    if (mode === "edit" && initialTransaction) {
+      // Convert ISO string to datetime-local format
+      const date = new Date(initialTransaction.transaction_date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+    return getNowDateTimeString();
+  });
+
+  // Receipt Upload States
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(() => {
+    if (mode === "edit" && initialTransaction?.receipt_url) {
+      return initialTransaction.receipt_url;
+    }
+    return null;
+  });
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Pre-select default wallet in create mode
+  useEffect(() => {
+    if (mode === "create" && !loadingWallets && wallets.length > 0 && !sourceId) {
+      const activeWallets = wallets.filter((w) => !w.is_archived);
+      const defaultWallet = activeWallets.find((w) => w.is_default);
+      if (defaultWallet) {
+        setSourceId(`wallet:${defaultWallet.id}`);
+      } else if (activeWallets.length > 0) {
+        setSourceId(`wallet:${activeWallets[0].id}`);
+      }
+    }
+  }, [mode, wallets, loadingWallets, sourceId]);
+
+  // Pre-select category when type changes (create mode only)
+  useEffect(() => {
+    if (mode === "create") {
+      const typeCategories = categories.filter((c) => c.type === type);
+      if (typeCategories.length > 0) {
+        const currentCat = categories.find((c) => c.id === categoryId);
+        if (!currentCat || currentCat.type !== type) {
+          setCategoryId(typeCategories[0].id);
+        }
+      } else {
+        setCategoryId("");
+      }
+    }
+  }, [mode, type, categories, categoryId]);
+
+  return {
+    fileInputRef,
+    amountInputRef,
+    user,
+    wallets,
+    categories,
+    paylaterPlatforms,
+    refreshWallets,
+    refreshPaylaterPlatforms,
+    loading,
+    amount,
+    setAmount,
+    type,
+    setType,
+    sourceId,
+    setSourceId,
+    categoryId,
+    setCategoryId,
+    description,
+    setDescription,
+    transactionDate,
+    setTransactionDate,
+    receiptFile,
+    setReceiptFile,
+    receiptPreview,
+    setReceiptPreview,
+    uploadingReceipt,
+    setUploadingReceipt,
+    submitting,
+    setSubmitting,
+    mode,
+    initialTransaction
+  };
+}
+
+export type TransactionFormState = ReturnType<typeof useTransactionFormState>;
