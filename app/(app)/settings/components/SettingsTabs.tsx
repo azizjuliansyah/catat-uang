@@ -1,7 +1,7 @@
 "use client";
 
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
-import { User, Shield, FolderOpen, ClipboardCopy } from "lucide-react";
+import { User, FolderOpen, ClipboardCopy } from "lucide-react";
 
 type TabType = "profile-security" | "categories" | "templates";
 
@@ -17,10 +17,9 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
         isActive={activeTab === "profile-security"}
         onClick={() => onTabChange("profile-security")}
         variant="pill"
-        className="px-2 py-0 h-full text-xs flex-1 min-w-[90px]"
+        className="px-3 py-0 h-full text-xs flex-1 min-w-[140px]"
       >
         <User className="w-3.5 h-3.5 mr-1.5 inline" />
-        <Shield className="w-3.5 h-3.5 mr-1 inline" />
         Profil & Keamanan
       </TabButton>
 
