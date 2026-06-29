@@ -73,7 +73,7 @@ export function PasswordChangeForm({
             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
             className="absolute right-1 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors cursor-pointer min-h-0 h-8 w-8 p-0 bg-transparent border-transparent hover:bg-transparent"
           >
-            {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </Button>
         </div>
         {passwordErrors.current && (
