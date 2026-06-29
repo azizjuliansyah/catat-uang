@@ -168,7 +168,7 @@ export default function LoginPage() {
 
         {/* Footer/Help links */}
         <p className="text-center text-xs text-text-muted font-mono">
-          CatatUang Financial System v1.0.0
+          © {new Date().getFullYear()} CatatUang. All rights reserved.
         </p>
       </div>
     </div>
