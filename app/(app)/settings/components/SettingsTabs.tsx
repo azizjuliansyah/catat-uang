@@ -1,34 +1,26 @@
 "use client";
 
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
-import { User, Shield, FolderOpen, ClipboardCopy } from "lucide-react";
+import { UserShield, FolderOpen, ClipboardCopy } from "lucide-react";
+
+type TabType = "profile-security" | "categories" | "templates";
 
 interface SettingsTabsProps {
-  activeTab: "profile" | "categories" | "security" | "templates";
-  onTabChange: (tab: "profile" | "categories" | "security" | "templates") => void;
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
 }
 
 export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
   return (
     <TabButtonGroup variant="pill" className="h-10 items-center gap-1 self-start max-w-md flex-wrap">
       <TabButton
-        isActive={activeTab === "profile"}
-        onClick={() => onTabChange("profile")}
+        isActive={activeTab === "profile-security"}
+        onClick={() => onTabChange("profile-security")}
         variant="pill"
         className="px-2 py-0 h-full text-xs flex-1 min-w-[90px]"
       >
-        <User className="w-3.5 h-3.5 mr-1.5 inline" />
-        Profil
-      </TabButton>
-
-      <TabButton
-        isActive={activeTab === "security"}
-        onClick={() => onTabChange("security")}
-        variant="pill"
-        className="px-2 py-0 h-full text-xs flex-1 min-w-[90px]"
-      >
-        <Shield className="w-3.5 h-3.5 mr-1.5 inline" />
-        Keamanan
+        <UserShield className="w-3.5 h-3.5 mr-1.5 inline" />
+        Profil & Keamanan
       </TabButton>
 
       <TabButton
