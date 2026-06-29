@@ -13,6 +13,9 @@ export function ProfileSecurityCombined() {
 
   const profileActions = useProfileActions({ user, supabase, refreshUser });
 
+  // Prioritize user_metadata avatar, fallback to database value
+  const displayAvatarUrl = user?.user_metadata?.avatar_url || profileActions.avatarUrl || null;
+
   // Create a wrapper that passes an empty event to handleProfileSave
   const handleProfileSave = () => {
     const event = new Event("submit", { bubbles: true, cancelable: true }) as unknown as React.FormEvent;
@@ -24,7 +27,7 @@ export function ProfileSecurityCombined() {
       {/* Left Column: Profile Preview (30%) */}
       <div className="lg:sticky lg:top-6 h-fit">
         <ProfilePreviewCard
-          avatarUrl={profileActions.avatarUrl}
+          avatarUrl={displayAvatarUrl}
           name={profileActions.profileName}
           email={user?.email || null}
           createdAt={user?.created_at || null}
@@ -37,7 +40,7 @@ export function ProfileSecurityCombined() {
         <ProfileForm
           userEmail={user?.email}
           profileName={profileActions.profileName}
-          avatarUrl={profileActions.avatarUrl}
+          avatarUrl={displayAvatarUrl}
           onProfileNameChange={profileActions.setProfileName}
           onAvatarUpload={() => profileActions.fileInputRef.current?.click()}
           onSubmit={handleProfileSave}
