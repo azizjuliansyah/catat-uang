@@ -89,3 +89,17 @@ export const formatDateLong = (dateStr: string | null | undefined): string => {
     day: "numeric"
   });
 };
+
+/**
+ * Formats a date to Indonesian locale with custom options
+ */
+export const formatDateIndo = (
+  date: Date,
+  options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }
+): string => {
+  return date.toLocaleDateString("id-ID", options);
+};
