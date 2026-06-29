@@ -50,14 +50,9 @@ export function ProfileForm({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             onClick={onAvatarUpload}
-            className={`
-              relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all
-              ${isDragOver
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/50 hover:bg-surface-input/50'
-              }
-              ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
-            }
+            className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+              isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-surface-input/50"
+            } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {/* Avatar Preview */}
             <div className="flex justify-center mb-4">
