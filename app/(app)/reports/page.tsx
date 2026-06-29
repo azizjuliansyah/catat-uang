@@ -6,7 +6,8 @@ import { PeriodFilter } from "./components/FilterBar";
 import { SummaryCards } from "./components/SummaryCards";
 import { ReportsCharts } from "./components/ReportsCharts";
 import { ReportsTables } from "./components/ReportsTables";
-import { ReportsSkeleton } from "./components/ReportsSkeleton";
+import { ReportsChartsSkeleton } from "./components/ReportsChartsSkeleton";
+import { ReportsTablesSkeleton } from "./components/ReportsTablesSkeleton";
 
 import { useReportsState } from "./hooks/useReportsState";
 import { useReportsHandlers } from "./hooks/useReportsHandlers";
@@ -48,6 +49,7 @@ export default function ReportsPage() {
     filteredTransactions,
     cashflowData,
     categoryBreakdown,
+    incomeCategoryBreakdown,
     totalIncome,
     totalExpense,
     netCashflow,
@@ -59,8 +61,6 @@ export default function ReportsPage() {
   const formatPercentage = (val: number) => {
     return val.toFixed(1) + "%";
   };
-
-  if (loading) return <ReportsSkeleton />;
 
   if (errorMsg) {
     return <div className="text-center py-10 text-danger">{errorMsg}</div>;
@@ -119,18 +119,27 @@ export default function ReportsPage() {
         totalExpense={totalExpense}
         netCashflow={netCashflow}
         currentWalletsTotal={currentWalletsTotal}
+        isLoading={loading}
       />
 
       {viewMode === "visual" ? (
-        <ReportsCharts
-          cashflowData={cashflowData}
-          categoryBreakdown={categoryBreakdown}
-          chartColors={CHART_COLORS}
-        />
+        loading ? (
+          <ReportsChartsSkeleton />
+        ) : (
+          <ReportsCharts
+            cashflowData={cashflowData}
+            categoryBreakdown={categoryBreakdown}
+            incomeCategoryBreakdown={incomeCategoryBreakdown}
+            chartColors={CHART_COLORS}
+          />
+        )
+      ) : loading ? (
+        <ReportsTablesSkeleton />
       ) : (
         <ReportsTables
           cashflowData={cashflowData}
           categoryBreakdown={categoryBreakdown}
+          incomeCategoryBreakdown={incomeCategoryBreakdown}
           formatPercentage={formatPercentage}
         />
       )}

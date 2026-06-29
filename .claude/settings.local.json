@@ -34,7 +34,8 @@
       "Bash(node -e ' *)",
       "Bash(Select-String -Pattern \"useTransactionFormState\")",
       "Bash(git diff *)",
-      "Bash(echo \"Exit code: $?\")"
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(dir \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\\\\app\\\\\\(app\\)\\\\paylater\\\\[id]\\\\components\")"
     ]
   }
 }

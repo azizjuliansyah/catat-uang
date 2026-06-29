@@ -43,7 +43,7 @@ index 0000000..468c3f1
 +        size="sm"
 +        onClick={() => onEdit(transaction)}
 +        className="h-8 px-2"
-+        title="Sunting"
++        title="Edit"
 +      >
 +        <Edit2 className="w-4 h-4" />
 +      </Button>

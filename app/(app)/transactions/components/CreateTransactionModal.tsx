@@ -4,7 +4,7 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
-import { Calendar, Wallet as WalletIcon, CreditCard, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { CategoryGridSelector } from "./CategoryGridSelector";
 import { ReceiptManager } from "./ReceiptManager";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";
@@ -94,12 +94,15 @@ export function CreateTransactionModal({
         {/* Segment Type Selector */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
-          <TabButtonGroup variant="pill" uniformWidth className="h-10 items-center gap-1">
+          <TabButtonGroup variant="pill-colored" uniformWidth className="h-10 items-center gap-1">
             <TabButton
               isActive={type === "expense"}
               onClick={() => setType("expense")}
-              variant="pill"
-              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "expense" ? "bg-expense/10 text-expense" : ""}`}
+              variant="pill-colored"
+              className={`px-2 py-0 h-full text-xs transition-all ${type === "expense"
+                ? "bg-expense/25 border-none text-expense"
+                : "text-text-secondary hover:text-text-primary"
+                }`}
             >
               <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
               Pengeluaran
@@ -107,8 +110,11 @@ export function CreateTransactionModal({
             <TabButton
               isActive={type === "income"}
               onClick={() => setType("income")}
-              variant="pill"
-              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "income" ? "bg-income/10 text-income" : ""}`}
+              variant="pill-colored"
+              className={`px-2 py-0 h-full text-xs transition-all ${type === "income"
+                ? "bg-income/25 border-none text-income"
+                : "text-text-secondary hover:text-text-primary"
+                }`}
             >
               <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
               Pemasukan
@@ -153,12 +159,11 @@ export function CreateTransactionModal({
               <span className="text-danger">*</span>
             </label>
             <div className="relative">
-              <Calendar className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="datetime-local"
                 value={transactionDate}
                 onChange={(e) => setTransactionDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer"
+                className="w-full min-h-[44px] pl-4 pr-3 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer"
                 required
               />
             </div>
@@ -167,7 +172,7 @@ export function CreateTransactionModal({
           {/* Source/Target Wallet */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              Sumber Dana
+              {type === "income" ? "Dompet Tujuan" : "Sumber Dana"}
               <span className="text-danger">*</span>
             </label>
             <CustomSelect
@@ -177,21 +182,19 @@ export function CreateTransactionModal({
                 { value: "header-wallets", label: "Dompet / Rekening", disabled: true },
                 ...wallets.filter((w) => !w.is_archived).map((w) => ({
                   value: `wallet:${w.id}`,
-                  label: `${w.name} (${formatIDR(w.balance)})`,
-                  icon: <WalletIcon className="w-4 h-4 text-text-secondary" />
+                  label: `${w.name} (${formatIDR(w.balance)})`
                 })),
                 ...(paylaterPlatforms.filter((p) => !p.is_archived).length > 0
                   ? [
-                      { value: "header-paylater", label: "Paylater (Kredit)", disabled: true },
-                      ...paylaterPlatforms.filter((p) => !p.is_archived).map((p) => ({
-                        value: `paylater:${p.id}`,
-                        label: `${p.name} (Outstanding: ${formatIDR(p.balance)})`,
-                        icon: <CreditCard className="w-4 h-4 text-text-secondary" />
-                      }))
-                    ]
+                    { value: "header-paylater", label: "Paylater (Kredit)", disabled: true },
+                    ...paylaterPlatforms.filter((p) => !p.is_archived).map((p) => ({
+                      value: `paylater:${p.id}`,
+                      label: `${p.name} (Outstanding: ${formatIDR(p.balance)})`
+                    }))
+                  ]
                   : [])
               ]}
-              placeholder="Pilih Sumber Dana"
+              placeholder={type === "income" ? "Pilih Dompet Tujuan" : "Pilih Sumber Dana"}
             />
           </div>
         </div>
@@ -208,13 +211,12 @@ export function CreateTransactionModal({
         <div className="space-y-2">
           <label className="text-xs font-semibold text-text-secondary">Deskripsi / Catatan (Opsional)</label>
           <div className="relative">
-            <FileText className="w-4 h-4 text-text-secondary absolute left-3 top-3 pointer-events-none" />
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Contoh: Beli makan siang nasi goreng kambing"
               rows={3}
-              className="w-full pl-9 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none"
+              className="w-full pl-4 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none"
             />
           </div>
         </div>
@@ -226,6 +228,7 @@ export function CreateTransactionModal({
           onFileChange={handleFileChange}
           onRemove={handleRemoveReceipt}
           fileInputRef={fileInputRef}
+          type={type}
         />
       </div>
     </Modal>

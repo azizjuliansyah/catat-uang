@@ -35,12 +35,16 @@ export function TemplatesTab() {
     <div className="space-y-6">
       {/* Subtabs Expense/Income Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-card border border-border rounded-2xl p-4">
-        <TabButtonGroup variant="pill" className="h-10 items-center gap-1 self-start">
+        <TabButtonGroup variant="pill-colored" className="h-10 items-center gap-1 self-start">
           <TabButton
             isActive={templateType === "expense"}
             onClick={() => setTemplateType("expense")}
-            variant="pill"
-            className="px-2 py-0 h-full text-xs"
+            variant="pill-colored"
+            className={`px-2 py-0 text-xs transition-all ${
+              templateType === "expense"
+                ? "bg-expense/25 border-none text-expense"
+                : "text-text-secondary hover:text-text-primary"
+            }`}
           >
             <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
             Pengeluaran
@@ -48,8 +52,12 @@ export function TemplatesTab() {
           <TabButton
             isActive={templateType === "income"}
             onClick={() => setTemplateType("income")}
-            variant="pill"
-            className="px-2 py-0 h-full text-xs"
+            variant="pill-colored"
+            className={`px-2 py-0 h-full text-xs transition-all ${
+              templateType === "income"
+                ? "bg-income/25 border-none text-income"
+                : "text-text-secondary hover:text-text-primary"
+            }`}
           >
             <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
             Pemasukan
@@ -73,7 +81,7 @@ export function TemplatesTab() {
 
       {/* Templates Grid List */}
       {templatesLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-32 bg-surface-card rounded-2xl border border-border/50 animate-pulse" />
           ))}
@@ -91,7 +99,7 @@ export function TemplatesTab() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {filteredTemplates.map((template) => {
             const category = categories.find((c) => c.id === template.category_id);
             const wallet = wallets.find((w) => w.id === template.wallet_id);
@@ -129,6 +137,7 @@ export function TemplatesTab() {
                   <div className="flex items-center gap-0.5 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                     <ActionButton
                       icon={Edit2}
+                      size="sm"
                       title="Edit Template"
                       onClick={() => {
                         setEditingTemplate(template);
@@ -137,6 +146,7 @@ export function TemplatesTab() {
                     />
                     <ActionButton
                       icon={Trash2}
+                      size="sm"
                       title="Hapus Template"
                       variant="danger"
                       onClick={() => setTemplateToDelete(template)}
@@ -145,7 +155,7 @@ export function TemplatesTab() {
                 </div>
 
                 {/* Bottom portion / details */}
-                <div className="mt-4 pt-4 border-t border-border/60 flex items-center justify-between gap-4 relative z-10">
+                <div className="mt-4 flex items-center justify-between gap-4 relative z-10">
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">
                       Jumlah Uang

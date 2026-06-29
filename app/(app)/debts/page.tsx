@@ -12,10 +12,9 @@ import { DebtsSummary } from "./components/DebtsSummary";
 import { DebtCard } from "./components/DebtCard";
 import { DebtsFilters } from "./components/DebtsFilters";
 import { DebtsEmptyState } from "./components/DebtsEmptyState";
+import { DebtsGridSkeleton } from "./components/DebtsGridSkeleton";
 import { DebtFormModal } from "./components/modals/DebtFormModal";
-import { PaymentModal } from "./components/modals/PaymentModal";
 import { DeleteDebtModal } from "./components/modals/DeleteDebtModal";
-import { DebtsSkeleton } from "./components/DebtsSkeleton";
 
 export default function DebtsPage() {
   const { user, loadingUser, wallets, loadingWallets, refreshWallets } = useApp();
@@ -26,8 +25,7 @@ export default function DebtsPage() {
   const {
     fetchDebts,
     handleSaveDebt,
-    handleDeleteDebt,
-    handleRecordPayment
+    handleDeleteDebt
   } = useDebtsHandlers({
     user,
     refreshWallets,
@@ -96,11 +94,11 @@ export default function DebtsPage() {
       />
 
       {/* Summary Cards */}
-      <DebtsSummary debts={state.debts} />
+      <DebtsSummary debts={state.debts} isLoading={loading} />
 
       {/* Main List */}
       {loading ? (
-        <DebtsSkeleton />
+        <DebtsGridSkeleton />
       ) : state.filteredDebts.length === 0 ? (
         <DebtsEmptyState
           searchTerm={state.searchTerm}
@@ -109,14 +107,13 @@ export default function DebtsPage() {
           onAddClick={state.openAddModal}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {state.filteredDebts.map((item) => (
             <DebtCard
               key={item.id}
               item={item}
               onEdit={state.openEditModal}
               onDelete={state.setDebtToDelete}
-              onPay={state.openPayModal}
             />
           ))}
         </div>
@@ -139,25 +136,6 @@ export default function DebtsPage() {
         setFormPackages={state.setFormPackages}
         isSubmitting={state.submittingDebt}
         editingDebt={state.editingDebt}
-      />
-
-      <PaymentModal
-        isOpen={state.isPayModalOpen}
-        onClose={() => state.setIsPayModalOpen(false)}
-        onSubmit={handleRecordPayment}
-        payingDebt={state.payingDebt}
-        payAmount={state.payAmount}
-        setPayAmount={state.setPayAmount}
-        payWalletId={state.payWalletId}
-        setPayWalletId={state.setPayWalletId}
-        payDate={state.payDate}
-        setPayDate={state.setPayDate}
-        payProofFiles={state.payProofFiles}
-        setPayProofFiles={state.setPayProofFiles}
-        payProofPreviews={state.payProofPreviews}
-        setPayProofPreviews={state.setPayProofPreviews}
-        isSubmitting={state.submittingPayment}
-        wallets={wallets}
       />
 
       <DeleteDebtModal

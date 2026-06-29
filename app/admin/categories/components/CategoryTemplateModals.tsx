@@ -2,9 +2,8 @@ import React from "react";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { FormField } from "@/components/ui/molecules/FormField";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
-import { getIconComponent } from "@/lib/utils/icons";
-import { Check } from "lucide-react";
+import { IconSelector } from "@/components/ui/molecules/IconSelector";
+import { ColorPicker } from "@/components/ui/molecules/ColorPicker";
 import { AdminCategoriesState } from "../hooks/useAdminCategoriesState";
 
 interface CategoryTemplateModalsProps {
@@ -64,7 +63,7 @@ export function CategoryTemplateModals({
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingTemplate ? "Sunting Template Kategori" : "Buat Template Kategori Baru"}
+        title={editingTemplate ? "Edit Template Kategori" : "Buat Template Kategori Baru"}
         onSubmit={handleSubmit}
         footer={
           <ModalFooter
@@ -97,11 +96,10 @@ export function CategoryTemplateModals({
                   setFormType("expense");
                   if (formColor === "#10B981") setFormColor("#EF4444");
                 }}
-                className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                  formType === "expense"
+                className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${formType === "expense"
                     ? "bg-danger text-white"
                     : "text-text-secondary hover:bg-surface-hover"
-                }`}
+                  }`}
               >
                 Pengeluaran
               </button>
@@ -111,73 +109,34 @@ export function CategoryTemplateModals({
                   setFormType("income");
                   if (formColor === "#EF4444") setFormColor("#10B981");
                 }}
-                className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                  formType === "income"
+                className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${formType === "income"
                     ? "bg-success text-white"
                     : "text-text-secondary hover:bg-surface-hover"
-                }`}
+                  }`}
               >
                 Pemasukan
               </button>
             </div>
           </div>
 
-          {/* Icon Selection */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              Pilih Ikon
-              <span className="text-danger">*</span>
-            </label>
-            <div className="grid grid-cols-4 gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
-              {PRESET_ICONS.map((iconName) => {
-                const IconComp = getIconComponent(iconName);
-                return (
-                  <ActionButton
-                    key={iconName}
-                    icon={IconComp}
-                    title={iconName}
-                    variant="ghost"
-                    size="sm"
-                    isSelected={formIcon === iconName}
-                    selectedColor="var(--color-primary)"
-                    onClick={() => setFormIcon(iconName)}
-                  />
-                );
-              })}
-            </div>
-          </div>
+          <IconSelector
+            icons={PRESET_ICONS}
+            selected={formIcon}
+            onSelect={setFormIcon}
+            label="Pilih Ikon"
+            required
+            columns={4}
+          />
 
-          {/* Color Selection */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              Pilih Warna
-              <span className="text-danger">*</span>
-            </label>
-            <div className="flex flex-wrap gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
-              {PRESET_COLORS.map((col) => {
-                const isSelected = formColor.toLowerCase() === col.hex.toLowerCase();
-                return (
-                  <Button
-                    key={col.hex}
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setFormColor(col.hex)}
-                    className={`w-7 h-7 p-0 min-h-0 rounded-full transition-all cursor-pointer flex items-center justify-center border-2 border-transparent ${
-                      isSelected
-                        ? "border-text-primary scale-110"
-                        : "hover:scale-105"
-                    }`}
-                    style={{ backgroundColor: col.hex }}
-                    title={col.name}
-                  >
-                    {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
+          <ColorPicker
+            colors={PRESET_COLORS}
+            selected={formColor}
+            onSelect={setFormColor}
+            label="Pilih Warna"
+            required
+            allowCustom={false}
+            columns={4}
+          />
         </div>
       </Modal>
 

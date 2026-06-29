@@ -1,9 +1,11 @@
 ### Task 5: Create TransactionListActions
 
 **Files:**
+
 - Create: `app/(app)/transactions/components/TransactionListActions.tsx`
 
 **Interfaces:**
+
 - Props: `transaction`, `onDetail`, `onEdit`, `onDelete`
 
 **Purpose:** Action buttons component for each transaction list item.
@@ -51,7 +53,7 @@ export function TransactionListActions({
         size="sm"
         onClick={() => onEdit(transaction)}
         className="h-8 px-2"
-        title="Sunting"
+        title="Edit"
       >
         <Edit2 className="w-4 h-4" />
       </Button>
@@ -77,4 +79,3 @@ git commit -m "feat: add TransactionListActions component"
 ```
 
 ---
-

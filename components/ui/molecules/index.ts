@@ -12,6 +12,8 @@ export { Breadcrumbs } from "./Breadcrumbs";
 export { ModalFooter } from "./ModalFooter";
 export { IconSelector } from "./IconSelector";
 export { ColorPicker } from "./ColorPicker";
+export { ItemGridSelector } from "./ItemGridSelector";
+export type { GridItem } from "./ItemGridSelector";
 export { TabButtonGroup } from "./TabButtonGroup";
 export { PageHeader } from "./PageHeader";
 export { CardActions } from "./CardActions";
@@ -20,4 +22,5 @@ export { CardSkeleton } from "./CardSkeleton";
 export { TableSkeleton } from "./TableSkeleton";
 export { DetailPageHeader } from "./DetailPageHeader";
 export type { DetailHeaderBadge, DetailHeaderBadgeVariant, DisplayCard } from "./DetailPageHeader";
-
+export { DropdownMenu } from "./DropdownMenu";
+export type { DropdownMenuItem } from "./DropdownMenu";

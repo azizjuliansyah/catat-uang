@@ -9,6 +9,7 @@ import { getIconComponent } from "@/lib/utils/icons";
 import { Plus, Edit2, Trash2, FolderMinus, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { CategoryModal } from "./modals/CategoryModal";
 import { DeleteCategoryModal } from "./modals/DeleteCategoryModal";
+import { ConfirmApplyTemplateModal } from "./modals/ConfirmApplyTemplateModal";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { applyCategoryTemplates } from "@/app/admin/categories/actions";
 import { Category } from "../types";
@@ -21,6 +22,7 @@ export function CategoriesTab() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isConfirmTemplateModalOpen, setIsConfirmTemplateModalOpen] = useState(false);
 
   const { success: showSuccessToast, error: showErrorToast } = useToast();
   const [applyingTemplate, setApplyingTemplate] = useState(false);
@@ -37,6 +39,7 @@ export function CategoriesTab() {
           showSuccessToast("Semua kategori template sudah ada di akun Anda.");
         }
       }
+      setIsConfirmTemplateModalOpen(false);
     } catch (err: unknown) {
       console.error("Error applying category templates:", err);
       const msg = err instanceof Error ? err.message : String(err);
@@ -52,12 +55,15 @@ export function CategoriesTab() {
     <div className="space-y-6">
       {/* Subtabs Expense/Income Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-card border border-border rounded-2xl p-4">
-        <TabButtonGroup variant="pill" className="h-10 items-center gap-1 self-start">
+        <TabButtonGroup variant="pill-colored" className="h-10 items-center gap-1 self-start">
           <TabButton
             isActive={categoryType === "expense"}
             onClick={() => setCategoryType("expense")}
-            variant="pill"
-            className="px-2 py-0 h-full text-xs"
+            variant="pill-colored"
+            className={`px-2 py-0 h-full text-xs transition-all ${categoryType === "expense"
+                ? "bg-expense/25 border-none text-expense"
+                : "text-text-secondary hover:text-text-primary"
+              }`}
           >
             <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
             Pengeluaran
@@ -65,8 +71,11 @@ export function CategoriesTab() {
           <TabButton
             isActive={categoryType === "income"}
             onClick={() => setCategoryType("income")}
-            variant="pill"
-            className="px-2 py-0 h-full text-xs"
+            variant="pill-colored"
+            className={`px-2 py-0 h-full text-xs transition-all ${categoryType === "income"
+                ? "bg-income/25 border-none text-income"
+                : "text-text-secondary hover:text-text-primary"
+              }`}
           >
             <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
             Pemasukan
@@ -75,10 +84,9 @@ export function CategoriesTab() {
 
         <div className="flex gap-2 self-stretch sm:self-auto">
           <Button
-            onClick={handleApplyTemplate}
+            onClick={() => setIsConfirmTemplateModalOpen(true)}
             variant="ghost"
             size="sm"
-            isLoading={applyingTemplate}
             className="flex-1 sm:flex-initial"
           >
             <Sparkles className="w-4 h-4 mr-1.5" />
@@ -152,6 +160,7 @@ export function CategoriesTab() {
                 <div className="flex items-center gap-0.5 relative z-10 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                   <ActionButton
                     icon={Edit2}
+                    size="sm"
                     title="Edit Kategori"
                     onClick={() => {
                       setEditingCategory(cat);
@@ -160,6 +169,7 @@ export function CategoriesTab() {
                   />
                   <ActionButton
                     icon={Trash2}
+                    size="sm"
                     title="Hapus Kategori"
                     variant="danger"
                     onClick={() => setCategoryToDelete(cat)}
@@ -189,6 +199,14 @@ export function CategoriesTab() {
         onClose={() => setCategoryToDelete(null)}
         categoryToDelete={categoryToDelete}
         onDeleteSuccess={refreshCategories}
+      />
+
+      {/* Category Template Confirmation Modal */}
+      <ConfirmApplyTemplateModal
+        isOpen={isConfirmTemplateModalOpen}
+        onClose={() => setIsConfirmTemplateModalOpen(false)}
+        onConfirm={handleApplyTemplate}
+        isSubmitting={applyingTemplate}
       />
     </div>
   );

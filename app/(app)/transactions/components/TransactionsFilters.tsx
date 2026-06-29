@@ -1,23 +1,19 @@
 "use client";
 
-import React from "react";
 import { SlidersHorizontal, Layers, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
 import { SearchInput } from "@/components/ui/atoms/SearchInput";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { DatePeriodFilter } from "@/components/ui/atoms/DatePeriodFilter";
-
-interface Wallet {
-  id: string;
-  name: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  type: "income" | "expense";
-}
+import {
+  Wallet,
+  Category,
+  PERIOD_OPTIONS,
+  getWalletOptions,
+  getIncomeCategoryOptions,
+  getExpenseCategoryOptions,
+} from "./filters/FilterOptions";
 
 interface TransactionsFiltersProps {
   searchTerm: string;
@@ -58,43 +54,11 @@ export function TransactionsFilters({
   selectedCategoryId,
   setSelectedCategoryId,
   wallets,
-  categories
+  categories,
 }: TransactionsFiltersProps) {
-  const periodOptions = [
-    { value: "1week", label: "Satu Minggu yang Lalu" },
-    { value: "2weeks", label: "Dua Minggu yang Lalu" },
-    { value: "1month", label: "Sebulan yang Lalu" },
-    { value: "3months", label: "3 Bulan yang Lalu" },
-    { value: "custom", label: "Custom Tanggal" }
-  ];
-
-  const walletOptions = [
-    { value: "all", label: "Semua Dompet" },
-    ...wallets.map((w) => ({
-      value: w.id,
-      label: w.name,
-    })),
-  ];
-
-  const incomeCategoryOptions = [
-    { value: "all", label: "Semua Kategori Masuk" },
-    ...categories
-      .filter((c) => c.type === "income")
-      .map((c) => ({
-        value: c.id,
-        label: c.name,
-      })),
-  ];
-
-  const expenseCategoryOptions = [
-    { value: "all", label: "Semua Kategori Keluar" },
-    ...categories
-      .filter((c) => c.type === "expense")
-      .map((c) => ({
-        value: c.id,
-        label: c.name,
-      })),
-  ];
+  const walletOptions = getWalletOptions(wallets);
+  const incomeCategoryOptions = getIncomeCategoryOptions(categories);
+  const expenseCategoryOptions = getExpenseCategoryOptions(categories);
 
   const selectedIncomeCategory = categories.find((c) => c.id === selectedCategoryId && c.type === "income");
   const selectedExpenseCategory = categories.find((c) => c.id === selectedCategoryId && c.type === "expense");
@@ -122,17 +86,17 @@ export function TransactionsFilters({
           setCustomStartDate={setCustomStartDate}
           customEndDate={customEndDate}
           setCustomEndDate={setCustomEndDate}
-          options={periodOptions}
+          options={PERIOD_OPTIONS}
           size="sm"
-          className="w-full sm:w-56 shrink-0"
+          className="w-full sm:w-auto shrink-0"
         />
 
         {/* Filter toggle */}
         <Button
-          variant={showFilters ? "primary" : "secondary"}
+          variant={showFilters ? "primary" : "ghost"}
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className="sm:w-auto"
+          className="sm:w-auto rounded-xl"
         >
           <SlidersHorizontal className="w-4 h-4 mr-1.5" />
           Filter

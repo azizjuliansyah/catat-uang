@@ -14,6 +14,7 @@ interface ReceiptManagerProps {
   shouldDeleteExistingReceipt?: boolean;
   setShouldDeleteExistingReceipt?: (val: boolean) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
+  type?: "expense" | "income";
 }
 
 export function ReceiptManager({
@@ -24,17 +25,29 @@ export function ReceiptManager({
   existingReceiptUrl,
   shouldDeleteExistingReceipt = false,
   setShouldDeleteExistingReceipt,
-  fileInputRef
+  fileInputRef,
+  type
 }: ReceiptManagerProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold text-text-secondary">Lampirkan Nota (Opsional)</label>
+      <label className="text-xs font-semibold text-text-secondary">
+        {type === "income" ? "Lampirkan Bukti" : "Lampirkan Nota"} (Opsional)
+      </label>
+
+      {/* Hidden file input for file selection */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={onFileChange}
+        className="hidden"
+      />
 
       {/* Existing Receipt Preview */}
       {existingReceiptUrl && !shouldDeleteExistingReceipt && (
         <FilePreviewCard
           existingUrl={existingReceiptUrl}
-          name="Nota Terunggah"
+          name={type === "income" ? "Bukti Terunggah" : "Nota Terunggah"}
           onDelete={() => setShouldDeleteExistingReceipt?.(true)}
         />
       )}
@@ -70,8 +83,8 @@ export function ReceiptManager({
                 }}
                 accept="image/jpeg,image/png,image/webp"
                 maxSize={5 * 1024 * 1024}
-                label="Pilih file nota pembayaran baru"
-                helperText="Klik untuk memilih file foto/nota. Maksimal 5MB."
+                label={type === "income" ? "Pilih file bukti transaksi baru" : "Pilih file nota pembayaran baru"}
+                helperText={type === "income" ? "Klik untuk memilih file foto/bukti. Maksimal 5MB." : "Klik untuk memilih file foto/nota. Maksimal 5MB."}
               />
 
               {shouldDeleteExistingReceipt && (
@@ -82,7 +95,7 @@ export function ReceiptManager({
                   onClick={() => setShouldDeleteExistingReceipt?.(false)}
                   className="absolute right-3 top-3"
                 >
-                  Urungkan Hapus Nota Lama
+                  {type === "income" ? "Urungkan Hapus Bukti Lama" : "Urungkan Hapus Nota Lama"}
                 </Button>
               )}
             </div>

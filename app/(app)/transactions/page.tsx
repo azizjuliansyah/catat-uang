@@ -10,7 +10,7 @@ import { ArrowRightLeft, Plus, Sparkles } from "lucide-react";
 import { TransactionsFilters } from "./components/TransactionsFilters";
 import { TransactionsStats } from "./components/TransactionsStats";
 import { TransactionListGroup } from "./components/TransactionListGroup";
-import { TransactionsSkeleton } from "./components/TransactionsSkeleton";
+import { TransactionsListSkeleton } from "./components/TransactionsListSkeleton";
 import { RunTemplatesModal } from "./components/RunTemplatesModal";
 
 import { useTransactionsState } from "./hooks/useTransactionsState";
@@ -21,7 +21,7 @@ import { Transaction } from "./types";
 
 export default function TransactionsPage() {
   const router = useRouter();
-  const { wallets, categories } = useApp();
+  const { wallets, categories, setIsCreateTransactionModalOpen } = useApp();
 
   // Temporary container for initial filter hook triggers
   const stateHelper = useTransactionsState([]);
@@ -67,11 +67,17 @@ export default function TransactionsPage() {
     totalExpense,
     netFlow,
     groupedTransactions,
+    dateTotals,
+    itemsPerPage,
+    setItemsPerPage,
+    getDatePage,
+    setDatePage,
+    getDatePaginatedTransactions,
+    getDateTotalPages,
     uniqueDates,
   } = useTransactionsState(transactions);
 
   // Modal state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
@@ -98,10 +104,6 @@ export default function TransactionsPage() {
     setTransactionToEdit(null);
   };
 
-  const handleCloseCreate = () => {
-    setIsCreateModalOpen(false);
-  };
-
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
@@ -122,7 +124,7 @@ export default function TransactionsPage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={() => setIsCreateTransactionModalOpen(true)}
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Transaksi Baru
@@ -159,21 +161,29 @@ export default function TransactionsPage() {
         totalExpense={totalExpense}
         netFlow={netFlow}
         formatIDR={formatIDR}
+        isLoading={loading}
       />
 
       {/* Transactions List */}
       {loading ? (
-        <TransactionsSkeleton />
+        <TransactionsListSkeleton />
       ) : uniqueDates.length > 0 ? (
         <TransactionListGroup
           uniqueDates={uniqueDates}
           groupedTransactions={groupedTransactions}
+          dateTotals={dateTotals}
           formatDateLong={formatDateLong}
           formatIDR={formatIDR}
           setReceiptModalUrl={setReceiptModalUrl}
           setTransactionToDelete={setTransactionToDelete}
           onDetail={handleDetail}
           onEdit={handleEdit}
+          getDatePage={getDatePage}
+          setDatePage={setDatePage}
+          getDatePaginatedTransactions={getDatePaginatedTransactions}
+          getDateTotalPages={getDateTotalPages}
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
         />
       ) : (
         <EmptyState
@@ -197,12 +207,12 @@ export default function TransactionsPage() {
         receiptModalUrl={receiptModalUrl}
         onCloseReceipt={() => setReceiptModalUrl(null)}
         formatIDR={formatIDR}
-        isCreateOpen={isCreateModalOpen}
-        onCloseCreate={handleCloseCreate}
-        onCreateSuccess={fetchTransactions}
         isEditOpen={isEditModalOpen}
         onCloseEdit={handleCloseEdit}
-        onEditSuccess={fetchTransactions}
+        onEditSuccess={() => {
+          fetchTransactions();
+          handleCloseEdit();
+        }}
         transactionToEdit={transactionToEdit}
         isDetailOpen={isDetailModalOpen}
         onCloseDetail={handleCloseDetail}

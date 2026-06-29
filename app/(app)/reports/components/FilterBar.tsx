@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { BarChart4, Table } from "lucide-react";
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";

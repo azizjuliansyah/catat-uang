@@ -58,6 +58,22 @@ export function useTransactionsHandlers(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, dateRangeType, customStartDate, customEndDate]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleTransactionCreated = () => {
+      if (user) {
+        fetchTransactions();
+      }
+    };
+
+    window.addEventListener("transaction-created", handleTransactionCreated);
+    return () => {
+      window.removeEventListener("transaction-created", handleTransactionCreated);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, dateRangeType, customStartDate, customEndDate]);
+
   return {
     loading,
     transactions,

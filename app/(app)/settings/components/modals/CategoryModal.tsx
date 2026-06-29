@@ -7,9 +7,8 @@ import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
-import { ActionButton } from "@/components/ui/atoms/ActionButton";
-import { getIconComponent } from "@/lib/utils/icons";
-import { Check } from "lucide-react";
+import { IconSelector } from "@/components/ui/molecules/IconSelector";
+import { ColorPicker } from "@/components/ui/molecules/ColorPicker";
 import { Category } from "../../types";
 import { createCategory, updateCategory } from "../../services";
 import { getErrorMessage, CATEGORY_PRESETS } from "../../utils";
@@ -95,7 +94,7 @@ export function CategoryModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingCategory ? "Sunting Kategori" : "Buat Kategori Baru"}
+      title={editingCategory ? "Edit Kategori" : "Buat Kategori Baru"}
       onSubmit={handleCategorySubmit}
       footer={
         <ModalFooter
@@ -115,61 +114,24 @@ export function CategoryModal({
           placeholder="Contoh: Belanja Bulanan, Gaji, Makan Luar"
         />
 
-        {/* Icon Selection */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Pilih Ikon
-            <span className="text-danger">*</span>
-          </label>
-          <div className="grid grid-cols-4 gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
-            {CATEGORY_PRESETS.icons.map((iconName) => {
-              const IconComp = getIconComponent(iconName);
-              return (
-                <ActionButton
-                  key={iconName}
-                  icon={IconComp}
-                  title={iconName}
-                  variant="ghost"
-                  size="sm"
-                  isSelected={catIcon === iconName}
-                  selectedColor="var(--color-primary)"
-                  onClick={() => setCatIcon(iconName)}
-                />
-              );
-            })}
-          </div>
-        </div>
+        <IconSelector
+          icons={CATEGORY_PRESETS.icons}
+          selected={catIcon}
+          onSelect={setCatIcon}
+          label="Pilih Ikon"
+          required
+          columns={4}
+        />
 
-        {/* Color Selection */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Pilih Warna Kategori
-            <span className="text-danger">*</span>
-          </label>
-          <div className="flex flex-wrap gap-2 bg-surface-input/30 border border-border p-3 rounded-xl">
-            {CATEGORY_PRESETS.colors.map((col) => {
-              const isSelected = catColor.toLowerCase() === col.hex.toLowerCase();
-              return (
-                <Button
-                  key={col.hex}
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setCatColor(col.hex)}
-                  className={`w-7 h-7 p-0 min-h-0 rounded-full transition-all cursor-pointer flex items-center justify-center border-2 border-transparent ${isSelected
-                      ? "border-text-primary scale-110"
-                      : "hover:scale-105"
-                    }`}
-                  style={{ backgroundColor: col.hex }}
-                  title={col.name}
-                >
-                  {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
+        <ColorPicker
+          colors={CATEGORY_PRESETS.colors}
+          selected={catColor}
+          onSelect={setCatColor}
+          label="Pilih Warna Kategori"
+          required
+          allowCustom={false}
+          columns={4}
+        />
       </div>
     </Modal>
   );

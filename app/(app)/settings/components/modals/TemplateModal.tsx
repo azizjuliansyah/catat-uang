@@ -10,7 +10,7 @@ import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";
 import { CategoryGridSelector } from "@/app/(app)/transactions/components/CategoryGridSelector";
-import { Wallet as WalletIcon, CreditCard, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { createTemplate, updateTemplate } from "../../services";
 import { getErrorMessage, formatIDR } from "../../utils";
 
@@ -154,18 +154,16 @@ export function TemplateModal({
     { value: "header-wallets", label: "Dompet / Rekening", disabled: true },
     ...wallets.filter((w) => !w.is_archived).map((w) => ({
       value: `wallet:${w.id}`,
-      label: `${w.name} (${formatIDR(w.balance)})`,
-      icon: <WalletIcon className="w-4 h-4 text-text-secondary" />
+      label: `${w.name} (${formatIDR(w.balance)})`
     })),
     ...(type === "expense" && paylaterPlatforms.filter((p) => !p.is_archived).length > 0
       ? [
-          { value: "header-paylater", label: "Paylater (Kredit)", disabled: true },
-          ...paylaterPlatforms.filter((p) => !p.is_archived).map((p) => ({
-            value: `paylater:${p.id}`,
-            label: `${p.name} (Outstanding: ${formatIDR(p.balance)})`,
-            icon: <CreditCard className="w-4 h-4 text-text-secondary" />
-          }))
-        ]
+        { value: "header-paylater", label: "Paylater (Kredit)", disabled: true },
+        ...paylaterPlatforms.filter((p) => !p.is_archived).map((p) => ({
+          value: `paylater:${p.id}`,
+          label: `${p.name} (Outstanding: ${formatIDR(p.balance)})`
+        }))
+      ]
       : [])
   ];
 
@@ -173,7 +171,7 @@ export function TemplateModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingTemplate ? "Sunting Template Transaksi" : "Buat Template Transaksi Baru"}
+      title={editingTemplate ? "Edit Template Transaksi" : "Buat Template Transaksi Baru"}
       onSubmit={handleSubmit}
       footer={
         <ModalFooter
@@ -192,20 +190,24 @@ export function TemplateModal({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Contoh: Kopi Harian, Bayar Kos, Uang Jajan"
+          className="!rounded-xl"
         />
 
         {/* Transaction Type */}
         <div className="space-y-2">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
-          <TabButtonGroup variant="pill" uniformWidth className="h-10 items-center gap-1">
+          <TabButtonGroup variant="pill-colored" uniformWidth className="h-10 items-center gap-1">
             <TabButton
               isActive={type === "expense"}
               onClick={() => {
                 setType("expense");
                 setCategoryId("");
               }}
-              variant="pill"
-              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "expense" ? "bg-expense/10 text-expense" : ""}`}
+              variant="pill-colored"
+              className={`px-2 py-0 h-full text-xs transition-all ${type === "expense"
+                  ? "bg-expense/25 border-none text-expense"
+                  : "text-text-secondary hover:text-text-primary"
+                }`}
             >
               <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
               Pengeluaran
@@ -216,8 +218,11 @@ export function TemplateModal({
                 setType("income");
                 setCategoryId("");
               }}
-              variant="pill"
-              className={`px-2 py-0 h-full text-xs rounded-lg ${type === "income" ? "bg-income/10 text-income" : ""}`}
+              variant="pill-colored"
+              className={`px-2 py-0 h-full text-xs transition-all ${type === "income"
+                  ? "bg-income/25 border-none text-income"
+                  : "text-text-secondary hover:text-text-primary"
+                }`}
             >
               <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
               Pemasukan
@@ -255,14 +260,14 @@ export function TemplateModal({
         {/* Source of Funds */}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Sumber Dana
+            {type === "income" ? "Dompet Tujuan" : "Sumber Dana"}
             <span className="text-danger">*</span>
           </label>
           <CustomSelect
             value={sourceId}
             onChange={setSourceId}
             options={sourceOptions}
-            placeholder="Pilih Sumber Dana"
+            placeholder={type === "income" ? "Pilih Dompet Tujuan" : "Pilih Sumber Dana"}
           />
         </div>
 
@@ -278,13 +283,12 @@ export function TemplateModal({
         <div className="space-y-2">
           <label className="text-xs font-semibold text-text-secondary">Deskripsi / Catatan (Opsional)</label>
           <div className="relative">
-            <FileText className="w-4 h-4 text-text-secondary absolute left-3 top-3 pointer-events-none" />
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Contoh: Catatan tambahan untuk template ini..."
-              rows={2}
-              className="w-full pl-9 pr-4 py-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none focus-glow"
+              rows={3}
+              className="w-full pl-4 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none focus-glow"
             />
           </div>
         </div>

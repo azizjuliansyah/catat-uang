@@ -40,15 +40,14 @@ export function DeleteConfirmationModal({
           cancelText="Batal"
           submitText="Hapus"
           variant="destructive"
-          fullWidth={true}
         />
       }
     >
-      <div className="space-y-4 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-md bg-danger/10 text-danger mb-2">
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 w-12 h-12 rounded-md bg-danger/10 text-danger flex items-center justify-center">
           <Icon className="w-6 h-6" />
         </div>
-        <div className="text-body text-text-secondary leading-relaxed">
+        <div className="flex-1 text-body text-text-secondary leading-relaxed">
           {children}
         </div>
       </div>

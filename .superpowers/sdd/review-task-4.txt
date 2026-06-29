@@ -82,7 +82,7 @@ index 0000000..73b83b4
 +
 +  if (loading || !transaction) {
 +    return (
-+      <Modal isOpen={isOpen} onClose={onClose} title="Sunting Transaksi">
++      <Modal isOpen={isOpen} onClose={onClose} title="Edit Transaksi">
 +        <div className="space-y-6 animate-pulse">
 +          <div className="h-6 w-32 bg-border/40 rounded" />
 +          <div className="h-96 bg-surface-hover rounded" />
@@ -95,7 +95,7 @@ index 0000000..73b83b4
 +    <Modal
 +      isOpen={isOpen}
 +      onClose={onClose}
-+      title="Sunting Transaksi"
++      title="Edit Transaksi"
 +      onSubmit={handleSubmit}
 +      className="max-w-2xl"
 +      footer={

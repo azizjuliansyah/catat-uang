@@ -77,6 +77,7 @@ export default function PaylaterPage() {
         totalLimit={totalLimit}
         overallUsagePercentage={overallUsagePercentage}
         hasPlatforms={activePlatforms.length > 0}
+        platformCount={activePlatforms.length}
       />
 
       {/* Grid List */}

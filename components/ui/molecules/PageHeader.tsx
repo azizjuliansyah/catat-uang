@@ -6,7 +6,7 @@ import { LucideIcon } from "lucide-react";
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
-  description?: string; // Alias for subtitle
+  description?: string | React.ReactNode; // Alias for subtitle
   icon?: LucideIcon | React.ReactNode;
   iconClassName?: string;
   actions?: React.ReactNode;
@@ -72,7 +72,11 @@ export function PageHeader({
             {title}
           </h1>
           {finalDescription && (
-            <p className="text-xs text-text-secondary mt-1">{finalDescription}</p>
+            typeof finalDescription === "string" ? (
+              <p className="text-xs text-text-secondary mt-1">{finalDescription}</p>
+            ) : (
+              <div className="mt-1">{finalDescription}</div>
+            )
           )}
         </div>
 

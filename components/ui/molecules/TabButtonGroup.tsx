@@ -26,7 +26,11 @@ export function TabButtonGroup({
     "pill-colored": "bg-surface-input p-1 border border-border rounded-xl",
   };
 
-  const containerClasses = fullWidth ? "flex" : uniformWidth ? "grid grid-cols-2" : "flex";
+  const containerClasses = fullWidth
+    ? "flex items-center"
+    : uniformWidth
+      ? "grid grid-cols-2 items-center"
+      : "flex items-center";
 
   // Clone children to add uniform width class
   const enhancedChildren = React.Children.map(children, (child) => {

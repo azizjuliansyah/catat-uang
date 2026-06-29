@@ -34,7 +34,7 @@ export function ReportsHeader({
             {exportingExcel ? "Menulis..." : "Excel"}
           </Button>
           <Button
-            variant="primary"
+            variant="destructive"
             size="sm"
             onClick={onExportPDF}
             disabled={exportingPDF}

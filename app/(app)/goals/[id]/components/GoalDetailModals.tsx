@@ -1,4 +1,3 @@
-import React from "react";
 import { Wallet } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";

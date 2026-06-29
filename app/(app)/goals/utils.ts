@@ -25,6 +25,9 @@ export const calculateETAInfo = (goal: SavingGoal): ETAInfo => {
     };
   }
 
+  // Daily contribution required
+  const requiredDaily = Math.round(remaining / daysDiff);
+
   // Weekly contribution required
   const weeksRemaining = Math.max(1, daysDiff / 7);
   const requiredWeekly = Math.round(remaining / weeksRemaining);
@@ -37,6 +40,7 @@ export const calculateETAInfo = (goal: SavingGoal): ETAInfo => {
     status: "ongoing",
     daysLeft: daysDiff,
     msg: `${daysDiff} hari lagi`,
+    requiredDaily,
     requiredWeekly,
     requiredMonthly
   };

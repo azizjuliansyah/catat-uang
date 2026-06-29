@@ -12,7 +12,7 @@ import { GoalCard } from "./components/GoalCard";
 import { GoalsFilters } from "./components/GoalsFilters";
 import { GoalsEmptyState } from "./components/GoalsEmptyState";
 import { GoalsModals } from "./components/GoalsModals";
-import { GoalsSkeleton } from "./components/GoalsSkeleton";
+import { GoalsGridSkeleton } from "./components/GoalsGridSkeleton";
 
 export default function GoalsPage() {
   const {
@@ -114,11 +114,11 @@ export default function GoalsPage() {
       />
 
       {/* Summary Cards */}
-      <GoalsSummary goals={goals} />
+      <GoalsSummary goals={goals} isLoading={loading} />
 
       {/* Goals Grid */}
       {loading ? (
-        <GoalsSkeleton />
+        <GoalsGridSkeleton />
       ) : filteredGoals.length === 0 ? (
         <GoalsEmptyState
           searchTerm={state.searchTerm}
@@ -126,7 +126,7 @@ export default function GoalsPage() {
           onAddClick={state.openAddModal}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredGoals.map((goal) => (
             <GoalCard
               key={goal.id}

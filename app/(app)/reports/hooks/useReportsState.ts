@@ -18,10 +18,9 @@ export function useReportsState(
 
   // Filter States
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>("last_6_months");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilterType>("this_month");
   const [customStartDate, setCustomStartDate] = useState(() => {
     const d = new Date();
-    d.setMonth(d.getMonth() - 5);
     d.setDate(1);
     return getLocalDateString(d);
   });
@@ -169,6 +168,34 @@ export function useReportsState(
       .sort((a, b) => b.amount - a.amount);
   }, [filteredTransactions]);
 
+  // Category breakdown for income
+  const incomeCategoryBreakdown = useMemo(() => {
+    const incomeTx = filteredTransactions.filter((tx) => tx.type === "income");
+    const categoryMap = new Map<string, { amount: number; color: string }>();
+
+    incomeTx.forEach((tx) => {
+      const catName = tx.categories?.name || "Tanpa Kategori";
+      const catColor = tx.categories?.color || "#71717a";
+      const existing = categoryMap.get(catName) || { amount: 0, color: catColor };
+      existing.amount += Number(tx.amount);
+      categoryMap.set(catName, existing);
+    });
+
+    const total = Array.from(categoryMap.values()).reduce(
+      (sum, cat) => sum + cat.amount,
+      0
+    );
+
+    return Array.from(categoryMap.entries())
+      .map(([name, values]) => ({
+        name,
+        amount: values.amount,
+        color: values.color,
+        percentage: total > 0 ? (values.amount / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [filteredTransactions]);
+
   // Summaries
   const { totalIncome, totalExpense, netCashflow } = useMemo(() => {
     const totalInc = filteredTransactions
@@ -215,6 +242,7 @@ export function useReportsState(
     filteredTransactions,
     cashflowData,
     categoryBreakdown,
+    incomeCategoryBreakdown,
     totalIncome,
     totalExpense,
     netCashflow,

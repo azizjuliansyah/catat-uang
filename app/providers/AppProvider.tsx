@@ -84,6 +84,8 @@ interface AppContextType {
   isInstallable: boolean;
   isInstalled: boolean;
   triggerInstallPrompt: () => Promise<boolean>;
+  isCreateTransactionModalOpen: boolean;
+  setIsCreateTransactionModalOpen: (open: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -100,6 +102,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loadingPaylaterPlatforms, setLoadingPaylaterPlatforms] = useState(false);
   const [templates, setTemplates] = useState<TransactionTemplateItem[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [isCreateTransactionModalOpen, setIsCreateTransactionModalOpen] = useState(false);
 
   // PWA Installation state
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -303,6 +306,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isInstallable,
         isInstalled,
         triggerInstallPrompt,
+        isCreateTransactionModalOpen,
+        setIsCreateTransactionModalOpen,
       }}
     >
       {children}

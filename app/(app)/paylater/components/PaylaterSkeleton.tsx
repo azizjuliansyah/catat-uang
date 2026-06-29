@@ -23,8 +23,8 @@ export function PaylaterBannerSkeleton() {
 
 export function PaylaterGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {[1, 2, 3].map((i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {[1, 2, 3, 4].map((i) => (
         <div key={i} className="bg-surface-card border border-border rounded-2xl overflow-hidden animate-pulse">
           <div className="h-1 w-full bg-border/40" />
           <div className="p-5 space-y-4">

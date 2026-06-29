@@ -35,7 +35,74 @@ export const DatePeriodFilter = ({
   className = "",
 }: DatePeriodFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dateError, setDateError] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Max 1 year validation
+  const MAX_YEAR_DIFF = 365; // days in a year (approximate)
+
+  const validateDateRange = (start: string, end: string) => {
+    if (!start || !end) {
+      setDateError("");
+      return true;
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = endDate.getTime() - startDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > MAX_YEAR_DIFF) {
+      setDateError("Maksimal range tanggal adalah 1 tahun");
+      return false;
+    }
+
+    if (diffDays < 0) {
+      setDateError("Tanggal selesai harus lebih besar dari tanggal mulai");
+      return false;
+    }
+
+    setDateError("");
+    return true;
+  };
+
+  const handleStartDateChange = (newValue: string) => {
+    setCustomStartDate(newValue);
+    if (customEndDate) {
+      validateDateRange(newValue, customEndDate);
+    } else {
+      setDateError("");
+    }
+  };
+
+  const handleEndDateChange = (newValue: string) => {
+    // Calculate max allowed start date (1 year before end date)
+    if (customStartDate) {
+      const endDate = new Date(newValue);
+      const maxStartDate = new Date(endDate);
+      maxStartDate.setFullYear(maxStartDate.getFullYear() - 1);
+
+      const startDate = new Date(customStartDate);
+      if (startDate < maxStartDate) {
+        // Adjust start date to be within 1 year range
+        const adjustedStart = getLocalDateString(maxStartDate);
+        setCustomStartDate(adjustedStart);
+        setDateError("");
+        setCustomEndDate(newValue);
+        return;
+      }
+    }
+
+    setCustomEndDate(newValue);
+    validateDateRange(customStartDate, newValue);
+  };
+
+  const getLocalDateString = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   // Close on click outside
   useEffect(() => {
@@ -116,6 +183,7 @@ export const DatePeriodFilter = ({
                   onClick={() => {
                     onChange(opt.value);
                     if (opt.value !== "custom") {
+                      setDateError("");
                       setIsOpen(false);
                     }
                   }}
@@ -144,8 +212,11 @@ export const DatePeriodFilter = ({
                   <input
                     type="date"
                     value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="w-full px-2 bg-surface-input border border-border focus:border-border-focus rounded-md text-text-primary text-[11px] outline-none transition-all duration-150 ease cursor-pointer h-8"
+                    onChange={(e) => handleStartDateChange(e.target.value)}
+                    max={customEndDate}
+                    className={`w-full px-2 bg-surface-input border focus:border-border-focus rounded-md text-text-primary text-[11px] outline-none transition-all duration-150 ease cursor-pointer h-8 ${
+                      dateError ? "border-feedback-error" : "border-border"
+                    }`}
                   />
                 </div>
                 <div className="space-y-1">
@@ -153,16 +224,23 @@ export const DatePeriodFilter = ({
                   <input
                     type="date"
                     value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="w-full px-2 bg-surface-input border border-border focus:border-border-focus rounded-md text-text-primary text-[11px] outline-none transition-all duration-150 ease cursor-pointer h-8"
+                    onChange={(e) => handleEndDateChange(e.target.value)}
+                    min={customStartDate}
+                    className={`w-full px-2 bg-surface-input border focus:border-border-focus rounded-md text-text-primary text-[11px] outline-none transition-all duration-150 ease cursor-pointer h-8 ${
+                      dateError ? "border-feedback-error" : "border-border"
+                    }`}
                   />
                 </div>
               </div>
+              {dateError && (
+                <p className="text-[10px] text-feedback-error font-medium">{dateError}</p>
+              )}
               <Button
                 variant="primary"
                 size="sm"
                 className="w-full h-8 min-h-[32px] text-xs"
                 onClick={() => setIsOpen(false)}
+                disabled={!!dateError}
               >
                 Terapkan
               </Button>

@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { Spinner } from "@/components/ui/atoms/Spinner";
 import { Button } from "@/components/ui/atoms/Button";
+import { FAB } from "@/components/ui/atoms/FAB";
+import { CreateTransactionModal } from "@/app/(app)/transactions/components/CreateTransactionModal";
 import {
   LayoutDashboard,
   ArrowRightLeft,
@@ -27,12 +29,68 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
-  const { user, wallets, loadingUser } = useApp();
+  const {
+    user,
+    wallets,
+    loadingUser,
+    isCreateTransactionModalOpen,
+    setIsCreateTransactionModalOpen,
+    refreshWallets,
+    refreshCategories,
+    refreshPaylaterPlatforms,
+    refreshTemplates
+  } = useApp();
 
   const [selectedWalletId, setSelectedWalletId] = useState<string>("all");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isFabHidden, setIsFabHidden] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check if any dialog/modal is open in the DOM to hide/show the FAB dynamically
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const checkOpenDialogs = () => {
+      const hasOpenDialog = document.querySelector('dialog[open], [role="dialog"], [aria-modal="true"]') !== null;
+      setIsFabHidden(hasOpenDialog);
+    };
+
+    checkOpenDialogs();
+
+    const observer = new MutationObserver(() => {
+      checkOpenDialogs();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["open", "style", "class"],
+    });
+
+    const handleClicks = () => {
+      setTimeout(checkOpenDialogs, 50);
+    };
+    window.addEventListener("click", handleClicks);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("click", handleClicks);
+    };
+  }, []);
+
+  const handleTransactionCreated = () => {
+    refreshWallets();
+    refreshCategories();
+    refreshPaylaterPlatforms();
+    refreshTemplates();
+
+    const event = new CustomEvent("transaction-created");
+    window.dispatchEvent(event);
+
+    setIsCreateTransactionModalOpen(false);
+  };
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -326,6 +384,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       </div>
+
+      {/* Global FAB */}
+      {!isFabHidden && (
+        <FAB
+          icon={Plus}
+          title="Tambah Transaksi"
+          onClick={() => setIsCreateTransactionModalOpen(true)}
+        />
+      )}
+
+      {/* Global Create Transaction Modal */}
+      <CreateTransactionModal
+        isOpen={isCreateTransactionModalOpen}
+        onClose={() => setIsCreateTransactionModalOpen(false)}
+        onSuccess={handleTransactionCreated}
+      />
     </div>
   );
 }

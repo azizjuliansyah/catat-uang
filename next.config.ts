@@ -57,6 +57,16 @@ const nextConfig: NextConfig = {
     return config;
   },
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        port: "",
+        pathname: "/storage/v1/**",
+      },
+    ],
+  },
 };
 
 export default withPWA(nextConfig);

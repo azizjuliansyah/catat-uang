@@ -6,6 +6,7 @@ interface DashboardStatsProps {
   currentMonthExpense: number;
   netCashflow: number;
   totalPaylaterDebt: number;
+  isLoading?: boolean;
 }
 
 export function DashboardStats({
@@ -13,7 +14,8 @@ export function DashboardStats({
   currentMonthIncome,
   currentMonthExpense,
   netCashflow,
-  totalPaylaterDebt
+  totalPaylaterDebt,
+  isLoading = false,
 }: DashboardStatsProps) {
   const formatIDR = (val: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -32,6 +34,7 @@ export function DashboardStats({
         value={formatIDR(totalBalance)}
         variant="primary"
         description="Semua dompet aktif"
+        isLoading={isLoading}
       />
 
       {/* Current Month Income */}
@@ -40,6 +43,7 @@ export function DashboardStats({
         value={formatIDR(currentMonthIncome)}
         variant="income"
         description="Bulan berjalan"
+        isLoading={isLoading}
       />
 
       {/* Current Month Expense */}
@@ -48,22 +52,25 @@ export function DashboardStats({
         value={formatIDR(currentMonthExpense)}
         variant="expense"
         description="Bulan berjalan"
+        isLoading={isLoading}
       />
 
       {/* Net Flow */}
       <InfoCard
         title="Arus Bersih (Net)"
         value={formatIDR(netCashflow)}
-        variant={netCashflow >= 0 ? "success" : "danger"}
+        variant={netCashflow >= 0 ? "income" : "expense"}
         description={netCashflow >= 0 ? "Surplus bulan ini" : "Defisit bulan ini"}
+        isLoading={isLoading}
       />
 
       {/* Paylater Debt */}
       <InfoCard
         title="Hutang Paylater"
         value={formatIDR(totalPaylaterDebt)}
-        variant="danger"
+        variant="expense"
         description="Total tagihan aktif"
+        isLoading={isLoading}
       />
     </div>
   );

@@ -123,7 +123,7 @@ export function PaylaterModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingPlatform ? "Sunting Platform Paylater" : "Buat Platform Paylater Baru"}
+      title={editingPlatform ? "Edit Platform Paylater" : "Buat Platform Paylater Baru"}
       onSubmit={handleSubmit}
       footer={
         <ModalFooter

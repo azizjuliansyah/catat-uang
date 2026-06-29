@@ -35,7 +35,10 @@ export function useTransactionFormState(
     refreshPaylaterPlatforms
   } = useApp();
 
-  const loading = loadingUser || loadingWallets || loadingCategories || loadingPaylaterPlatforms;
+  const loading =
+    (loadingUser && !user) ||
+    (loadingWallets && wallets.length === 0) ||
+    (loadingCategories && categories.length === 0);
 
   // Initialize form based on mode
   const [amount, setAmount] = useState(() => {

@@ -37,13 +37,21 @@ export function getDateRange(type: string, customStart?: string, customEnd?: str
   return { startDate, endDate };
 }
 
+export interface DateTotals {
+  date: string;
+  totalIncome: number;
+  totalExpense: number;
+  netFlow: number;
+  transactionCount: number;
+}
+
 export function useTransactionsState(transactions: Transaction[]) {
   // Filter States
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<"all" | "income" | "expense">("all");
   const [selectedWalletId, setSelectedWalletId] = useState<string>("all");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
-  const [dateRangeType, setDateRangeType] = useState<string>("1month");
+  const [dateRangeType, setDateRangeType] = useState<string>("1week");
   const [customStartDate, setCustomStartDate] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 7);
@@ -52,6 +60,18 @@ export function useTransactionsState(transactions: Transaction[]) {
   const [customEndDate, setCustomEndDate] = useState<string>(() => {
     return getLocalDateString(new Date());
   });
+
+  // Global items per page setting (applies to all date groups)
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Per-day page state: { "2025-01-15": 1, "2025-01-14": 2, ... }
+  const [datePages, setDatePages] = useState<Record<string, number>>({});
+
+  // Helper to get/set page for a specific date
+  const getDatePage = (date: string) => datePages[date] || 1;
+  const setDatePage = (date: string, page: number) => {
+    setDatePages(prev => ({ ...prev, [date]: page }));
+  };
 
   // UI States
   const [showFilters, setShowFilters] = useState(false);
@@ -115,6 +135,43 @@ export function useTransactionsState(transactions: Transaction[]) {
     return Object.keys(groupedTransactions).sort((a, b) => b.localeCompare(a));
   }, [groupedTransactions]);
 
+  // Calculate daily totals for each date
+  const dateTotals = useMemo(() => {
+    const totals: { [date: string]: DateTotals } = {};
+    uniqueDates.forEach((date) => {
+      const dayTransactions = groupedTransactions[date];
+      const income = dayTransactions
+        .filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const expense = dayTransactions
+        .filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      totals[date] = {
+        date,
+        totalIncome: income,
+        totalExpense: expense,
+        netFlow: income - expense,
+        transactionCount: dayTransactions.length,
+      };
+    });
+    return totals;
+  }, [uniqueDates, groupedTransactions]);
+
+  // Get paginated transactions for a specific date
+  const getDatePaginatedTransactions = (date: string): Transaction[] => {
+    const dayTransactions = groupedTransactions[date] || [];
+    const page = getDatePage(date);
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return dayTransactions.slice(startIndex, endIndex);
+  };
+
+  // Get total pages for a specific date
+  const getDateTotalPages = (date: string): number => {
+    const dayTransactions = groupedTransactions[date] || [];
+    return Math.ceil(dayTransactions.length / itemsPerPage);
+  };
+
   return {
     searchTerm,
     setSearchTerm,
@@ -144,5 +201,12 @@ export function useTransactionsState(transactions: Transaction[]) {
     netFlow,
     groupedTransactions,
     uniqueDates,
+    dateTotals,
+    itemsPerPage,
+    setItemsPerPage,
+    getDatePage,
+    setDatePage,
+    getDatePaginatedTransactions,
+    getDateTotalPages,
   };
 }

@@ -3,7 +3,7 @@ import { FormField } from "@/components/ui/molecules/FormField";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { DebtPackage, DebtItem } from "../../types";
 import { ProofUploader } from "./ProofUploader";
 import { getNowDateTimeString } from "@/lib/utils/date";
@@ -136,24 +136,31 @@ export function DebtFormModal({
       <div className="space-y-4">
         {/* Jenis Catatan */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Jenis Catatan
-            <span className="text-danger">*</span>
-          </label>
-          <TabButtonGroup variant="pill-colored" uniformWidth>
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Catatan</label>
+          <TabButtonGroup variant="pill-colored" uniformWidth className="h-10 items-center gap-1">
             <TabButton
               isActive={formType === "owe"}
               onClick={() => setFormType("owe")}
-              color="#f59e0b"
+              variant="pill-colored"
+              className={`px-2 py-0 h-full text-xs transition-all ${formType === "owe"
+                ? "bg-[#d48c3a]/25 border-none text-[#d48c3a]"
+                : "text-text-secondary hover:text-text-primary"
+                }`}
             >
-              Hutang Saya (Owe)
+              <ArrowDownToLine className="w-3.5 h-3.5 mr-1.5 inline" />
+              Hutang (Owe)
             </TabButton>
             <TabButton
               isActive={formType === "lend"}
               onClick={() => setFormType("lend")}
-              color="#06b6d4"
+              variant="pill-colored"
+              className={`px-2 py-0 h-full text-xs transition-all ${formType === "lend"
+                ? "bg-[#5c6bc0]/25 border-none text-[#5c6bc0]"
+                : "text-text-secondary hover:text-text-primary"
+                }`}
             >
-              Piutang Saya (Lend)
+              <ArrowUpFromLine className="w-3.5 h-3.5 mr-1.5 inline" />
+              Piutang (Lend)
             </TabButton>
           </TabButtonGroup>
         </div>
@@ -246,6 +253,7 @@ export function DebtFormModal({
         {/* Add Row Button */}
         <Button
           type="button"
+          size="sm"
           variant="dashed"
           onClick={handleAddRow}
           className="py-2.5 flex items-center justify-center gap-1.5 text-xs"

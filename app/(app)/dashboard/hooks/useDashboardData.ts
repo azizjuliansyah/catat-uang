@@ -20,32 +20,47 @@ export function useDashboardData() {
   const [loadingTx, setLoadingTx] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  useEffect(() => {
+  async function loadDashboardTxData() {
     if (!user) return;
+    setLoadingTx(true);
+    setErrorMsg(null);
+    try {
+      const { year, month } = getCurrentMonthRange();
 
-    async function loadDashboardTxData() {
-      if (!user) return;
-      setLoadingTx(true);
-      setErrorMsg(null);
-      try {
-        const { year, month } = getCurrentMonthRange();
+      const stats = await fetchMonthlyStats(supabase, user.id, year, month);
+      setCurrentMonthIncome(stats.income);
+      setCurrentMonthExpense(stats.expense);
 
-        const stats = await fetchMonthlyStats(supabase, user.id, year, month);
-        setCurrentMonthIncome(stats.income);
-        setCurrentMonthExpense(stats.expense);
-
-        const recent = await fetchRecentTransactions(supabase, user.id, 5);
-        setRecentTransactions(recent);
-      } catch (err: unknown) {
-        console.error("Error loading dashboard transaction data:", err);
-        setErrorMsg("Gagal memuat data transaksi: " + getErrorMessage(err));
-      } finally {
-        setLoadingTx(false);
-      }
+      const recent = await fetchRecentTransactions(supabase, user.id, 5);
+      setRecentTransactions(recent);
+    } catch (err: unknown) {
+      console.error("Error loading dashboard transaction data:", err);
+      setErrorMsg("Gagal memuat data transaksi: " + getErrorMessage(err));
+    } finally {
+      setLoadingTx(false);
     }
+  }
 
-    loadDashboardTxData();
+  useEffect(() => {
+    if (user) {
+      loadDashboardTxData();
+    }
   }, [supabase, user]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleTransactionCreated = () => {
+      if (user) {
+        loadDashboardTxData();
+      }
+    };
+
+    window.addEventListener("transaction-created", handleTransactionCreated);
+    return () => {
+      window.removeEventListener("transaction-created", handleTransactionCreated);
+    };
+  }, [user]);
 
   return {
     recentTransactions,

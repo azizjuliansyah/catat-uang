@@ -1,0 +1,122 @@
+"use client";
+
+import React from "react";
+import { getIconComponent } from "@/lib/utils/icons";
+
+export interface GridItem {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  [key: string]: any; // Allow additional properties
+}
+
+interface ItemGridSelectorProps {
+  items: GridItem[];
+  selected: string;
+  onSelect: (id: string) => void;
+  label?: string;
+  required?: boolean;
+  columns?: 4 | 5 | 6 | 7 | 8;
+  size?: "sm" | "md" | "lg";
+  emptyMessage?: string;
+  className?: string;
+  getIconComponent?: (name: string) => React.ComponentType<{ className?: string }>;
+}
+
+export function ItemGridSelector({
+  items,
+  selected,
+  onSelect,
+  label,
+  required = false,
+  columns = 4,
+  size = "sm",
+  emptyMessage = "Tidak ada item tersedia.",
+  className = "",
+  getIconComponent: customGetIcon,
+}: ItemGridSelectorProps) {
+  const gridColsMap: Record<number, string> = {
+    4: "grid-cols-3 sm:grid-cols-4",
+    5: "grid-cols-3 sm:grid-cols-5",
+    6: "grid-cols-3 sm:grid-cols-6",
+    7: "grid-cols-3 sm:grid-cols-7",
+    8: "grid-cols-3 sm:grid-cols-8",
+  };
+
+  const getIconFn = customGetIcon || getIconComponent;
+
+  // Size mapping for icon container
+  const sizeMap: Record<string, string> = {
+    sm: "w-8 h-8",
+    md: "w-10 h-10",
+    lg: "w-12 h-12",
+  };
+
+  // Size mapping for icon itself
+  const iconSizeMap: Record<string, string> = {
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6",
+  };
+
+  // Max 4 rows visible (3 items per row on mobile = 12 items max visible)
+  const maxVisibleRows = 4;
+  const gridGapClass = "gap-3";
+  const gapSize = 12; // gap-3 = 0.75rem = 12px
+  const itemHeight = 72; // approximate item height (icon + text + padding)
+  const gridContainerPadding = 12; // p-3
+  const maxHeight = (maxVisibleRows * itemHeight) + ((maxVisibleRows - 1) * gapSize) + (gridContainerPadding * 2);
+
+  return (
+    <div className={`space-y-2 ${className}`}>
+      {label && (
+        <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+          {label}
+          {required && <span className="text-danger">*</span>}
+        </label>
+      )}
+      <div
+        className={`grid ${gridColsMap[columns]} ${gridGapClass} bg-surface-input border border-border p-3 rounded-xl overflow-y-auto`}
+        style={{ maxHeight: `${maxHeight}px` }}
+        role="radiogroup"
+        aria-label={label || "Item selector"}
+      >
+        {items.map((item) => {
+          const IconComponent = getIconFn(item.icon);
+          const isSelected = selected === item.id;
+
+          if (!IconComponent) return null;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onSelect(item.id)}
+              className={`p-3 rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer min-h-0 h-auto font-sans font-medium select-none active:scale-[0.98] focus:outline-none w-full border-2 ${
+                isSelected
+                  ? "border-primary bg-surface-hover/50 text-primary font-semibold"
+                  : "border-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+              }`}
+              title={item.name}
+            >
+              <div
+                className={`${sizeMap[size]} rounded-lg flex items-center justify-center text-white shrink-0`}
+                style={{ backgroundColor: item.color }}
+              >
+                <IconComponent className={iconSizeMap[size]} />
+              </div>
+              <span className="text-[10px] truncate w-full">{item.name}</span>
+            </button>
+          );
+        })}
+
+        {items.length === 0 && (
+          <div className="col-span-full py-4 text-center text-xs text-text-secondary">
+            {emptyMessage}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

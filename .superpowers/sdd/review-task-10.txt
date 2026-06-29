@@ -149,7 +149,7 @@ index 95d5ca5..0000000
 -      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 -        <div>
 -          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
--            Sunting Catatan Transaksi
+-            Edit Catatan Transaksi
 -          </h1>
 -          <p className="text-xs text-text-secondary mt-1">
 -            Ubah data nominal, kategori, dompet, deskripsi, atau lampiran nota transaksi.

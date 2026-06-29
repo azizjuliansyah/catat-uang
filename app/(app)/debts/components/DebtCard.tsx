@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DebtItem } from "../types";
 import { isOverdue } from "../utils";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, User, Calendar, Coins } from "lucide-react";
+import { Edit2, Trash2, User, Calendar } from "lucide-react";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { Button } from "@/components/ui/atoms/Button";
 import { CardActions } from "@/components/ui/molecules/CardActions";
@@ -16,10 +16,9 @@ interface DebtCardProps {
   item: DebtItem;
   onEdit: (item: DebtItem) => void;
   onDelete: (item: DebtItem) => void;
-  onPay: (item: DebtItem) => void;
 }
 
-export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
+export function DebtCard({ item, onEdit, onDelete }: DebtCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const remaining = item.total_amount - item.paid_amount;
   const progress = item.total_amount > 0 ? (item.paid_amount / item.total_amount) * 100 : 0;
@@ -38,7 +37,7 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
     >
       {/* Top Info */}
       <div className="w-full">
-        <div className="flex items-start justify-between relative z-10 w-full">
+        <div className="flex items-center justify-between relative z-10 w-full">
           <div className="flex items-center gap-3 min-w-0">
             <DynamicColorIcon icon={User} color={cardColor} size="sm" variant="light" />
             <div className="min-w-0">
@@ -74,11 +73,11 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
         {/* Amounts */}
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs relative z-10 w-full">
           <div>
-            <p className="text-text-secondary text-[10px] font-semibold uppercase tracking-wider">Total Tagihan</p>
+            <p className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">Total Tagihan</p>
             <p className="font-bold text-text-primary font-mono mt-0.5">{formatIDR(item.total_amount)}</p>
           </div>
           <div className="text-right">
-            <p className="text-text-secondary text-[10px] font-semibold uppercase tracking-wider">Sisa Tagihan</p>
+            <p className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">Sisa Tagihan</p>
             <p className={`font-bold font-mono mt-0.5 ${item.status === "paid" ? "text-success" : "text-text-primary"}`}>
               {item.status === "paid" ? "Lunas" : formatIDR(remaining)}
             </p>
@@ -110,19 +109,6 @@ export function DebtCard({ item, onEdit, onDelete, onPay }: DebtCardProps) {
         </div>
 
         <DetailLink href={`/debts/${item.id}`} />
-      </div>
-
-      <div className="flex justify-end mt-1.5">
-        {item.status === "unpaid" && (
-          <Button
-            size="sm"
-            color={cardColor}
-            onClick={() => onPay(item)}
-          >
-            <Coins className="w-3.5 h-3.5" />
-            Bayar
-          </Button>
-        )}
       </div>
     </FinancialCard>
   );

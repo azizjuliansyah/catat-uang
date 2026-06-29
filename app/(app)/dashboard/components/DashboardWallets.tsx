@@ -17,9 +17,10 @@ interface WalletItem {
 
 interface DashboardWalletsProps {
   wallets: WalletItem[];
+  isLoading?: boolean;
 }
 
-export function DashboardWallets({ wallets }: DashboardWalletsProps) {
+export function DashboardWallets({ wallets, isLoading = false }: DashboardWalletsProps) {
   const formatIDR = (val: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -45,7 +46,30 @@ export function DashboardWallets({ wallets }: DashboardWalletsProps) {
       </div>
 
       <div className="space-y-3">
-        {wallets.map((wallet) => {
+        {isLoading ? (
+          // Skeleton items
+          [1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-surface-card border border-border/80 rounded-2xl px-4 py-2 relative overflow-hidden animate-pulse"
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-surface-hover shrink-0" />
+                  <div className="min-w-0 space-y-2">
+                    <div className="h-3.5 w-24 bg-surface-hover rounded" />
+                    <div className="h-2.5 w-20 bg-surface-hover rounded" />
+                  </div>
+                </div>
+                <div className="h-4 w-20 bg-surface-hover rounded" />
+              </div>
+              <div className="mt-2 pt-1 border-t border-border/50">
+                <div className="h-3 w-16 bg-surface-hover rounded ml-auto" />
+              </div>
+            </div>
+          ))
+        ) : (
+          wallets.map((wallet) => {
           const WalletIconComponent = getIconComponent(wallet.icon);
           return (
             <div
@@ -94,7 +118,8 @@ export function DashboardWallets({ wallets }: DashboardWalletsProps) {
               </div>
             </div>
           );
-        })}
+        })
+        )}
       </div>
     </div>
   );

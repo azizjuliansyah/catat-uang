@@ -12,9 +12,10 @@ import { DashboardTransaction } from "../types";
 
 interface DashboardRecentTransactionsProps {
   recentTransactions: DashboardTransaction[];
+  isLoading?: boolean;
 }
 
-export function DashboardRecentTransactions({ recentTransactions }: DashboardRecentTransactionsProps) {
+export function DashboardRecentTransactions({ recentTransactions, isLoading = false }: DashboardRecentTransactionsProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
@@ -50,7 +51,21 @@ export function DashboardRecentTransactions({ recentTransactions }: DashboardRec
         />
       </div>
 
-      {recentTransactions.length === 0 ? (
+      {isLoading ? (
+        // Skeleton rows
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl bg-surface-input border border-border animate-pulse">
+              <div className="w-8 h-8 rounded-lg bg-surface-hover shrink-0" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="h-3.5 w-32 bg-surface-hover rounded" />
+                <div className="h-2.5 w-48 bg-surface-hover rounded" />
+              </div>
+              <div className="h-4 w-20 bg-surface-hover rounded shrink-0" />
+            </div>
+          ))}
+        </div>
+      ) : recentTransactions.length === 0 ? (
         <div className="text-center py-6">
           <HelpCircle className="w-8 h-8 text-text-secondary/40 mx-auto mb-2" />
           <p className="text-xs text-text-secondary">Belum ada transaksi</p>
@@ -127,7 +142,7 @@ export function DashboardRecentTransactions({ recentTransactions }: DashboardRec
               );
             })}
           </div>
-          )}
+      )}
 
       {/* Detail Dialog Modal */}
       {selectedTransaction && (

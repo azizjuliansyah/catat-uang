@@ -1,9 +1,5 @@
 "use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useApp } from "@/app/providers/AppProvider";
-import { useToast } from "@/components/ui/molecules/Toast";
 
 // Import new components
 import { DebtDetailHeader } from "./components/DebtDetailHeader";
@@ -20,21 +16,9 @@ import { PaymentModal } from "../components/modals/PaymentModal";
 import { DeleteDebtModal } from "../components/modals/DeleteDebtModal";
 import { DeletePaymentModal } from "../components/modals/DeletePaymentModal";
 
-// Import types
-import type { DebtItem, DebtPaymentItem } from "./types";
-
-function getErrorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === "object" && err !== null && "message" in err) {
-    return (err as any).message;
-  }
-  return "Unknown error";
-}
 
 export default function DebtDetailPage() {
-  const router = useRouter();
   const { wallets, refreshWallets } = useApp();
-  const { success: showSuccessToast, error: showErrorToast } = useToast();
 
   // Use custom hooks for state and handlers
   const state = useDebtDetailState();
@@ -114,40 +98,43 @@ export default function DebtDetailPage() {
     handleDeletePayment
   } = handlers;
 
-  if (loading || !debt) {
+  if (loading && !debt) {
     return <DebtEmptyState />;
   }
-
-  const isOwe = debt.type === "owe";
 
   return (
     <div className="space-y-6 font-sans pb-12">
       {/* Header Section */}
       <DebtDetailHeader
-        debt={debt}
+        debt={debt || null}
+        isLoading={loading}
         onEdit={openEditModal}
         onDelete={() => setShowDeleteDebtModal(true)}
       />
 
       {/* Progress Stats */}
-      <DebtProgressStats debt={debt} />
+      <DebtProgressStats debt={debt || null} isLoading={loading} />
 
       {/* Transaction Groups and Payment History */}
-      <div className="space-y-6">
+      <div className="flex flex-col md:flex-row gap-6 items-start">
         {/* Transaction Groups */}
-        <DebtTransactionList
-          transactions={debt.debt_transactions || []}
-          debtStatus={debt.status}
-        />
+        <div className="flex-1">
+          <DebtTransactionList
+            transactions={debt?.debt_transactions || []}
+            debtStatus={debt?.status || "unpaid"}
+          />
+        </div>
 
         {/* Payment History */}
-        <DebtPaymentList
-          payments={payments}
-          debtStatus={debt.status}
-          debtType={debt.type}
-          onRecordPayment={() => setIsPayModalOpen(true)}
-          onDeletePayment={(payment) => setPaymentToDelete(payment)}
-        />
+        <div className="flex-1">
+          <DebtPaymentList
+            payments={payments}
+            debtStatus={debt?.status || "unpaid"}
+            debtType={debt?.type || "owe"}
+            onRecordPayment={() => setIsPayModalOpen(true)}
+            onDeletePayment={(payment) => setPaymentToDelete(payment)}
+          />
+        </div>
       </div>
 
       {/* Modals */}
@@ -163,14 +150,14 @@ export default function DebtDetailPage() {
         formPackages={formPackages}
         setFormPackages={setFormPackages}
         isSubmitting={isSavingDebt}
-        editingDebt={debt}
+        editingDebt={debt || undefined}
       />
 
       <PaymentModal
         isOpen={isPayModalOpen}
         onClose={() => setIsPayModalOpen(false)}
         onSubmit={handleRecordPayment}
-        payingDebt={debt}
+        payingDebt={debt!}
         payAmount={payAmount}
         setPayAmount={setPayAmount}
         payWalletId={payWalletId}
@@ -188,7 +175,7 @@ export default function DebtDetailPage() {
       <DeleteDebtModal
         isOpen={showDeleteDebtModal}
         onClose={() => setShowDeleteDebtModal(false)}
-        debtToDelete={debt}
+        debtToDelete={debt!}
         onConfirm={handleDeleteDebt}
         isSubmitting={isDeletingDebt}
       />

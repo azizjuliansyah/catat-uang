@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
+import { ProgressBar } from "@/components/ui/molecules/ProgressBar";
 import { getIconComponent } from "@/lib/utils/icons";
 import { Plus, FolderMinus, Calendar, Edit2, Trash2 } from "lucide-react";
 import { DetailLink } from "@/components/ui/atoms/DetailLink";
@@ -51,7 +52,7 @@ export function PaylaterGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {platforms.map((platform) => {
         const IconComponent = getIconComponent(platform.icon);
         const remainingLimit = platform.limit_amount - platform.balance;
@@ -128,15 +129,13 @@ export function PaylaterGrid({
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full h-2 bg-surface-hover rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${usagePercentage}%`,
-                    backgroundColor: platform.balance > platform.limit_amount ? "#EF4444" : platform.color
-                  }}
-                />
-              </div>
+              <ProgressBar
+                percentage={usagePercentage}
+                variant="solid"
+                color={platform.balance > platform.limit_amount ? "#EF4444" : platform.color}
+                height="sm"
+                trackColor="default"
+              />
             </div>
 
             {/* Footer Action button */}

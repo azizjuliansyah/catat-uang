@@ -3,8 +3,6 @@ import { SavingGoal } from "../types";
 import { getIconComponent } from "@/lib/utils/icons";
 import { formatIDR } from "@/lib/utils/format";
 import { Edit2, Trash2, Plus, ArrowUpRight, Calendar } from "lucide-react";
-import { formatDateTimeShort } from "@/lib/utils/date";
-import { Button } from "@/components/ui/atoms/Button";
 import { CardActions } from "@/components/ui/molecules/CardActions";
 import { ProgressBar } from "@/components/ui/atoms/ProgressBar";
 import { DynamicColorIcon } from "@/components/ui/atoms/DynamicColorIcon";
@@ -25,8 +23,6 @@ export function GoalCard({
   goal,
   onEdit,
   onDelete,
-  onTopup,
-  onWithdraw
 }: GoalCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const progress = Math.min(100, (goal.current_amount / goal.target_amount) * 100);
@@ -34,7 +30,6 @@ export function GoalCard({
   const IconComp = getIconComponent(goal.icon);
   const isAchieved = goal.status === "achieved";
   const isWithdrawn = goal.status === "withdrawn";
-  const hasFunds = goal.current_amount > 0;
 
   const cardColor = isAchieved
     ? "#10b981" // Goal Complete
@@ -85,11 +80,11 @@ export function GoalCard({
         <div className="mt-5 space-y-2 relative z-10 w-full">
           <div className="flex justify-between text-xs">
             <div>
-              <p className="text-text-secondary text-[9px] font-bold uppercase tracking-wider">Terkumpul</p>
+              <p className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Terkumpul</p>
               <p className="font-bold text-text-primary font-mono mt-0.5">{formatIDR(goal.current_amount)}</p>
             </div>
             <div className="text-right">
-              <p className="text-text-secondary text-[9px] font-bold uppercase tracking-wider">Target</p>
+              <p className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Target</p>
               <p className="font-bold text-text-primary font-mono mt-0.5">{formatIDR(goal.target_amount)}</p>
             </div>
           </div>
@@ -109,45 +104,6 @@ export function GoalCard({
         <DateDisplay date={goal.target_date} label="Target:" showIcon />
 
         <DetailLink href={`/goals/${goal.id}`} />
-      </div>
-
-      {/* Quick Actions Row */}
-      <div className="mt-3 flex items-center justify-end gap-2 relative z-10 w-full">
-
-        {/* Withdraw Button - show if has funds AND not already withdrawn */}
-        {hasFunds && !isWithdrawn && (
-          <Button
-            size="sm"
-            variant="success"
-            onClick={() => onWithdraw(goal)}
-          >
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            Tarik
-          </Button>
-        )}
-
-        {/* Disabled state when withdrawn */}
-        {isWithdrawn && (
-          <Button
-            disabled
-            size="sm"
-            variant="secondary"
-          >
-            Sudah Ditarik
-          </Button>
-        )}
-
-        {/* Top-up Button - only show if ongoing or not withdrawn */}
-        {goal.status === "ongoing" && (
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => onTopup(goal)}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Top-up
-          </Button>
-        )}
       </div>
     </FinancialCard>
   );

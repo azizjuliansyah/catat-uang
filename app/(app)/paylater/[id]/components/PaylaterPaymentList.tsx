@@ -33,18 +33,6 @@ export function PaylaterPaymentList({
           </h3>
           <p className="text-xs text-text-secondary mt-0.5">Catatan pelunasan tagihan</p>
         </div>
-
-        {platform.balance > 0 && (
-          <Button
-            onClick={() => setIsPaymentModalOpen(true)}
-            size="sm"
-            variant="primary"
-            className="text-xs cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5 mr-1" />
-            Bayar Tagihan
-          </Button>
-        )}
       </div>
 
       <div className="space-y-3">

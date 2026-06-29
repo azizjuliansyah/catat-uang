@@ -3,10 +3,10 @@
 import { getIconComponent } from "@/lib/utils/icons";
 import { WalletItem } from "../types";
 import { formatIDR } from "@/lib/utils/format";
-import { Edit2, Trash2, Archive, RotateCcw, Star } from "lucide-react";
+import { Edit2, Trash2, Archive, RotateCcw, Star, MoreVertical } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { CardActions, CardAction } from "@/components/ui/molecules/CardActions";
+import { DropdownMenu } from "@/components/ui/molecules/DropdownMenu";
 import { DetailLink } from "@/components/ui/atoms/DetailLink";
 
 interface WalletCardProps {
@@ -81,23 +81,51 @@ export function WalletCard({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div 
-          onPointerDown={(e) => e.stopPropagation()} 
-          onTouchStart={(e) => e.stopPropagation()} 
+        {/* Action Button - Three Dots Menu */}
+        <div
+          onPointerDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
           className="cursor-default"
         >
-          <CardActions
-            actions={
-              [
-                !wallet.is_default && !wallet.is_archived && { icon: Star, label: "Setel Utama", variant: "primary" as const, onClick: () => onSetDefault(wallet) },
-                { icon: Edit2, label: "Ubah Dompet", onClick: () => onEdit(wallet) },
-                { icon: wallet.is_archived ? RotateCcw : Archive, label: wallet.is_archived ? "Aktifkan Kembali" : "Arsipkan Dompet", onClick: () => onArchive(wallet) },
-                !wallet.is_default && { icon: Trash2, label: "Hapus Dompet", variant: "danger" as const, onClick: () => onDelete(wallet) }
-              ].filter(Boolean) as CardAction[]
-            }
-            position="top-right"
-            revealOn="group-hover"
+          <DropdownMenu
+            triggerIcon={MoreVertical}
+            triggerTitle="Menu Dompet"
+            items={[
+              ...(wallet.is_default || wallet.is_archived
+                ? []
+                : [
+                    {
+                      icon: Star,
+                      label: "Setel Utama",
+                      variant: "primary" as const,
+                      onClick: () => onSetDefault(wallet),
+                    },
+                  ]),
+              {
+                icon: Edit2,
+                label: "Ubah Dompet",
+                onClick: () => onEdit(wallet),
+              },
+              {
+                icon: wallet.is_archived ? RotateCcw : Archive,
+                label: wallet.is_archived
+                  ? "Aktifkan Kembali"
+                  : "Arsipkan Dompet",
+                onClick: () => onArchive(wallet),
+              },
+              ...(wallet.is_default
+                ? []
+                : [
+                    {
+                      icon: Trash2,
+                      label: "Hapus Dompet",
+                      variant: "danger" as const,
+                      onClick: () => onDelete(wallet),
+                    },
+                  ]),
+            ]}
+            align="right"
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           />
         </div>
       </div>
@@ -106,7 +134,7 @@ export function WalletCard({
       <div className="mt-2">
         <div className="flex flex-col gap-2">
           <div>
-            <p className="text-caption text-text-secondary uppercase tracking-wide">
+            <p className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
               Saldo saat ini
             </p>
             <p className="text-metric-sm text-text-primary font-mono mt-1">
@@ -114,9 +142,9 @@ export function WalletCard({
             </p>
           </div>
 
-          <div 
-            className="pt-2 border-t border-border/60 flex justify-end" 
-            onPointerDown={(e) => e.stopPropagation()} 
+          <div
+            className="pt-2 border-t border-border/60 flex justify-end"
+            onPointerDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
           >
             <DetailLink href={`/wallets/${wallet.id}`} label="Lihat Detail" />

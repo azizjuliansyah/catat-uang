@@ -16,6 +16,8 @@ interface DetailLinkProps {
   size?: DetailLinkSize;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  target?: string;
+  rel?: string;
 }
 
 const variantClasses: Record<DetailLinkVariant, string> = {
@@ -43,11 +45,15 @@ export function DetailLink({
   size = "sm",
   className = "",
   onClick,
+  target,
+  rel,
 }: DetailLinkProps) {
   return (
     <Link
       href={href}
       onClick={onClick}
+      target={target}
+      rel={rel}
       className={`${variantClasses[variant]} ${sizeClasses[size]} font-semibold flex items-center gap-1 transition-all duration-150 ease-in-out ${className}`}
     >
       {iconPosition === "left" && <Icon className={iconSizes[size]} />}

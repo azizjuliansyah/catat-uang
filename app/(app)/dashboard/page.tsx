@@ -9,7 +9,6 @@ import { DashboardHeader } from "./components/DashboardHeader";
 import { DashboardStats } from "./components/DashboardStats";
 import { DashboardWallets } from "./components/DashboardWallets";
 import { DashboardRecentTransactions } from "./components/DashboardRecentTransactions";
-import { DashboardSkeleton } from "./components/DashboardSkeleton";
 import { useDashboardData } from "./hooks/useDashboardData";
 
 export default function DashboardPage() {
@@ -36,11 +35,10 @@ export default function DashboardPage() {
   const totalBalance = wallets.reduce((sum, w) => sum + Number(w.balance), 0);
   const totalPaylaterDebt = activePaylater.reduce((sum, p) => sum + Number(p.balance), 0);
   const netCashflow = currentMonthIncome - currentMonthExpense;
-  const isLoading = loadingUser || loadingWallets || loadingPaylaterPlatforms || (user && loadingTx);
 
-  if (isLoading) return <DashboardSkeleton />;
-
-  if (wallets.length === 0) {
+  // Show empty state if no wallets after loading completes
+  const isInitialLoad = loadingUser || loadingWallets || loadingPaylaterPlatforms;
+  if (!isInitialLoad && wallets.length === 0) {
     return (
       <div className="max-w-md mx-auto py-16 flex flex-col items-center justify-center font-sans">
         <EmptyState
@@ -74,16 +72,17 @@ export default function DashboardPage() {
         currentMonthExpense={currentMonthExpense}
         netCashflow={netCashflow}
         totalPaylaterDebt={totalPaylaterDebt}
+        isLoading={loadingTx}
       />
 
       {/* Main Grid: Wallets (Left) & Recent Transactions (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <DashboardWallets wallets={wallets} />
+          <DashboardWallets wallets={wallets} isLoading={loadingWallets} />
         </div>
 
         <div className="lg:col-span-2">
-          <DashboardRecentTransactions recentTransactions={recentTransactions} />
+          <DashboardRecentTransactions recentTransactions={recentTransactions} isLoading={loadingTx} />
         </div>
       </div>
     </div>

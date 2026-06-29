@@ -120,7 +120,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               <span>{error}</span>
             </p>
           ) : helperText ? (
-            <p className="text-xxs text-text-muted mt-1.5">{helperText}</p>
+            <p className="text-xs text-text-muted mt-1.5">{helperText}</p>
           ) : null}
         </div>
       );
@@ -166,7 +166,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               <span>{error}</span>
             </p>
           ) : helperText ? (
-            <p className="text-xxs text-text-muted mt-1.5">{helperText}</p>
+            <p className="text-xs text-text-muted mt-1.5">{helperText}</p>
           ) : null}
         </div>
       );
@@ -209,7 +209,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               <span>{error}</span>
             </p>
           ) : helperText ? (
-            <p className="text-xxs text-text-muted mt-1.5">{helperText}</p>
+            <p className="text-xs text-text-muted mt-1.5">{helperText}</p>
           ) : null}
         </div>
       );
@@ -261,7 +261,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
             <span>{error}</span>
           </p>
         ) : helperText ? (
-          <p className="text-xxs text-text-muted mt-1.5">{helperText}</p>
+          <p className="text-xs text-text-muted mt-1.5">{helperText}</p>
         ) : null}
       </div>
     );

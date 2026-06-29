@@ -9,13 +9,15 @@ interface WalletsHeaderProps {
   wallets: WalletItem[];
   onTransferClick: () => void;
   onAddClick: () => void;
+  isLoading?: boolean;
 }
 
 export function WalletsHeader({
   activeWalletsTotal,
   wallets,
   onTransferClick,
-  onAddClick
+  onAddClick,
+  isLoading = false,
 }: WalletsHeaderProps) {
   const activeCount = wallets.filter(w => !w.is_archived).length;
 
@@ -57,7 +59,7 @@ export function WalletsHeader({
               Total Saldo Aktif
             </p>
             <p className="text-metric text-text-primary font-mono mt-2">
-              {formatIDR(activeWalletsTotal)}
+              {isLoading ? "Rp 0" : formatIDR(activeWalletsTotal)}
             </p>
           </div>
           <div className="text-right">

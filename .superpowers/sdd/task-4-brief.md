@@ -1,9 +1,11 @@
 ### Task 4: Create EditTransactionModal
 
 **Files:**
+
 - Create: `app/(app)/transactions/components/EditTransactionModal.tsx`
 
 **Interfaces:**
+
 - Consumes: `useTransactionFormState`, `useTransactionFormHandlers`
 - Props: `isOpen`, `onClose`, `onSuccess`, `transaction`
 
@@ -90,7 +92,7 @@ export function EditTransactionModal({
 
   if (loading || !transaction) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Sunting Transaksi">
+      <Modal isOpen={isOpen} onClose={onClose} title="Edit Transaksi">
         <div className="space-y-6 animate-pulse">
           <div className="h-6 w-32 bg-border/40 rounded" />
           <div className="h-96 bg-surface-hover rounded" />
@@ -103,7 +105,7 @@ export function EditTransactionModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Sunting Transaksi"
+      title="Edit Transaksi"
       onSubmit={handleSubmit}
       className="max-w-2xl"
       footer={
@@ -269,4 +271,3 @@ git commit -m "feat: add EditTransactionModal component"
 ```
 
 ---
-

@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/atoms/Button";
-import { Eye, Edit2, Trash2 } from "lucide-react";
+import { Eye, Edit2, Trash2, MoreVertical } from "lucide-react";
 import { Transaction } from "../types";
+import { DropdownMenu, DropdownMenuItem } from "@/components/ui/molecules";
 
 interface TransactionListActionsProps {
   transaction: Transaction;
@@ -17,35 +17,32 @@ export function TransactionListActions({
   onEdit,
   onDelete
 }: TransactionListActionsProps) {
+  const menuItems: DropdownMenuItem[] = [
+    {
+      label: "Detail",
+      icon: Eye,
+      onClick: () => onDetail(transaction),
+    },
+    {
+      label: "Edit",
+      icon: Edit2,
+      onClick: () => onEdit(transaction),
+      dividerAfter: true,
+    },
+    {
+      label: "Hapus",
+      icon: Trash2,
+      variant: "danger",
+      onClick: () => onDelete(transaction),
+    },
+  ];
+
   return (
-    <div className="flex items-center gap-1.5">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onDetail(transaction)}
-        className="h-8 px-2"
-        title="Lihat Detail"
-      >
-        <Eye className="w-4 h-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onEdit(transaction)}
-        className="h-8 px-2"
-        title="Sunting"
-      >
-        <Edit2 className="w-4 h-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onDelete(transaction)}
-        className="h-8 px-2 text-danger hover:text-danger hover:bg-danger/10"
-        title="Hapus"
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
-    </div>
+    <DropdownMenu
+      triggerIcon={MoreVertical}
+      items={menuItems}
+      align="right"
+    />
   );
 }
+

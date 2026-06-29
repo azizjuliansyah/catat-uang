@@ -10,14 +10,14 @@ import { useWalletsState } from "./hooks/useWalletsState";
 import { useWalletsHandlers } from "./hooks/useWalletsHandlers";
 
 import { WalletsHeader } from "./components/WalletsHeader";
-import { WalletsFilterBar } from "./components/WalletsFilterBar";
+import { WalletsFilterBar } from "./components/WalletsFilter";
 import { WalletCard } from "./components/WalletCard";
 import { WalletsEmptyState } from "./components/WalletsEmptyState";
+import { WalletsGridSkeleton } from "./components/WalletsGridSkeleton";
 import { AddWalletModal } from "./components/modals/AddWalletModal";
 import { EditWalletModal } from "./components/modals/EditWalletModal";
 import { TransferModal } from "./components/modals/TransferModal";
 import { DeleteWalletModal } from "./components/modals/DeleteWalletModal";
-import { WalletsSkeleton } from "./components/WalletsSkeleton";
 
 export default function WalletsPage() {
   const { user, wallets, loadingWallets: loading, refreshWallets } = useApp();
@@ -86,6 +86,7 @@ export default function WalletsPage() {
         wallets={wallets}
         onTransferClick={state.openTransferModal}
         onAddClick={() => state.setIsAddModalOpen(true)}
+        isLoading={loading}
       />
 
       {/* [2] Filter Bar (Tabs + Search) */}
@@ -99,7 +100,7 @@ export default function WalletsPage() {
 
       {/* [3] Content Grid */}
       {loading ? (
-        <WalletsSkeleton />
+        <WalletsGridSkeleton />
       ) : state.filteredWallets.length === 0 ? (
         <WalletsEmptyState
           activeTab={state.activeTab}

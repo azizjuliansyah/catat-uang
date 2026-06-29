@@ -7,6 +7,7 @@ export interface SavingGoal {
   target_date: string;
   status: "ongoing" | "achieved" | "withdrawn";
   icon: string;
+  is_archived: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -27,6 +28,7 @@ export interface ETAInfo {
   status: "achieved" | "late" | "ongoing";
   msg: string;
   daysLeft?: number;
+  requiredDaily?: number;
   requiredWeekly?: number;
   requiredMonthly?: number;
   needed?: string;

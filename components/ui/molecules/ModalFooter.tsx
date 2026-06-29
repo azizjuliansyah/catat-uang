@@ -27,7 +27,7 @@ export function ModalFooter({
   alignment = "right",
   cancelVariant = "ghost",
   submitVariant,
-  fullWidth = true,
+  fullWidth = false,
   className = "",
 }: ModalFooterProps) {
   const alignmentClasses = {

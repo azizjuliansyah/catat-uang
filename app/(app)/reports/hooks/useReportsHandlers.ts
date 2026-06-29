@@ -42,18 +42,37 @@ export function useReportsHandlers() {
     }
   }
 
+  async function loadReportsData(userId: string) {
+    setLoading(true);
+    try {
+      await Promise.all([fetchTransactions(userId), fetchDebts()]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Fetch data on user change
   useEffect(() => {
-    async function init() {
-      if (!user) return;
-      setLoading(true);
-      try {
-        await Promise.all([fetchTransactions(user.id), fetchDebts()]);
-      } finally {
-        setLoading(false);
-      }
+    if (user) {
+      loadReportsData(user.id);
     }
-    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // Hook into transaction-created event
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleTransactionCreated = () => {
+      if (user) {
+        loadReportsData(user.id);
+      }
+    };
+
+    window.addEventListener("transaction-created", handleTransactionCreated);
+    return () => {
+      window.removeEventListener("transaction-created", handleTransactionCreated);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 

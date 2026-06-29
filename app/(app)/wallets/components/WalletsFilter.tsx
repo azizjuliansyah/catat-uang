@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { SearchInput } from "@/components/ui/atoms/SearchInput";
 import { TabButtonGroup, TabButton } from "@/components/ui/molecules/TabButtonGroup";
 import { WalletItem } from "../types";

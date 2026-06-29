@@ -39,7 +39,7 @@ export const FinancialCard = forwardRef<HTMLDivElement, FinancialCardProps>(
           setIsHovered(false);
           props.onMouseLeave?.(e);
         }}
-        className={`rounded-lg p-5 flex flex-col justify-between relative overflow-hidden group transition-all duration-150 ease select-none ${
+        className={`rounded-lg py-3 px-5 flex flex-col justify-between relative overflow-hidden group transition-all duration-150 ease select-none ${
           isDragging ? "opacity-40" : ""
         } ${className}`}
         {...props}

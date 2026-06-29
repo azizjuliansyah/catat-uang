@@ -15,3 +15,4 @@ export { DatePeriodFilter } from "./DatePeriodFilter";
 // New atoms
 export { SearchInput } from "./SearchInput";
 export { ProgressBar } from "./ProgressBar";
+export { FAB } from "./FAB";

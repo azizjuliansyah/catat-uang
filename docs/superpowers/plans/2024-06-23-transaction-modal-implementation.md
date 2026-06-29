@@ -13,7 +13,7 @@
 - All monetary values use `formatIDR()` from `lib/utils/format.ts`
 - Currency inputs use `font-mono` class
 - Modal components follow existing `FormModal` and `Modal` patterns
-- Form validation matches existing patterns (required fields marked with *)
+- Form validation matches existing patterns (required fields marked with \*)
 - Supabase client: `lib/supabase/client.ts` for browser operations
 - Data from `AppProvider`: wallets, categories, paylaterPlatforms
 - Type definitions use existing Transaction interface
@@ -23,6 +23,7 @@
 ## File Structure
 
 ### New Files
+
 ```
 app/(app)/transactions/components/
   ├── CreateTransactionModal.tsx        # Create transaction form modal
@@ -35,6 +36,7 @@ app/(app)/transactions/hooks/
 ```
 
 ### Modified Files
+
 ```
 app/(app)/transactions/
   ├── components/TransactionListGroup.tsx    # Add actions to list items
@@ -46,6 +48,7 @@ app/(app)/dashboard/components/
 ```
 
 ### Files to Remove
+
 ```
 app/(app)/transactions/[id]/
   ├── page.tsx                              # No longer needed
@@ -59,9 +62,11 @@ app/(app)/transactions/[id]/
 ### Task 1: Create shared form state hook
 
 **Files:**
+
 - Create: `app/(app)/transactions/hooks/useTransactionFormState.ts`
 
 **Interfaces:**
+
 - Produces: `TransactionFormState` type with all form fields
 
 **Purpose:** Extract and adapt state management from page-based to modal-based, supporting both create and edit modes.
@@ -88,7 +93,7 @@ interface Transaction {
 
 export function useTransactionFormState(
   mode: "create" | "edit",
-  initialTransaction?: Transaction
+  initialTransaction?: Transaction,
 ) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const amountInputRef = useRef<HTMLInputElement>(null);
@@ -103,10 +108,14 @@ export function useTransactionFormState(
     paylaterPlatforms,
     loadingPaylaterPlatforms,
     refreshWallets,
-    refreshPaylaterPlatforms
+    refreshPaylaterPlatforms,
   } = useApp();
 
-  const loading = loadingUser || loadingWallets || loadingCategories || loadingPaylaterPlatforms;
+  const loading =
+    loadingUser ||
+    loadingWallets ||
+    loadingCategories ||
+    loadingPaylaterPlatforms;
 
   // Initialize form based on mode
   const [amount, setAmount] = useState(() => {
@@ -176,7 +185,12 @@ export function useTransactionFormState(
 
   // Pre-select default wallet in create mode
   useEffect(() => {
-    if (mode === "create" && !loadingWallets && wallets.length > 0 && !sourceId) {
+    if (
+      mode === "create" &&
+      !loadingWallets &&
+      wallets.length > 0 &&
+      !sourceId
+    ) {
       const activeWallets = wallets.filter((w) => !w.is_archived);
       const defaultWallet = activeWallets.find((w) => w.is_default);
       if (defaultWallet) {
@@ -233,7 +247,7 @@ export function useTransactionFormState(
     submitting,
     setSubmitting,
     mode,
-    initialTransaction
+    initialTransaction,
   };
 }
 
@@ -252,9 +266,11 @@ git commit -m "feat: add shared form state hook for transaction modals"
 ### Task 2: Create shared form handlers hook
 
 **Files:**
+
 - Create: `app/(app)/transactions/hooks/useTransactionFormHandlers.ts`
 
 **Interfaces:**
+
 - Consumes: `TransactionFormState` from `useTransactionFormState`
 - Produces: Handlers for file change, remove receipt, submit
 
@@ -271,7 +287,7 @@ import { TransactionFormState } from "./useTransactionFormState";
 export function useTransactionFormHandlers(
   state: TransactionFormState,
   toast: { success: (msg: string) => void; error: (msg: string) => void },
-  onSuccess: () => void
+  onSuccess: () => void,
 ) {
   const supabase = createClient();
 
@@ -295,7 +311,7 @@ export function useTransactionFormHandlers(
     fileInputRef,
     amountInputRef,
     mode,
-    initialTransaction
+    initialTransaction,
   } = state;
 
   // Handle Receipt Selection
@@ -349,14 +365,17 @@ export function useTransactionFormHandlers(
 
     const isWallet = sourceId.startsWith("wallet:");
     const actualWalletId = isWallet ? sourceId.replace("wallet:", "") : null;
-    const actualPaylaterId = !isWallet ? sourceId.replace("paylater:", "") : null;
+    const actualPaylaterId = !isWallet
+      ? sourceId.replace("paylater:", "")
+      : null;
 
     setSubmitting(true);
 
     try {
-      let finalReceiptUrl = mode === "edit" && initialTransaction?.receipt_url && !receiptFile
-        ? initialTransaction.receipt_url
-        : null;
+      let finalReceiptUrl =
+        mode === "edit" && initialTransaction?.receipt_url && !receiptFile
+          ? initialTransaction.receipt_url
+          : null;
 
       // 1. Upload receipt if new file exists
       if (receiptFile) {
@@ -370,9 +389,9 @@ export function useTransactionFormHandlers(
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("receipts")
-          .getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("receipts").getPublicUrl(filePath);
 
         finalReceiptUrl = publicUrl;
         setUploadingReceipt(false);
@@ -391,7 +410,7 @@ export function useTransactionFormHandlers(
             type: type,
             description: description.trim() || null,
             transaction_date: new Date(transactionDate).toISOString(),
-            receipt_url: finalReceiptUrl
+            receipt_url: finalReceiptUrl,
           });
 
         if (insertError) throw insertError;
@@ -408,7 +427,7 @@ export function useTransactionFormHandlers(
             type: type,
             description: description.trim() || null,
             transaction_date: new Date(transactionDate).toISOString(),
-            receipt_url: finalReceiptUrl
+            receipt_url: finalReceiptUrl,
           })
           .eq("id", initialTransaction!.id);
 
@@ -440,7 +459,7 @@ export function useTransactionFormHandlers(
     handleFileChange,
     handleRemoveReceipt,
     handleSubmit,
-    getFormattedPreview
+    getFormattedPreview,
   };
 }
 ```
@@ -457,9 +476,11 @@ git commit -m "feat: add shared form handlers hook for transaction modals"
 ### Task 3: Create CreateTransactionModal
 
 **Files:**
+
 - Create: `app/(app)/transactions/components/CreateTransactionModal.tsx`
 
 **Interfaces:**
+
 - Consumes: `useTransactionFormState`, `useTransactionFormHandlers`
 - Props: `isOpen`, `onClose`, `onSuccess`
 
@@ -715,9 +736,11 @@ git commit -m "feat: add CreateTransactionModal component"
 ### Task 4: Create EditTransactionModal
 
 **Files:**
+
 - Create: `app/(app)/transactions/components/EditTransactionModal.tsx`
 
 **Interfaces:**
+
 - Consumes: `useTransactionFormState`, `useTransactionFormHandlers`
 - Props: `isOpen`, `onClose`, `onSuccess`, `transaction`
 
@@ -804,7 +827,7 @@ export function EditTransactionModal({
 
   if (loading || !transaction) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Sunting Transaksi">
+      <Modal isOpen={isOpen} onClose={onClose} title="Edit Transaksi">
         <div className="space-y-6 animate-pulse">
           <div className="h-6 w-32 bg-border/40 rounded" />
           <div className="h-96 bg-surface-hover rounded" />
@@ -817,7 +840,7 @@ export function EditTransactionModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Sunting Transaksi"
+      title="Edit Transaksi"
       onSubmit={handleSubmit}
       className="max-w-2xl"
       footer={
@@ -987,9 +1010,11 @@ git commit -m "feat: add EditTransactionModal component"
 ### Task 5: Create TransactionListActions
 
 **Files:**
+
 - Create: `app/(app)/transactions/components/TransactionListActions.tsx`
 
 **Interfaces:**
+
 - Props: `transaction`, `onDetail`, `onEdit`, `onDelete`
 
 **Purpose:** Action buttons component for each transaction list item.
@@ -1037,7 +1062,7 @@ export function TransactionListActions({
         size="sm"
         onClick={() => onEdit(transaction)}
         className="h-8 px-2"
-        title="Sunting"
+        title="Edit"
       >
         <Edit2 className="w-4 h-4" />
       </Button>
@@ -1067,9 +1092,11 @@ git commit -m "feat: add TransactionListActions component"
 ### Task 6: Update TransactionListGroup to use actions
 
 **Files:**
+
 - Modify: `app/(app)/transactions/components/TransactionListGroup.tsx`
 
 **Interfaces:**
+
 - Adds props: `onDetail`, `onEdit` (onDelete already exists)
 
 **Purpose:** Integrate action buttons into list items and remove navigation to edit page.
@@ -1162,9 +1189,11 @@ git commit -m "refactor: add action buttons to transaction list items"
 ### Task 7: Update TransactionsModals to export new modals
 
 **Files:**
+
 - Modify: `app/(app)/transactions/components/TransactionsModals.tsx`
 
 **Interfaces:**
+
 - Adds: `CreateTransactionModal`, `EditTransactionModal` exports
 - Removes: Transaction detail modal (handled separately)
 
@@ -1331,6 +1360,7 @@ export { EditTransactionModal } from "./EditTransactionModal";
 - [ ] **Step 2: Update imports**
 
 Add `Modal` to imports if not present:
+
 ```typescript
 import { Modal } from "@/components/ui/organisms/Modal";
 ```
@@ -1347,9 +1377,11 @@ git commit -m "refactor: update TransactionsModals to export new modals"
 ### Task 8: Wire up modals in transactions page
 
 **Files:**
+
 - Modify: `app/(app)/transactions/page.tsx`
 
 **Interfaces:**
+
 - Adds state for: create, edit, detail modals
 - Updates: `TransactionListGroup` props, `TransactionsModals` props
 
@@ -1362,8 +1394,12 @@ git commit -m "refactor: update TransactionsModals to export new modals"
 const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
-const [transactionToView, setTransactionToView] = useState<Transaction | null>(null);
+const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(
+  null,
+);
+const [transactionToView, setTransactionToView] = useState<Transaction | null>(
+  null,
+);
 ```
 
 - [ ] **Step 2: Add handler functions**
@@ -1466,9 +1502,11 @@ git commit -m "feat: wire up transaction modals in page"
 ### Task 9: Update DashboardRecentTransactions with actions
 
 **Files:**
+
 - Modify: `app/(app)/dashboard/components/DashboardRecentTransactions.tsx`
 
 **Interfaces:**
+
 - Adds: state and handlers for detail/edit modals
 - Uses: `TransactionListActions`
 
@@ -1546,6 +1584,7 @@ git commit -m "feat: add action buttons to dashboard transactions"
 ### Task 10: Remove old edit page and components
 
 **Files:**
+
 - Delete: `app/(app)/transactions/[id]/page.tsx`
 - Delete: `app/(app)/transactions/[id]/components/EditTransactionForm.tsx`
 - Delete: `app/(app)/transactions/[id]/components/EditTransactionDeleteModal.tsx`
@@ -1594,6 +1633,7 @@ git commit -m "refactor: remove old transaction detail/edit pages"
 ### Task 11: Fix receipt upload bug
 
 **Files:**
+
 - Investigate: `app/(app)/transactions/hooks/useTransactionFormHandlers.ts`
 
 **Purpose:** Ensure receipt images are properly uploaded and saved to database.
@@ -1610,6 +1650,7 @@ SELECT * FROM storage.buckets WHERE name = 'receipts';
 Expected: Should return one row with bucket info.
 
 If not exists:
+
 ```sql
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('receipts', 'receipts', true);
@@ -1624,6 +1665,7 @@ SELECT * FROM storage.policies WHERE bucket = 'receipts';
 Expected: Should have INSERT and SELECT policies for authenticated users.
 
 If missing:
+
 ```sql
 -- Allow authenticated users to upload
 INSERT INTO storage.policies (bucket, name, definition)
@@ -1646,6 +1688,7 @@ VALUES (
 - [ ] **Step 3: Verify the upload logic**
 
 In `useTransactionFormHandlers.ts`, the upload logic at lines 91-108 should:
+
 1. Upload file with unique path: `${user.id}/receipt-${Date.now()}.${fileExt}`
 2. Get public URL correctly
 3. Set `finalReceiptUrl` to the public URL
@@ -1654,6 +1697,7 @@ In `useTransactionFormHandlers.ts`, the upload logic at lines 91-108 should:
 - [ ] **Step 4: Test with console logging**
 
 Add temporary logging to verify:
+
 ```typescript
 console.log("Uploading receipt to:", filePath);
 console.log("Upload error:", uploadError);
