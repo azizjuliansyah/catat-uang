@@ -37,11 +37,16 @@ export function ProfileSecurityCombined() {
         <ProfileForm
           userEmail={user?.email}
           profileName={profileActions.profileName}
+          avatarUrl={profileActions.avatarUrl}
           onProfileNameChange={profileActions.setProfileName}
           onAvatarUpload={() => profileActions.fileInputRef.current?.click()}
           onSubmit={handleProfileSave}
           isSaving={profileActions.profileSaving}
           isUploading={profileActions.uploading}
+          isDragOver={profileActions.isDragOver}
+          onDragOver={profileActions.handleDragOver}
+          onDragLeave={profileActions.handleDragLeave}
+          onDrop={profileActions.handleDrop}
         />
 
         {/* Hidden file input for avatar upload */}
