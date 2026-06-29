@@ -1,7 +1,14 @@
 "use client";
 
-import { User } from "lucide-react";
 import { formatDateIndo } from "@/lib/utils/date";
+
+// Helper to get initials from name
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
 
 interface ProfilePreviewCardProps {
   avatarUrl: string | null;
@@ -32,8 +39,10 @@ export function ProfilePreviewCard({
               className="w-24 h-24 rounded-full object-cover border-4 border-surface"
             />
           ) : (
-            <div className="w-24 h-24 rounded-full bg-surface-hover flex items-center justify-center border-4 border-surface">
-              <User className="w-12 h-12 text-text-muted" />
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center border-4 border-surface">
+              <span className="text-3xl font-bold text-white font-display">
+                {getInitials(name || "Pengguna")}
+              </span>
             </div>
           )}
         </div>
