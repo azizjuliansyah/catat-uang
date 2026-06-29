@@ -11,6 +11,7 @@ export { StatusBadge } from "./StatusBadge";
 export { Spinner } from "./Spinner";
 export { DynamicColorIcon } from "./DynamicColorIcon";
 export { DatePeriodFilter } from "./DatePeriodFilter";
+export { PasswordInput } from "./PasswordInput";
 
 // New atoms
 export { SearchInput } from "./SearchInput";

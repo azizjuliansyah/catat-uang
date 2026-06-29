@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/atoms/Button";
-import { Eye, EyeOff, Mail, Lock, TrendingUp } from "lucide-react";
+import { Button, PasswordInput } from "@/components/ui/atoms";
+import { Mail, TrendingUp } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,7 +14,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -144,43 +143,17 @@ export default function LoginPage() {
             </div>
 
             {/* Password Field */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label htmlFor="password" className="block text-sm font-medium text-text-primary">
-                  Password
-                </label>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
-                  <Lock className="h-4 w-4" />
-                </div>
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (passwordError) setPasswordError("");
-                  }}
-                  className={`block w-full pl-10 pr-10 py-2 bg-surface-input border ${
-                    passwordError ? "border-danger focus:ring-danger/25" : "border-border focus:ring-primary/25"
-                  } rounded-md text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 text-sm transition-all`}
-                  placeholder="••••••••"
-                  disabled={loading}
-                />
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary transition-colors min-h-0 h-auto p-0 hover:bg-transparent"
-                  disabled={loading}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              {passwordError && (
-                <p className="text-xs text-danger mt-1">{passwordError}</p>
-              )}
-            </div>
+            <PasswordInput
+              label="Password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(value) => {
+                setPassword(value);
+                if (passwordError) setPasswordError("");
+              }}
+              error={passwordError}
+              disabled={loading}
+            />
 
             {/* Submit Button */}
             <Button
