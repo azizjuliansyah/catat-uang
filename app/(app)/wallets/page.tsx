@@ -20,6 +20,7 @@ import {
 } from "./components";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
 import { Wallet as DefaultWalletIcon, Search } from "lucide-react";
+import { WalletsPageSkeleton, WalletsGridSkeleton } from "./page.skeleton";
 
 
 export default function WalletsPage() {
@@ -108,7 +109,7 @@ export default function WalletsPage() {
 
       {/* [3] Content Grid */}
       {loading ? (
-        <WalletGridSkeleton />
+        <WalletsGridSkeleton />
       ) : state.filteredWallets.length === 0 ? (
         <EmptyState
           icon={state.searchTerm.trim().length > 0 ? Search : DefaultWalletIcon}

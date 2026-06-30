@@ -10,6 +10,7 @@ import {
 } from "./components";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
 import { FolderMinus } from "lucide-react";
+import { PaylaterPageSkeleton, PaylaterGridSkeleton } from "./page.skeleton";
 
 export default function PaylaterPage() {
   const state = usePaylaterState();
@@ -55,13 +56,7 @@ export default function PaylaterPage() {
 
       {/* Grid List */}
       {loading ? (
-        <PaylaterGrid
-          loading={loading}
-          platforms={activePlatforms}
-          onAddFirst={handleAddFirst}
-          onEdit={handleEditPlatform}
-          onDelete={handleDeletePlatform}
-        />
+        <PaylaterGridSkeleton />
       ) : activePlatforms.length === 0 ? (
         <EmptyState
           icon={FolderMinus}

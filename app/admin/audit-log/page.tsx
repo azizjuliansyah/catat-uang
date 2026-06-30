@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { AuditLogFilterBar, AuditLogSummary, AuditLogTable } from "./components";
 import { useAuditLogState, useAuditLogHandlers } from "./hooks";
 import { getActionIcon } from "./utils";
+import { AuditLogPageSkeleton } from "./page.skeleton";
 
 export default function AuditLogPage() {
   const {

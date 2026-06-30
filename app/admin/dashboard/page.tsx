@@ -5,10 +5,16 @@ import { LayoutDashboard } from "lucide-react";
 import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { AdminBanner, AdminUserCard, AdminAuditLogCard, AdminStatsCards } from "./components";
 import { useAdminStats } from "./hooks";
+import { AdminDashboardPageSkeleton } from "./page.skeleton";
 
 export default function AdminDashboardPage() {
-  const { user } = useApp();
+  const { user, loadingUser } = useApp();
   const { stats, loading: statsLoading } = useAdminStats();
+
+  // Show skeleton during initial load
+  if (loadingUser || statsLoading) {
+    return <AdminDashboardPageSkeleton />;
+  }
 
   return (
     <div className="space-y-6 font-sans">

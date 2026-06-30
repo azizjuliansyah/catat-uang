@@ -21,6 +21,7 @@ import {
   WalletDetailSummary,
   WalletDetailTransactionListSkeleton
 } from "./components";
+import { WalletDetailPageSkeleton } from "./page.skeleton";
 import {
   EditWalletModal,
   DeleteWalletModal,
@@ -87,16 +88,7 @@ export default function WalletDetailPage() {
     onTransferSuccess: refreshWallets,
   });
 
-  if (!wallet && !isPageLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
-        <WalletIcon className="w-10 h-10 text-text-muted" />
-        <p className="text-sm font-semibold text-text-secondary">Dompet tidak ditemukan.</p>
-      </div>
-    );
-  }
-
-  // Create date totals map
+  // Create date totals map (must be before conditional returns to maintain hooks order)
   const dateTotalsMap = useMemo(() => {
     const totals: { [date: string]: { date: string; totalIncome: number; totalExpense: number; netFlow: number; transactionCount: number } } = {};
     uniqueDates.forEach((date) => {
@@ -113,6 +105,20 @@ export default function WalletDetailPage() {
     });
     return totals;
   }, [uniqueDates, groupedTransactions]);
+
+  // Show skeleton during initial load
+  if (isPageLoading && !wallet) {
+    return <WalletDetailPageSkeleton />;
+  }
+
+  if (!wallet && !isPageLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <WalletIcon className="w-10 h-10 text-text-muted" />
+        <p className="text-sm font-semibold text-text-secondary">Dompet tidak ditemukan.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 font-sans">

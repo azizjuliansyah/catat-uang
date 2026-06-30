@@ -17,6 +17,7 @@ import {
 } from "./components";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
 import { Receipt } from "lucide-react";
+import { DebtsPageSkeleton, DebtsGridSkeleton as NewDebtsGridSkeleton } from "./page.skeleton";
 
 export default function DebtsPage() {
   const { user, loadingUser, wallets, loadingWallets, refreshWallets } = useApp();
@@ -90,7 +91,7 @@ export default function DebtsPage() {
 
       {/* Main List */}
       {loading ? (
-        <DebtGridSkeleton />
+        <NewDebtsGridSkeleton />
       ) : state.filteredDebts.length === 0 ? (
         <EmptyState
           icon={Receipt}

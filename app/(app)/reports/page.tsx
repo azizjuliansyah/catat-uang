@@ -11,6 +11,7 @@ import {
   ReportsTablesSkeleton
 } from "./components";
 import { useReportsState, useReportsHandlers } from "./hooks";
+import { ReportsPageSkeleton } from "./page.skeleton";
 
 const CHART_COLORS = {
   income: "hsl(142, 71%, 45%)", // Emerald Green
@@ -124,7 +125,7 @@ export default function ReportsPage() {
 
       {viewMode === "visual" ? (
         loading ? (
-          <ReportsChartsSkeleton />
+          <ReportsPageSkeleton />
         ) : (
           <ReportsCharts
             cashflowData={cashflowData}
@@ -134,7 +135,7 @@ export default function ReportsPage() {
           />
         )
       ) : loading ? (
-        <ReportsTablesSkeleton />
+        <ReportsPageSkeleton />
       ) : (
         <ReportsTables
           cashflowData={cashflowData}

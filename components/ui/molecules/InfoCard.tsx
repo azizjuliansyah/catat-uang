@@ -62,7 +62,7 @@ export function InfoCard({
         {title}
       </p>
       {isLoading ? (
-        <div className="h-7 w-32 bg-border/40 rounded animate-pulse mt-2" />
+        <div className="h-7 mt-2 bg-border/40 rounded animate-pulse w-32" aria-hidden="true" />
       ) : (
         <p className={`text-2xl font-bold mt-2 font-mono ${valueColorClass} ${valueClassName}`}>
           {value}

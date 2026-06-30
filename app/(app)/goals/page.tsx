@@ -13,6 +13,7 @@ import {
   GoalsGridSkeleton
 } from "./components";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
+import { GoalsPageSkeleton, GoalsGridSkeleton as NewGoalsGridSkeleton } from "./page.skeleton";
 
 export default function GoalsPage() {
   const {
@@ -108,7 +109,7 @@ export default function GoalsPage() {
 
       {/* Goals Grid */}
       {loading ? (
-        <GoalsGridSkeleton />
+        <NewGoalsGridSkeleton />
       ) : filteredGoals.length === 0 ? (
         <EmptyState
           icon={PiggyBank}

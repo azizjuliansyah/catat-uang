@@ -11,6 +11,7 @@ import { TemplateModal } from "./modals/TemplateModal";
 import { DeleteTemplateModal } from "./modals/DeleteTemplateModal";
 import { TransactionTemplateItem } from "@/app/providers/AppProvider";
 import { formatIDR } from "../utils";
+import { CategoryItemSkeleton } from "@/components/ui/skeleton/composite/CategoryItemSkeleton";
 
 export function TemplatesTab() {
   const {
@@ -82,8 +83,8 @@ export function TemplatesTab() {
       {/* Templates Grid List */}
       {templatesLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-surface-card rounded-2xl border border-border/50 animate-pulse" />
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <CategoryItemSkeleton key={`tpl-${i}`} height="tall" showDescription typeLabel={templateType === "expense" ? "Pengeluaran" : "Pemasukan"} />
           ))}
         </div>
       ) : filteredTemplates.length === 0 ? (

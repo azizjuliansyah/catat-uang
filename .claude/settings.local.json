@@ -35,7 +35,9 @@
       "Bash(Select-String -Pattern \"useTransactionFormState\")",
       "Bash(git diff *)",
       "Bash(echo \"Exit code: $?\")",
-      "Bash(dir \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\\\\app\\\\\\(app\\)\\\\paylater\\\\[id]\\\\components\")"
+      "Bash(dir \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\\\\app\\\\\\(app\\)\\\\paylater\\\\[id]\\\\components\")",
+      "Bash(Get-Content \"D:\\\\Data_Aziz\\\\ngoding\\\\code\\\\nextjs\\\\catat-uang\\\\app\\\\\\(app\\)\\\\goals\\\\[id]\\\\page.skeleton.tsx\" -Raw)",
+      "Bash(Select-String \".map\\\\\\(\\\\\\(i\\\\\\) =>\")"
     ]
   }
 }

@@ -23,12 +23,7 @@ export function PaylaterSummary({
   hasPlatforms,
   platformCount,
 }: PaylaterSummaryProps) {
-  // Only return null if not loading AND no platforms exist
-  // During loading, show skeleton cards
-  if (!hasPlatforms && !loading) {
-    return null;
-  }
-
+  // Summary cards are always shown, even when empty
   return (
     <>
       {/* Progress Bar Card */}

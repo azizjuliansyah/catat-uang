@@ -9,6 +9,7 @@ import {
   DebtPaymentList,
   DebtDetailLoading
 } from "./components";
+import { DebtDetailPageSkeleton } from "./page.skeleton";
 import { DebtFormModal, PaymentModal, DeleteDebtModal, DeletePaymentModal } from "../components";
 
 export default function DebtDetailPage() {
@@ -91,7 +92,7 @@ export default function DebtDetailPage() {
   } = handlers;
 
   if (loading && !debt) {
-    return <DebtDetailLoading />;
+    return <DebtDetailPageSkeleton />;
   }
 
   return (

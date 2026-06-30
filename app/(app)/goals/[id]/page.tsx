@@ -7,9 +7,9 @@ import {
   GoalDeadlineEstimation,
   GoalTransactionList,
   GoalDetailLoading,
-  GoalDetailModals,
-  GoalDetailSummary
+  GoalDetailModals
 } from "./components";
+import { GoalDetailPageSkeleton } from "./page.skeleton";
 import { calculateETAInfo } from "../utils";
 import { ETAInfo } from "../types";
 
@@ -31,7 +31,7 @@ export default function GoalDetailPage() {
   const { handleMarkComplete, handleToggleArchive } = handlers;
 
   if (loading && !goal) {
-    return <GoalDetailLoading />;
+    return <GoalDetailPageSkeleton />;
   }
 
   // Calculate derived values
@@ -51,9 +51,6 @@ export default function GoalDetailPage() {
         onMarkComplete={handleMarkComplete}
         onToggleArchive={handleToggleArchive}
       />
-
-      {/* Goal Summary/Header Card */}
-      <GoalDetailSummary goal={goal || null} isLoading={loading} />
 
       {/* Progress Section */}
       <GoalProgressSection goal={goal || null} isLoading={loading} />

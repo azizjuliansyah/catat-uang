@@ -8,6 +8,7 @@ import { UserAuditLogs } from "../components/UserAuditLogs";
 import { UserModals } from "../components/UserModals";
 import { CardSkeleton } from "@/components/ui/molecules";
 import { ModalUserCompat } from "./types";
+import { UserDetailPageSkeleton } from "./page.skeleton";
 
 export default function UserDetailPage() {
   const {
@@ -35,11 +36,7 @@ export default function UserDetailPage() {
   } = useUserDetailState();
 
   if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <CardSkeleton showIcon={false} showMetric={false} showActions={false} lines={4} />
-      </div>
-    );
+    return <UserDetailPageSkeleton />;
   }
 
   if (!user) {

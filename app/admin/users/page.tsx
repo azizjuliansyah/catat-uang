@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { Button } from "@/components/ui/atoms/Button";
 import { UserFilterBar, UserTable, UserModals } from "./components";
 import { useUsersState, useUsersHandlers } from "./hooks";
+import { AdminUsersPageSkeleton } from "./page.skeleton";
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -94,16 +95,20 @@ export default function AdminUsersPage() {
       />
 
       {/* Users Table */}
-      <div className="bg-surface-card border border-border rounded-2xl overflow-hidden">
-        <UserTable
-          users={filteredUsers}
-          loading={loading}
-          onActionClick={handleActionClick}
-          searchTerm={searchTerm}
-          statusFilter={statusFilter}
-          roleFilter={roleFilter}
-        />
-      </div>
+      {loading ? (
+        <AdminUsersPageSkeleton />
+      ) : (
+        <div className="bg-surface-card border border-border rounded-2xl overflow-hidden">
+          <UserTable
+            users={filteredUsers}
+            loading={loading}
+            onActionClick={handleActionClick}
+            searchTerm={searchTerm}
+            statusFilter={statusFilter}
+            roleFilter={roleFilter}
+          />
+        </div>
+      )}
 
       {/* Modals */}
       <UserModals

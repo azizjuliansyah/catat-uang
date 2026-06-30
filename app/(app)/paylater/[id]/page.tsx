@@ -10,6 +10,7 @@ import {
   PaylaterPaymentList,
   PaylaterPaymentListSkeleton
 } from "./components";
+import { PaylaterDetailPageSkeleton } from "./page.skeleton";
 import { PaylaterPaymentModal, DeletePaylaterPaymentModal, PaylaterModal, DeletePaylaterModal } from "../components";
 import { getNextBillingDate } from "../utils";
 

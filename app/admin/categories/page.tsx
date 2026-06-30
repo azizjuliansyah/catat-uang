@@ -7,6 +7,7 @@ import { Layers, Plus, FolderMinus } from "lucide-react";
 import { useAdminCategoriesState, useAdminCategoriesHandlers } from "./hooks";
 import { CategoryFilterBar, CategoriesGrid, CategoryTemplateModals } from "./components";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
+import { AdminCategoriesPageSkeleton } from "./page.skeleton";
 
 export default function AdminCategoriesPage() {
   const toast = useToast();
@@ -69,11 +70,7 @@ export default function AdminCategoriesPage() {
 
       {/* Grid List */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-16 bg-surface-card rounded-2xl border border-border/50 animate-pulse" />
-          ))}
-        </div>
+        <AdminCategoriesPageSkeleton />
       ) : filteredTemplates.length === 0 ? (
         <EmptyState
           icon={FolderMinus}

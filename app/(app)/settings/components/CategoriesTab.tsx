@@ -13,6 +13,7 @@ import { ConfirmApplyTemplateModal } from "./modals/ConfirmApplyTemplateModal";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { applyCategoryTemplates } from "@/app/admin/categories/actions";
 import { Category } from "../types";
+import { CategoryItemSkeleton } from "@/components/ui/skeleton/composite/CategoryItemSkeleton";
 
 export function CategoriesTab() {
   const { categories, loadingCategories: categoriesLoading, refreshCategories } = useApp();
@@ -110,7 +111,7 @@ export function CategoriesTab() {
       {categoriesLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-16 bg-surface-card rounded-2xl border border-border/50 animate-pulse" />
+            <CategoryItemSkeleton key={`cat-${i}`} height="short" typeLabel={categoryType === "expense" ? "Pengeluaran" : "Pemasukan"} />
           ))}
         </div>
       ) : filteredCategories.length === 0 ? (

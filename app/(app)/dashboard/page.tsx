@@ -7,6 +7,7 @@ import { PiggyBank, AlertCircle } from "lucide-react";
 
 import { DashboardHeader, DashboardStats, DashboardWallets, DashboardRecentTransactions } from "./components";
 import { useDashboardData } from "./hooks";
+import { DashboardPageSkeleton } from "./page.skeleton";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -33,19 +34,13 @@ export default function DashboardPage() {
   const totalPaylaterDebt = activePaylater.reduce((sum, p) => sum + Number(p.balance), 0);
   const netCashflow = currentMonthIncome - currentMonthExpense;
 
-  // Show empty state if no wallets after loading completes
-  const isInitialLoad = loadingUser || loadingWallets || loadingPaylaterPlatforms;
-  if (!isInitialLoad && wallets.length === 0) {
-    return (
-      <EmptyState
-        icon={PiggyBank}
-        title="Selamat Datang di CatatUang!"
-        description="Anda belum memiliki dompet aktif. Dompet digunakan sebagai sumber dana transaksi pengeluaran dan tujuan pemasukan Anda (seperti Tunai, Rekening Bank, atau E-Wallet)."
-        actionLabel="Buat Dompet Pertama"
-        onAction={() => router.push("/wallets")}
-      />
-    );
+  // Show loading skeleton during initial load
+  const isInitialLoad = loadingUser || loadingWallets || loadingPaylaterPlatforms || loadingTx;
+  if (isInitialLoad) {
+    return <DashboardPageSkeleton />;
   }
+
+  const hasNoWallets = wallets.length === 0;
 
   return (
     <div className="space-y-6 font-sans">
@@ -60,26 +55,37 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Bento Grid Summary Cards */}
+      {/* Bento Grid Summary Cards - Show even when no wallets */}
       <DashboardStats
         totalBalance={totalBalance}
         currentMonthIncome={currentMonthIncome}
         currentMonthExpense={currentMonthExpense}
         netCashflow={netCashflow}
         totalPaylaterDebt={totalPaylaterDebt}
-        isLoading={loadingTx}
+        isLoading={loadingTx || loadingWallets || loadingPaylaterPlatforms}
       />
 
-      {/* Main Grid: Wallets (Left) & Recent Transactions (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <DashboardWallets wallets={wallets} isLoading={loadingWallets} />
-        </div>
+      {/* Empty State - Only shown when no wallets, after header and stats */}
+      {hasNoWallets ? (
+        <EmptyState
+          icon={PiggyBank}
+          title="Selamat Datang di CatatUang!"
+          description="Anda belum memiliki dompet aktif. Dompet digunakan sebagai sumber dana transaksi pengeluaran dan tujuan pemasukan Anda (seperti Tunai, Rekening Bank, atau E-Wallet)."
+          actionLabel="Buat Dompet Pertama"
+          onAction={() => router.push("/wallets")}
+        />
+      ) : (
+        /* Main Grid: Wallets (Left) & Recent Transactions (Right) */
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <DashboardWallets wallets={wallets} isLoading={loadingWallets} />
+          </div>
 
-        <div className="lg:col-span-2">
-          <DashboardRecentTransactions recentTransactions={recentTransactions} isLoading={loadingTx} />
+          <div className="lg:col-span-2">
+            <DashboardRecentTransactions recentTransactions={recentTransactions} isLoading={loadingTx} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

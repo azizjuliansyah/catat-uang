@@ -3,6 +3,7 @@
 import { Settings as SettingsIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { ProfileSecurityCombined } from "@/app/(app)/settings/components/ProfileSecurityCombined";
+import { AdminSettingsPageSkeleton } from "./page.skeleton";
 
 export default function AdminSettingsPage() {
   return (
