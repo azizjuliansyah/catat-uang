@@ -1,26 +1,18 @@
 "use client";
+
 import { useApp } from "@/app/providers/AppProvider";
-
-// Import new components
-import { DebtDetailHeader } from "./components/DebtDetailHeader";
-import { DebtProgressStats } from "./components/DebtProgressStats";
-import { DebtTransactionList } from "./components/DebtTransactionList";
-import { DebtPaymentList } from "./components/DebtPaymentList";
-import { DebtEmptyState } from "./components/DebtEmptyState";
-import { useDebtDetailState } from "./hooks/useDebtDetailState";
-import { useDebtDetailHandlers } from "./hooks/useDebtDetailHandlers";
-
-// Import existing modals
-import { DebtFormModal } from "../components/modals/DebtFormModal";
-import { PaymentModal } from "../components/modals/PaymentModal";
-import { DeleteDebtModal } from "../components/modals/DeleteDebtModal";
-import { DeletePaymentModal } from "../components/modals/DeletePaymentModal";
-
+import { useDebtDetailState, useDebtDetailHandlers } from "./hooks";
+import {
+  DebtDetailHeader,
+  DebtDetailSummary,
+  DebtTransactionList,
+  DebtPaymentList,
+  DebtDetailLoading
+} from "./components";
+import { DebtFormModal, PaymentModal, DeleteDebtModal, DeletePaymentModal } from "../components";
 
 export default function DebtDetailPage() {
   const { wallets, refreshWallets } = useApp();
-
-  // Use custom hooks for state and handlers
   const state = useDebtDetailState();
 
   const {
@@ -99,7 +91,7 @@ export default function DebtDetailPage() {
   } = handlers;
 
   if (loading && !debt) {
-    return <DebtEmptyState />;
+    return <DebtDetailLoading />;
   }
 
   return (
@@ -112,8 +104,8 @@ export default function DebtDetailPage() {
         onDelete={() => setShowDeleteDebtModal(true)}
       />
 
-      {/* Progress Stats */}
-      <DebtProgressStats debt={debt || null} isLoading={loading} />
+      {/* Progress Stats / Summary */}
+      <DebtDetailSummary debt={debt || null} isLoading={loading} />
 
       {/* Transaction Groups and Payment History */}
       <div className="flex flex-col md:flex-row gap-6 items-start">

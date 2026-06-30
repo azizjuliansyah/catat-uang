@@ -5,11 +5,8 @@ import { useApp } from "@/app/providers/AppProvider";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
 import { PiggyBank, AlertCircle } from "lucide-react";
 
-import { DashboardHeader } from "./components/DashboardHeader";
-import { DashboardStats } from "./components/DashboardStats";
-import { DashboardWallets } from "./components/DashboardWallets";
-import { DashboardRecentTransactions } from "./components/DashboardRecentTransactions";
-import { useDashboardData } from "./hooks/useDashboardData";
+import { DashboardHeader, DashboardStats, DashboardWallets, DashboardRecentTransactions } from "./components";
+import { useDashboardData } from "./hooks";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -40,15 +37,13 @@ export default function DashboardPage() {
   const isInitialLoad = loadingUser || loadingWallets || loadingPaylaterPlatforms;
   if (!isInitialLoad && wallets.length === 0) {
     return (
-      <div className="max-w-md mx-auto py-16 flex flex-col items-center justify-center font-sans">
-        <EmptyState
-          icon={PiggyBank}
-          title="Selamat Datang di CatatUang!"
-          description="Anda belum memiliki dompet aktif. Dompet digunakan sebagai sumber dana transaksi pengeluaran dan tujuan pemasukan Anda (seperti Tunai, Rekening Bank, atau E-Wallet)."
-          actionLabel="Buat Dompet Pertama"
-          onAction={() => router.push("/wallets")}
-        />
-      </div>
+      <EmptyState
+        icon={PiggyBank}
+        title="Selamat Datang di CatatUang!"
+        description="Anda belum memiliki dompet aktif. Dompet digunakan sebagai sumber dana transaksi pengeluaran dan tujuan pemasukan Anda (seperti Tunai, Rekening Bank, atau E-Wallet)."
+        actionLabel="Buat Dompet Pertama"
+        onAction={() => router.push("/wallets")}
+      />
     );
   }
 

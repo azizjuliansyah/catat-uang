@@ -24,3 +24,17 @@ export { DetailPageHeader } from "./DetailPageHeader";
 export type { DetailHeaderBadge, DetailHeaderBadgeVariant, DisplayCard } from "./DetailPageHeader";
 export { DropdownMenu } from "./DropdownMenu";
 export type { DropdownMenuItem } from "./DropdownMenu";
+export { Accordion } from "./Accordion";
+export {
+  DetailHeader,
+  DetailDescriptionCard,
+  DetailItemCard,
+  DetailStatCard,
+  DetailStatsGrid,
+  DetailImageCard
+} from "./DetailComponents";
+export { ProgressStatCard } from "./ProgressStatCard";
+export { TableBody } from "./TableBody";
+export { TableHeader } from "./TableHeader";
+export { TransactionTypeSelector } from "./TransactionTypeSelector";
+

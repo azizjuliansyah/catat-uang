@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 
@@ -91,6 +92,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -258,7 +260,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
+      if (event === "PASSWORD_RECOVERY") {
+        router.push("/reset-password");
+      } else if (session?.user) {
         setUser(session.user);
       } else {
         setUser(null);

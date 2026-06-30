@@ -1,14 +1,5 @@
 import { useState } from "react";
-
-export interface User {
-  id: string;
-  email: string;
-  name: string | null;
-  role: "admin" | "user";
-  status: "active" | "suspended";
-  created_at: string;
-  avatar_url?: string | null;
-}
+import type { User } from "../types";
 
 export function useUsersState() {
   // Data states
@@ -25,6 +16,7 @@ export function useUsersState() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [resetPasswordModalOpen, setResetPasswordModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [generatedPassword, setGeneratedPassword] = useState<string>("");
 
   // Action loading state
   const [actionLoading, setActionLoading] = useState(false);
@@ -56,6 +48,7 @@ export function useUsersState() {
     setDeleteModalOpen(false);
     setResetPasswordModalOpen(false);
     setSelectedUser(null);
+    setGeneratedPassword("");
   };
 
   return {
@@ -83,6 +76,8 @@ export function useUsersState() {
     setResetPasswordModalOpen,
     selectedUser,
     setSelectedUser,
+    generatedPassword,
+    setGeneratedPassword,
 
     // Actions
     actionLoading,

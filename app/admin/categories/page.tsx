@@ -2,14 +2,11 @@
 
 import { useToast } from "@/components/ui/molecules/Toast";
 import { Button } from "@/components/ui/atoms/Button";
-
-import { useAdminCategoriesState } from "./hooks/useAdminCategoriesState";
-import { useAdminCategoriesHandlers } from "./hooks/useAdminCategoriesHandlers";
-import { CategoryTemplateModals } from "./components/CategoryTemplateModals";
-import { CategoriesHeader } from "./components/CategoriesHeader";
-import { CategoriesFilterBar } from "./components/CategoriesFilterBar";
-import { CategoriesEmptyState } from "./components/CategoriesEmptyState";
-import { CategoriesGrid } from "./components/CategoriesGrid";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
+import { Layers, Plus, FolderMinus } from "lucide-react";
+import { useAdminCategoriesState, useAdminCategoriesHandlers } from "./hooks";
+import { CategoryFilterBar, CategoriesGrid, CategoryTemplateModals } from "./components";
+import { EmptyState } from "@/components/ui/organisms/EmptyState";
 
 export default function AdminCategoriesPage() {
   const toast = useToast();
@@ -45,10 +42,25 @@ export default function AdminCategoriesPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <CategoriesHeader onCreateClick={handleCreateOpen} />
+      <PageHeader
+        icon={Layers}
+        iconClassName="w-6 h-6 text-warning"
+        title="Template Kategori"
+        description="Kelola template kategori global yang dapat disinkronkan oleh pengguna."
+        actions={
+          <Button
+            onClick={handleCreateOpen}
+            variant="primary"
+            size="sm"
+          >
+            <Plus className="w-4 h-4" />
+            Template Baru
+          </Button>
+        }
+      />
 
       {/* Filter Bar */}
-      <CategoriesFilterBar
+      <CategoryFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         categoryType={categoryType}
@@ -63,7 +75,11 @@ export default function AdminCategoriesPage() {
           ))}
         </div>
       ) : filteredTemplates.length === 0 ? (
-        <CategoriesEmptyState />
+        <EmptyState
+          icon={FolderMinus}
+          title="Belum ada template"
+          description="Tambahkan template baru untuk mempermudah pengguna memisahkan transaksi mereka."
+        />
       ) : (
         <CategoriesGrid
           templates={filteredTemplates}

@@ -1,46 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { useToast } from "@/components/ui/molecules/Toast";
-
-import { usePaylaterDetailState } from "./hooks/usePaylaterDetailState";
-import { usePaylaterDetailHandlers } from "./hooks/usePaylaterDetailHandlers";
-
-// Import components
-import { PaylaterDetailHeader } from "./components/PaylaterDetailHeader";
-import { PaylaterProgressStats } from "./components/PaylaterProgressStats";
-import { PaylaterTransactionList } from "./components/PaylaterTransactionList";
-import { PaylaterTransactionListSkeleton } from "./components/PaylaterTransactionListSkeleton";
-import { PaylaterPaymentList } from "./components/PaylaterPaymentList";
-import { PaylaterPaymentListSkeleton } from "./components/PaylaterPaymentListSkeleton";
-
-// Import modals
-import { PaylaterPaymentModal } from "../components/PaylaterPaymentModal";
-import { DeletePaylaterPaymentModal } from "../components/DeletePaylaterPaymentModal";
-import { PaylaterModal } from "../components/PaylaterModal";
-import { DeletePaylaterModal } from "../components/DeletePaylaterModal";
-
+import { usePaylaterDetailState, usePaylaterDetailHandlers } from "./hooks";
+import {
+  PaylaterDetailHeader,
+  PaylaterDetailSummary,
+  PaylaterTransactionList,
+  PaylaterTransactionListSkeleton,
+  PaylaterPaymentList,
+  PaylaterPaymentListSkeleton
+} from "./components";
+import { PaylaterPaymentModal, DeletePaylaterPaymentModal, PaylaterModal, DeletePaylaterModal } from "../components";
 import { getNextBillingDate } from "../utils";
-import { toggleArchivePaylaterPlatform } from "../services";
 
 export default function PaylaterDetailPage() {
   const router = useRouter();
-  const supabase = createClient();
-  const { success: showSuccessToast, error: showErrorToast } = useToast();
-
   const state = usePaylaterDetailState();
-  const handlers = usePaylaterDetailHandlers({
-    paymentToDelete: state.paymentToDelete,
-    setPaymentToDelete: state.setPaymentToDelete,
-    loadData: state.loadData,
-  });
-
-  // Modal states
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const {
     platform,
@@ -55,40 +30,33 @@ export default function PaylaterDetailPage() {
     toggleTransactionSelection,
     selectAllTransactions,
     clearSelection,
+    isEditModalOpen,
+    setIsEditModalOpen,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    isActionLoading,
+    setIsActionLoading,
   } = state;
 
-  const { handlePaymentSuccess, handleDeletePayment } = handlers;
+  const handlers = usePaylaterDetailHandlers({
+    paymentToDelete,
+    setPaymentToDelete,
+    loadData: state.loadData,
+    platform,
+    setIsEditModalOpen,
+    setIsDeleteModalOpen,
+    setIsActionLoading
+  });
+
+  const {
+    handlePaymentSuccess,
+    handleDeletePayment,
+    handleToggleArchive,
+    handleEditSuccess,
+    handleDeleteSuccess
+  } = handlers;
 
   const nextDates = platform ? getNextBillingDate(platform) : null;
-
-  // Archive/Unarchive handler
-  const handleToggleArchive = async () => {
-    if (!platform) return;
-    setIsActionLoading(true);
-    try {
-      const nextArchived = !platform.is_archived;
-      await toggleArchivePaylaterPlatform(supabase, platform.id, nextArchived);
-      showSuccessToast(nextArchived ? "Platform berhasil diarsipkan" : "Platform berhasil diaktifkan kembali");
-      // Refresh data
-      state.loadData();
-    } catch (err) {
-      console.error(err);
-      showErrorToast("Gagal mengubah status arsip platform");
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
-
-  // Handlers for modals
-  const handleEditSuccess = () => {
-    setIsEditModalOpen(false);
-    state.loadData();
-  };
-
-  const handleDeleteSuccess = () => {
-    setIsDeleteModalOpen(false);
-    router.push("/paylater");
-  };
 
   return (
     <div className="space-y-6 font-sans pb-12">
@@ -103,7 +71,7 @@ export default function PaylaterDetailPage() {
       />
 
       {/* Progress & Info Section */}
-      <PaylaterProgressStats
+      <PaylaterDetailSummary
         platform={platform}
         nextDates={nextDates}
         isLoading={loading}
@@ -175,7 +143,7 @@ export default function PaylaterDetailPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         platformToDelete={platform}
-        onDeleteSuccess={handleDeleteSuccess}
+        onDeleteSuccess={() => handleDeleteSuccess(router)}
       />
     </div>
   );

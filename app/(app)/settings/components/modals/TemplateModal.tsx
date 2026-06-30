@@ -5,12 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 import { useApp, TransactionTemplateItem } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { Textarea } from "@/components/ui/atoms/Textarea";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
-import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
+import { TransactionTypeSelector } from "@/components/ui/molecules/TransactionTypeSelector";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";
 import { CategoryGridSelector } from "@/app/(app)/transactions/components/CategoryGridSelector";
-import { TrendingDown, TrendingUp } from "lucide-react";
 import { createTemplate, updateTemplate } from "../../services";
 import { getErrorMessage, formatIDR } from "../../utils";
 
@@ -186,90 +188,49 @@ export function TemplateModal({
         <FormField
           label="Nama Template"
           required
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Contoh: Kopi Harian, Bayar Kos, Uang Jajan"
-          className="!rounded-xl"
-        />
+        >
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Contoh: Kopi Harian, Bayar Kos, Uang Jajan"
+          />
+        </FormField>
 
         {/* Transaction Type */}
-        <div className="space-y-2">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
-          <TabButtonGroup variant="pill-colored" uniformWidth className="h-10 items-center gap-1">
-            <TabButton
-              isActive={type === "expense"}
-              onClick={() => {
-                setType("expense");
-                setCategoryId("");
-              }}
-              variant="pill-colored"
-              className={`px-2 py-0 h-full text-xs transition-all ${type === "expense"
-                  ? "bg-expense/25 border-none text-expense"
-                  : "text-text-secondary hover:text-text-primary"
-                }`}
-            >
-              <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
-              Pengeluaran
-            </TabButton>
-            <TabButton
-              isActive={type === "income"}
-              onClick={() => {
-                setType("income");
-                setCategoryId("");
-              }}
-              variant="pill-colored"
-              className={`px-2 py-0 h-full text-xs transition-all ${type === "income"
-                  ? "bg-income/25 border-none text-income"
-                  : "text-text-secondary hover:text-text-primary"
-                }`}
-            >
-              <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
-              Pemasukan
-            </TabButton>
-          </TabButtonGroup>
-        </div>
+        <TransactionTypeSelector
+          value={type}
+          onChange={(newType) => {
+            setType(newType);
+            setCategoryId("");
+          }}
+        />
 
         {/* Amount */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Jumlah Uang
-            <span className="text-danger">*</span>
-          </label>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm font-bold text-text-secondary select-none">
-              Rp.
-            </span>
-            <input
-              type="text"
-              value={amount ? parseInt(amount).toLocaleString("id-ID") : ""}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/[^0-9]/g, "");
-                setAmount(raw);
-              }}
-              placeholder="0"
-              className="w-full pl-11 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-sm font-bold font-mono outline-none transition-all focus-glow"
-              required
-            />
-          </div>
-          <p className="text-xs text-text-muted">
-            Terformat: {getFormattedPreview()}
-          </p>
-        </div>
+        <FormField
+          label="Jumlah Uang"
+          required
+          helperText={`Terformat: ${getFormattedPreview()}`}
+        >
+          <CurrencyInput
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
         {/* Source of Funds */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            {type === "income" ? "Dompet Tujuan" : "Sumber Dana"}
-            <span className="text-danger">*</span>
-          </label>
+        <FormField
+          label={type === "income" ? "Dompet Tujuan" : "Sumber Dana"}
+          required
+        >
           <CustomSelect
             value={sourceId}
             onChange={setSourceId}
             options={sourceOptions}
             placeholder={type === "income" ? "Pilih Dompet Tujuan" : "Pilih Sumber Dana"}
           />
-        </div>
+        </FormField>
 
         {/* Category Grid */}
         <CategoryGridSelector
@@ -280,18 +241,14 @@ export function TemplateModal({
         />
 
         {/* Description */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary">Deskripsi / Catatan (Opsional)</label>
-          <div className="relative">
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Contoh: Catatan tambahan untuk template ini..."
-              rows={3}
-              className="w-full pl-4 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none focus-glow"
-            />
-          </div>
-        </div>
+        <FormField label="Deskripsi / Catatan (Opsional)">
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Contoh: Catatan tambahan untuk template ini..."
+            rows={3}
+          />
+        </FormField>
       </div>
     </Modal>
   );

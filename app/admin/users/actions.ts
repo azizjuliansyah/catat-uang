@@ -129,15 +129,15 @@ export async function deleteUser(userId: string, userEmail: string) {
 }
 
 // Reset password
-export async function resetPassword(userId: string, userEmail: string) {
+export async function resetPassword(userId: string, userEmail: string, newPassword?: string) {
   const adminSupabase = await createAdminClient();
   const serverSupabase = await createServerClient();
 
   const { data: { user: actorUser } } = await serverSupabase.auth.getUser();
   if (!actorUser) throw new Error("Unauthorized");
 
-  // Generate a temporary password
-  const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+  // Use provided password or generate a temporary one
+  const tempPassword = newPassword || generateRandomPassword();
 
   // Update user password via admin API
   const { error: authError } = await adminSupabase.auth.admin.updateUserById(userId, {
@@ -158,6 +158,16 @@ export async function resetPassword(userId: string, userEmail: string) {
   if (logError) console.error("Error writing audit log:", logError);
 
   return tempPassword;
+}
+
+// Generate random password helper
+function generateRandomPassword(length: number = 16): string {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
 }
 
 // Create user

@@ -82,14 +82,14 @@ const SelectTrigger = ({ children }: SelectTriggerProps) => {
     useSelectContext();
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs h-10 rounded-xl",
-    md: "px-3 py-2 text-sm min-h-[44px] rounded-xl",
-    lg: "px-4 py-2.5 text-sm min-h-[52px] rounded-xl",
+    sm: "px-3 py-1.5 text-xs h-9 rounded-md",
+    md: "px-3 py-2 text-sm min-h-[44px] rounded-md",
+    lg: "px-4 py-2.5 text-sm min-h-[52px] rounded-md",
   };
 
   const stateClasses = hasError
-    ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
-    : "border-border hover:border-border-strong focus:border-primary focus:ring-1 focus:ring-primary";
+    ? "border-danger focus:border-danger focus:outline-none"
+    : "border-border hover:border-border-strong focus:border-border-focus focus:outline-none";
 
   const disabledClasses = disabled
     ? "opacity-50 cursor-not-allowed bg-surface-input"
@@ -374,12 +374,12 @@ export const CustomSelect = ({
           className={`
             w-full flex items-center justify-between gap-2
             border outline-none transition-all duration-150 ease font-sans
-            ${size === "sm" ? "px-3 py-1.5 text-xs h-10 rounded-xl" : ""}
-            ${size === "md" ? "px-3 py-2 text-sm min-h-[44px] rounded-xl" : ""}
-            ${size === "lg" ? "px-4 py-2.5 text-sm min-h-[52px] rounded-xl" : ""}
+            ${size === "sm" ? "px-3 py-1.5 text-xs h-9 rounded-md" : ""}
+            ${size === "md" ? "px-3 py-2 text-sm min-h-[44px] rounded-md" : ""}
+            ${size === "lg" ? "px-4 py-2.5 text-sm min-h-[52px] rounded-md" : ""}
             ${hasError
-              ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
-              : "border-border hover:border-border-strong focus:border-primary focus:ring-1 focus:ring-primary"
+              ? "border-danger focus:border-danger focus:outline-none"
+              : "border-border hover:border-border-strong focus:border-border-focus focus:outline-none"
             }
             ${disabled
               ? "opacity-50 cursor-not-allowed bg-surface-input"

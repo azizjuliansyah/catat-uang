@@ -1,45 +1,49 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useApp } from "@/app/providers/AppProvider";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
-import { Button } from "@/components/ui/atoms/Button";
-import { PageHeader } from "@/components/ui/molecules/PageHeader";
-import { ArrowRightLeft, Plus, Sparkles } from "lucide-react";
-import { TransactionsFilters } from "./components/TransactionsFilters";
-import { TransactionsStats } from "./components/TransactionsStats";
-import { TransactionListGroup } from "./components/TransactionListGroup";
-import { TransactionsListSkeleton } from "./components/TransactionsListSkeleton";
-import { RunTemplatesModal } from "./components/RunTemplatesModal";
+import { ArrowRightLeft } from "lucide-react";
+import {
+  TransactionsHeader,
+  TransactionsFilterBar,
+  TransactionsSummary,
+  TransactionListGroup,
+  TransactionsListSkeleton,
+  RunTemplatesModal,
+  TransactionsModals
+} from "./components";
 
-import { useTransactionsState } from "./hooks/useTransactionsState";
-import { useTransactionsHandlers } from "./hooks/useTransactionsHandlers";
-import { TransactionsModals } from "./components/TransactionsModals";
+import { useTransactionsState, useTransactionsHandlers } from "./hooks";
 import { formatIDR, formatDateLong } from "./utils";
-import { Transaction } from "./types";
 
 export default function TransactionsPage() {
-  const router = useRouter();
   const { wallets, categories, setIsCreateTransactionModalOpen } = useApp();
 
   // Temporary container for initial filter hook triggers
   const stateHelper = useTransactionsState([]);
 
   // Fetching & operations handlers hook
+  const handlers = useTransactionsHandlers(
+    stateHelper.dateRangeType,
+    stateHelper.customStartDate,
+    stateHelper.customEndDate
+  );
+
   const {
     loading,
     transactions,
     deletingId,
     fetchTransactions,
     handleDeleteTransaction,
-  } = useTransactionsHandlers(
-    stateHelper.dateRangeType,
-    stateHelper.customStartDate,
-    stateHelper.customEndDate
-  );
+    handleDetail,
+    handleEdit,
+    handleCloseDetail,
+    handleCloseEdit
+  } = handlers;
 
   // Core filter & UI state hook linked with transactions data
+  const state = useTransactionsState(transactions);
+
   const {
     searchTerm,
     setSearchTerm,
@@ -75,66 +79,22 @@ export default function TransactionsPage() {
     getDatePaginatedTransactions,
     getDateTotalPages,
     uniqueDates,
-  } = useTransactionsState(transactions);
-
-  // Modal state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
-  const [transactionToView, setTransactionToView] = useState<Transaction | null>(null);
-
-  // Modal handlers
-  const handleDetail = (tx: Transaction) => {
-    setTransactionToView(tx);
-    setIsDetailModalOpen(true);
-  };
-
-  const handleEdit = (tx: Transaction) => {
-    setTransactionToEdit(tx);
-    setIsEditModalOpen(true);
-  };
-
-  const handleCloseDetail = () => {
-    setIsDetailModalOpen(false);
-    setTransactionToView(null);
-  };
-
-  const handleCloseEdit = () => {
-    setIsEditModalOpen(false);
-    setTransactionToEdit(null);
-  };
+    isEditModalOpen,
+    isDetailModalOpen,
+    transactionToEdit,
+    transactionToView
+  } = state;
 
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <PageHeader
-        icon={ArrowRightLeft}
-        title="Daftar Transaksi"
-        description="Lihat, cari, filter, dan kelola semua catatan keuangan Anda."
-        actions={
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsRunTemplatesOpen(true)}
-            >
-              <Sparkles className="w-4 h-4 mr-1.5 text-primary" />
-              Jalankan Template
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsCreateTransactionModalOpen(true)}
-            >
-              <Plus className="w-4 h-4 mr-1.5" />
-              Transaksi Baru
-            </Button>
-          </>
-        }
+      <TransactionsHeader
+        onRunTemplatesClick={() => setIsRunTemplatesOpen(true)}
+        onCreateTransactionClick={() => setIsCreateTransactionModalOpen(true)}
       />
 
       {/* Filter and Search Bar */}
-      <TransactionsFilters
+      <TransactionsFilterBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         dateRangeType={dateRangeType}
@@ -156,7 +116,7 @@ export default function TransactionsPage() {
       />
 
       {/* Summary Stats */}
-      <TransactionsStats
+      <TransactionsSummary
         totalIncome={totalIncome}
         totalExpense={totalExpense}
         netFlow={netFlow}
@@ -176,8 +136,8 @@ export default function TransactionsPage() {
           formatIDR={formatIDR}
           setReceiptModalUrl={setReceiptModalUrl}
           setTransactionToDelete={setTransactionToDelete}
-          onDetail={handleDetail}
-          onEdit={handleEdit}
+          onDetail={(tx) => handleDetail(tx, state)}
+          onEdit={(tx) => handleEdit(tx, state)}
           getDatePage={getDatePage}
           setDatePage={setDatePage}
           getDatePaginatedTransactions={getDatePaginatedTransactions}
@@ -190,7 +150,6 @@ export default function TransactionsPage() {
           icon={ArrowRightLeft}
           title="Tidak ada transaksi"
           description="Tidak ditemukan transaksi untuk filter saat ini. Coba pilih rentang tanggal lain atau ubah filter pencarian Anda."
-          className="w-full max-w-none"
         />
       )}
 
@@ -208,14 +167,14 @@ export default function TransactionsPage() {
         onCloseReceipt={() => setReceiptModalUrl(null)}
         formatIDR={formatIDR}
         isEditOpen={isEditModalOpen}
-        onCloseEdit={handleCloseEdit}
+        onCloseEdit={() => handleCloseEdit(state)}
         onEditSuccess={() => {
           fetchTransactions();
-          handleCloseEdit();
+          handleCloseEdit(state);
         }}
         transactionToEdit={transactionToEdit}
         isDetailOpen={isDetailModalOpen}
-        onCloseDetail={handleCloseDetail}
+        onCloseDetail={() => handleCloseDetail(state)}
         transactionToView={transactionToView}
       />
 

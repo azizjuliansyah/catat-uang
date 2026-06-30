@@ -5,7 +5,7 @@ import { useApp } from "@/app/providers/AppProvider";
 import { ProfilePreviewCard } from "./profile/ProfilePreviewCard";
 import { ProfileForm } from "./profile/ProfileForm";
 import { SecurityTab } from "./SecurityTab";
-import { useProfileActions } from "./profile/useProfileActions";
+import { useProfileActions } from "../hooks";
 
 export function ProfileSecurityCombined() {
   const supabase = createClient();

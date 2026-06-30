@@ -8,10 +8,10 @@ interface ModalFooterProps {
   submitText?: string;
   isSubmitting?: boolean;
   disabled?: boolean;
-  variant?: "primary" | "destructive" | "success";
+  variant?: "primary" | "destructive" | "success" | "warning";
   alignment?: "left" | "center" | "right" | "space-between";
   cancelVariant?: "ghost" | "secondary";
-  submitVariant?: "primary" | "destructive" | "success";
+  submitVariant?: "primary" | "destructive" | "success" | "warning";
   fullWidth?: boolean;
   className?: string;
 }

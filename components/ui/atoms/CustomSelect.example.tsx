@@ -111,26 +111,28 @@ export function FormFieldSelectExample() {
   return (
     <div className="w-full max-w-md space-y-4">
       <FormField
-        type="custom-select"
         label="Dompet"
-        name="wallet"
-        options={walletOptions}
-        value={formData.wallet}
-        onChange={(e) => setFormData({ ...formData, wallet: e.target.value })}
-        placeholder="Pilih dompet"
         required
-      />
+      >
+        <CustomSelect
+          options={walletOptions}
+          value={formData.wallet}
+          onChange={(value) => setFormData({ ...formData, wallet: value })}
+          placeholder="Pilih dompet"
+        />
+      </FormField>
 
       <FormField
-        type="custom-select"
         label="Kategori"
-        name="category"
-        options={categoryOptions}
-        value={formData.category}
-        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-        placeholder="Pilih kategori"
-        clearable
-      />
+      >
+        <CustomSelect
+          options={categoryOptions}
+          value={formData.category}
+          onChange={(value) => setFormData({ ...formData, category: value })}
+          placeholder="Pilih kategori"
+          clearable
+        />
+      </FormField>
     </div>
   );
 }
@@ -155,20 +157,20 @@ export function ErrorStateExample() {
   return (
     <div className="w-full max-w-md">
       <FormField
-        type="custom-select"
         label="Pilihan"
-        name="choice"
-        options={options}
-        value={value}
-        onChange={(e) => {
-          setValue(e.target.value);
-          validate(e.target.value);
-        }}
-        onBlur={() => validate(value)}
         error={error}
-        placeholder="Pilih opsi"
         required
-      />
+      >
+        <CustomSelect
+          options={options}
+          value={value}
+          onChange={(val) => {
+            setValue(val);
+            validate(val);
+          }}
+          placeholder="Pilih opsi"
+        />
+      </FormField>
     </div>
   );
 }

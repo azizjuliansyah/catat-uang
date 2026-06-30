@@ -1,17 +1,30 @@
 "use client";
 
 import { useApp } from "@/app/providers/AppProvider";
-import { AdminBanner } from "./components/AdminBanner";
-import { AdminUserCard } from "./components/AdminUserCard";
-import { AdminAuditLogCard } from "./components/AdminAuditLogCard";
+import { LayoutDashboard } from "lucide-react";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
+import { AdminBanner, AdminUserCard, AdminAuditLogCard, AdminStatsCards } from "./components";
+import { useAdminStats } from "./hooks";
 
 export default function AdminDashboardPage() {
   const { user } = useApp();
+  const { stats, loading: statsLoading } = useAdminStats();
 
   return (
     <div className="space-y-6 font-sans">
+      {/* Header */}
+      <PageHeader
+        icon={LayoutDashboard}
+        iconClassName="w-6 h-6 text-warning"
+        title="Dashboard Admin"
+        description="Ringkasan aktivitas sistem dan statistik pengguna."
+      />
+
       {/* Banner */}
       <AdminBanner />
+
+      {/* Stats Cards */}
+      <AdminStatsCards stats={stats} loading={statsLoading} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* User Management Section */}

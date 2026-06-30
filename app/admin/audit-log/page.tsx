@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { AuditLogFilters } from "./components/AuditLogFilters";
-import { AuditLogStats } from "./components/AuditLogStats";
-import { AuditLogTable } from "./components/AuditLogTable";
-import { AuditLogHeader } from "./components/AuditLogHeader";
-import { useAuditLogState } from "./hooks/useAuditLogState";
-import { useAuditLogHandlers } from "./hooks/useAuditLogHandlers";
+import { FileText } from "lucide-react";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
+import { AuditLogFilterBar, AuditLogSummary, AuditLogTable } from "./components";
+import { useAuditLogState, useAuditLogHandlers } from "./hooks";
 import { getActionIcon } from "./utils";
 
 export default function AuditLogPage() {
@@ -56,10 +54,15 @@ export default function AuditLogPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <AuditLogHeader />
+      <PageHeader
+        icon={FileText}
+        iconClassName="w-6 h-6 text-warning"
+        title="Audit Log Sistem"
+        description="Riwayat semua tindakan admin yang dilakukan dalam sistem."
+      />
 
       {/* Filters */}
-      <AuditLogFilters
+      <AuditLogFilterBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         actionFilter={actionFilter}
@@ -79,7 +82,7 @@ export default function AuditLogPage() {
       />
 
       {/* Summary Stats Cards */}
-      <AuditLogStats filteredLogs={filteredLogs} />
+      <AuditLogSummary filteredLogs={filteredLogs} />
 
       {/* Audit Log Table */}
       <div className="bg-surface-card border border-border rounded-2xl overflow-hidden">

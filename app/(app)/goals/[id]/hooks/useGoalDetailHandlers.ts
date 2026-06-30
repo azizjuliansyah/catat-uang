@@ -42,6 +42,8 @@ interface UseGoalDetailHandlersProps {
   setIsWithdrawModalOpen: (value: boolean) => void;
   setTransactionToDelete: (value: GoalTransaction | null) => void;
   loadData: () => Promise<void>;
+  isActionLoading: boolean;
+  setIsActionLoading: (value: boolean) => void;
 }
 
 export function useGoalDetailHandlers({
@@ -67,7 +69,9 @@ export function useGoalDetailHandlers({
   setIsTopupModalOpen,
   setIsWithdrawModalOpen,
   setTransactionToDelete,
-  loadData
+  loadData,
+  isActionLoading,
+  setIsActionLoading
 }: UseGoalDetailHandlersProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -271,11 +275,56 @@ export function useGoalDetailHandlers({
     }
   };
 
+  // Mark Complete handler
+  const handleMarkComplete = async () => {
+    if (!goal || goal.status === "achieved" || goal.status === "withdrawn") return;
+    setIsActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("saving_goals")
+        .update({ status: "achieved" })
+        .eq("id", goal.id);
+
+      if (error) throw error;
+      showSuccessToast(`Tujuan "${goal.name}" berhasil ditandai selesai!`);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      showErrorToast("Gagal menandai tujuan sebagai selesai");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  // Toggle Archive handler
+  const handleToggleArchive = async () => {
+    if (!goal) return;
+    setIsActionLoading(true);
+    try {
+      const nextArchived = !goal.is_archived;
+      const { error } = await supabase
+        .from("saving_goals")
+        .update({ is_archived: nextArchived })
+        .eq("id", goal.id);
+
+      if (error) throw error;
+      showSuccessToast(nextArchived ? "Tujuan berhasil diarsipkan" : "Tujuan berhasil diaktifkan kembali");
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      showErrorToast("Gagal mengubah status arsip tujuan");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
   return {
     handleSaveGoal,
     handleTopup,
     handleWithdraw,
     handleDeleteGoal,
-    handleDeleteTransaction
+    handleDeleteTransaction,
+    handleMarkComplete,
+    handleToggleArchive
   };
 }

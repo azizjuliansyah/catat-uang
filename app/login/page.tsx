@@ -1,176 +1,184 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { Button, PasswordInput } from "@/components/ui/atoms";
-import { Mail, TrendingUp } from "lucide-react";
+import { useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/atoms/Button";
+import { Input } from "@/components/ui/atoms/Input";
+import { PasswordInput } from "@/components/ui/atoms/PasswordInput";
+import { FormField } from "@/components/ui/molecules/FormField";
+import { useLoginState, useLoginHandlers } from "./hooks";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
-  const supabase = createClient();
+  const searchParams = useSearchParams();
+  const state = useLoginState();
+  const handlers = useLoginHandlers(state);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    loading,
+    errorMsg,
+    setErrorMsg,
+    emailError,
+    setEmailError,
+    passwordError,
+    setPasswordError,
+  } = state;
 
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const { handleLogin } = handlers;
 
-  const validate = () => {
-    let isValid = true;
-    if (!email) {
-      setEmailError("Email tidak boleh kosong");
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      setEmailError("Format email tidak valid");
-      isValid = false;
-    } else {
-      setEmailError("");
-    }
+  useEffect(() => {
+    // 1. Check query parameters for auth errors
+    const errorParam = searchParams.get("error");
+    const errorDescParam = searchParams.get("error_description");
 
-    if (!password) {
-      setPasswordError("Password tidak boleh kosong");
-      isValid = false;
-    } else if (password.length < 6) {
-      setPasswordError("Password minimal 6 karakter");
-      isValid = false;
-    } else {
-      setPasswordError("");
-    }
-
-    return isValid;
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    if (!validate()) return;
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setErrorMsg(error.message === "Invalid login credentials"
-          ? "Email atau password salah."
-          : error.message
-        );
-        setLoading(false);
-        return;
-      }
-
-      if (data?.user) {
-        // Redirection is handled by the router; middleware will guide the user.
-        // We do a hard refresh or router push to trigger middleware path checking.
-        router.refresh();
-        const role = data.user.app_metadata?.role || "user";
-        const status = data.user.app_metadata?.status || "active";
-
-        if (status === "suspended") {
-          router.push("/suspended");
+    if (errorParam) {
+      setTimeout(() => {
+        if (errorParam === "auth-code-error") {
+          setErrorMsg("Tautan verifikasi atau atur ulang password tidak valid atau telah kedaluwarsa.");
         } else {
-          router.push(role === "admin" ? "/admin" : "/dashboard");
+          setErrorMsg(errorDescParam || "Terjadi kesalahan autentikasi.");
         }
-      }
-    } catch (err) {
-      setErrorMsg("Terjadi kesalahan sistem. Silakan coba lagi.");
-      setLoading(false);
+      }, 0);
+      return;
     }
-  };
+
+    // 2. Check hash parameters (Supabase sends errors in hash fragment)
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hashError = hashParams.get("error");
+      const hashErrorDescription = hashParams.get("error_description");
+      const hashErrorCode = hashParams.get("error_code");
+
+      if (hashError) {
+        setTimeout(() => {
+          if (hashErrorCode === "otp_expired" || hashErrorDescription?.includes("expired")) {
+            setErrorMsg("Tautan verifikasi atau atur ulang password telah kedaluwarsa. Silakan kirim ulang permohonan.");
+          } else {
+            setErrorMsg(hashErrorDescription || "Tautan tidak valid.");
+          }
+        }, 0);
+      }
+    }
+  }, [searchParams, setErrorMsg]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-surface px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-72 h-72 bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none" />
+    <div className="relative h-[100dvh] w-full flex items-center justify-center lg:justify-end p-4 sm:p-6 lg:p-12 xl:p-16 bg-surface select-none overflow-hidden">
+      {/* Background Image: Fullscreen (hidden on mobile, visible on desktop) */}
+      <div className="absolute inset-0 z-0 hidden lg:block">
+        <Image
+          src="/login.webp"
+          alt="CatatUang Login Background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+      </div>
 
-      <div className="w-full max-w-md space-y-8 z-10">
-        {/* Branding/Header */}
-        <div className="text-center">
+      {/* Floating Login Card Form */}
+      <div className="w-full max-w-md bg-transparent lg:bg-surface-card/90 lg:backdrop-blur-md border-0 lg:border lg:border-border/50 rounded-none lg:rounded-2xl p-0 lg:p-6 lg:sm:p-8 shadow-none lg:shadow-2xl z-10 transition-all duration-300 lg:hover:shadow-primary/5">
+        {/* Logo, Title & Subtitle */}
+        <div className="flex flex-col items-center justify-center text-center mb-6">
           <div className="inline-flex items-center justify-center w-24 h-24">
-            <img src="/icon-192x192.png" alt="CatatUang" className="w-full h-full object-contain" />
+            <Image
+              src="/icon-192x192.png"
+              alt="CatatUang Logo"
+              width={192}
+              height={192}
+              priority
+              className="object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-text-primary font-sans">
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-sans">
             Catat<span className="text-primary font-bold">Uang</span>
           </h1>
-          <p className="mt-2 text-sm text-text-secondary">
+          <p className="mt-1.5 text-xs text-text-secondary max-w-[280px]">
             Kelola keuangan pribadi dengan presisi dan transparansi.
           </p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-surface-card border border-border rounded-xl p-6 sm:p-8 backdrop-blur-sm relative">
-          <form onSubmit={handleLogin} className="space-y-6">
-            {errorMsg && (
-              <div className="p-3 text-sm text-danger bg-danger/10 border border-danger/20 rounded-md">
-                {errorMsg}
-              </div>
-            )}
-
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-text-primary">
-                Alamat Email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
-                  <Mail className="h-4 w-4" />
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (emailError) setEmailError("");
-                  }}
-                  className={`block w-full pl-10 pr-3 py-2 bg-surface-input border ${
-                    emailError ? "border-danger focus:ring-danger/25" : "border-border focus:ring-primary/25"
-                  } rounded-md text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 text-sm transition-all`}
-                  placeholder="nama@email.com"
-                  disabled={loading}
-                />
-              </div>
-              {emailError && (
-                <p className="text-xs text-danger mt-1">{emailError}</p>
-              )}
+        <form onSubmit={(e) => handleLogin(e, router)} className="space-y-5 px-6 sm:px-0">
+          {errorMsg && (
+            <div className="p-3 text-sm text-danger bg-danger/10 border border-danger/20 rounded-md">
+              {errorMsg}
             </div>
+          )}
 
-            {/* Password Field */}
+          {/* Email Field */}
+          <FormField
+            label="Alamat Email"
+            error={emailError}
+          >
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError("");
+              }}
+              placeholder="nama@email.com"
+              disabled={loading}
+              hasError={!!emailError}
+            />
+          </FormField>
+
+          {/* Password Field */}
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-sm font-semibold text-text-secondary">Password</span>
+            <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+              Lupa Password?
+            </Link>
+          </div>
+          <FormField error={passwordError} label="">
             <PasswordInput
-              label="Password"
               placeholder="••••••••"
               value={password}
-              onChange={(value) => {
-                setPassword(value);
+              onChange={(e) => {
+                setPassword(e.target.value);
                 if (passwordError) setPasswordError("");
               }}
-              error={passwordError}
+              hasError={!!passwordError}
               disabled={loading}
             />
+          </FormField>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              isLoading={loading}
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md text-sm font-medium transition-all active:scale-[0.98]"
-            >
-              Masuk
-            </Button>
-          </form>
-        </div>
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            isLoading={loading}
+            className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md text-sm font-medium transition-all active:scale-[0.98]"
+          >
+            Masuk
+          </Button>
 
-        {/* Footer/Help links */}
-        <p className="text-center text-xs text-text-muted font-mono">
-          © {new Date().getFullYear()} CatatUang. All rights reserved.
-        </p>
+          {/* Go to Register Link */}
+          <p className="text-center text-sm text-text-secondary mt-4">
+            Belum punya akun?{" "}
+            <Link href="/register" className="text-primary font-medium hover:underline">
+              Daftar
+            </Link>
+          </p>
+        </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <p className="text-xs text-text-secondary animate-pulse font-sans">Memuat...</p>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

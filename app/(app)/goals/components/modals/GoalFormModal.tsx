@@ -1,5 +1,8 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { DatetimeInput } from "@/components/ui/atoms/DatetimeInput";
 import { IconSelector } from "@/components/ui/molecules/IconSelector";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { SavingGoal, GOAL_ICONS } from "../../types";
@@ -54,28 +57,35 @@ export function GoalFormModal({
         <FormField
           label="Nama Target Rencana"
           required
-          type="text"
-          value={formName}
-          onChange={(e) => onFormNameChange(e.target.value)}
-          placeholder="Contoh: Beli Laptop Baru, Liburan Jepang, DP Rumah"
-        />
+        >
+          <Input
+            type="text"
+            value={formName}
+            onChange={(e) => onFormNameChange(e.target.value)}
+            placeholder="Contoh: Beli Laptop Baru, Liburan Jepang, DP Rumah"
+          />
+        </FormField>
 
         <FormField
           label="Jumlah Dana Target (Rupiah)"
           required
-          type="currency"
-          value={formTargetAmount}
-          onChange={(e) => onFormTargetAmountChange(e.target.value)}
-          placeholder="0"
-        />
+        >
+          <CurrencyInput
+            value={formTargetAmount}
+            onChange={(e) => onFormTargetAmountChange(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
         <FormField
           label="Batas Waktu Rencana (Target Date)"
           required
-          type="datetime-local"
-          value={formTargetDate}
-          onChange={(e) => onFormTargetDateChange(e.target.value)}
-        />
+        >
+          <DatetimeInput
+            value={formTargetDate}
+            onChange={(e) => onFormTargetDateChange(e.target.value)}
+          />
+        </FormField>
 
         <IconSelector
           icons={GOAL_ICONS}

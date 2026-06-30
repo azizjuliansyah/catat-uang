@@ -18,6 +18,12 @@ export function useUserDetailState() {
   const [loading, setLoading] = useState(true);
   const [loadingLogs, setLoadingLogs] = useState(true);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
   // Modal states
   const [suspendModalOpen, setSuspendModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -38,11 +44,15 @@ export function useUserDetailState() {
     }
   }, [userId, error]);
 
-  const fetchUserAuditLogs = useCallback(async () => {
+  const fetchUserAuditLogs = useCallback(async (page: number = 1, size: number = pageSize) => {
     try {
       setLoadingLogs(true);
-      const data = await getUserAuditLogs(userId);
-      setAuditLogs(data as AuditLog[]);
+      const result = await getUserAuditLogs(userId, page, size);
+      setAuditLogs(result.logs as AuditLog[]);
+      setTotalPages(result.totalPages);
+      setTotal(result.total);
+      setCurrentPage(page);
+      setPageSize(size);
     } catch (err: unknown) {
       console.error("Error fetching audit logs:", err);
     } finally {
@@ -50,9 +60,18 @@ export function useUserDetailState() {
     }
   }, [userId]);
 
+  const handlePageChange = useCallback((page: number) => {
+    fetchUserAuditLogs(page, pageSize);
+  }, [fetchUserAuditLogs, pageSize]);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    // Reset to page 1 when changing page size
+    fetchUserAuditLogs(1, size);
+  }, [fetchUserAuditLogs]);
+
   useEffect(() => {
     if (userId) {
-      Promise.all([fetchUserDetails(), fetchUserAuditLogs()]);
+      Promise.all([fetchUserDetails(), fetchUserAuditLogs(1)]);
     }
   }, [userId, fetchUserDetails, fetchUserAuditLogs]);
 
@@ -70,7 +89,7 @@ export function useUserDetailState() {
       );
 
       setSuspendModalOpen(false);
-      await Promise.all([fetchUserDetails(), fetchUserAuditLogs()]);
+      await Promise.all([fetchUserDetails(), fetchUserAuditLogs(currentPage)]);
     } catch (err: unknown) {
       console.error("Error toggling suspend:", err);
       error("Gagal mengubah status pengguna");
@@ -89,7 +108,7 @@ export function useUserDetailState() {
       setGeneratedPassword(tempPassword);
       success("Password berhasil di-reset");
       setResetPasswordModalOpen(false);
-      await fetchUserAuditLogs();
+      await fetchUserAuditLogs(currentPage);
     } catch (err: unknown) {
       console.error("Error resetting password:", err);
       error("Gagal mereset password");
@@ -121,6 +140,12 @@ export function useUserDetailState() {
     auditLogs,
     loading,
     loadingLogs,
+    currentPage,
+    totalPages,
+    total,
+    pageSize,
+    handlePageChange,
+    handlePageSizeChange,
     suspendModalOpen,
     setSuspendModalOpen,
     deleteModalOpen,

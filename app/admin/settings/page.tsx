@@ -1,13 +1,19 @@
 "use client";
 
-import { AdminSettingsHeader } from "./components/AdminSettingsHeader";
+import { Settings as SettingsIcon } from "lucide-react";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { ProfileSecurityCombined } from "@/app/(app)/settings/components/ProfileSecurityCombined";
 
 export default function AdminSettingsPage() {
   return (
-    <div className="space-y-6 max-w-4xl mx-auto font-sans">
+    <div className="space-y-6 font-sans">
       {/* Header */}
-      <AdminSettingsHeader />
+      <PageHeader
+        icon={SettingsIcon}
+        iconClassName="w-6 h-6 text-warning"
+        title="Pengaturan Admin"
+        description="Kelola profil administrator dan keamanan akun Anda."
+      />
 
       {/* Content Area */}
       <ProfileSecurityCombined />

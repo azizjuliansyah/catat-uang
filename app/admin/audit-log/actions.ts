@@ -54,18 +54,32 @@ export async function getAuditLogs() {
   });
 }
 
-// Get user audit logs
-export async function getUserAuditLogs(userId: string) {
+// Get user audit logs with pagination
+export async function getUserAuditLogs(userId: string, page: number = 1, pageSize: number = 10) {
   const adminSupabase = await createAdminClient();
+
+  // First, get the total count
+  const { count, error: countError } = await adminSupabase
+    .from("audit_logs")
+    .select("*", { count: "exact", head: true })
+    .eq("target_id", userId);
+
+  if (countError) throw countError;
+
+  // Calculate pagination
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  // Fetch the paginated logs
   const { data: logs, error: logsError } = await adminSupabase
     .from("audit_logs")
     .select("*")
     .eq("target_id", userId)
     .order("created_at", { ascending: false })
-    .limit(20);
+    .range(from, to);
 
   if (logsError) throw logsError;
-  if (!logs) return [];
+  if (!logs) return { logs: [], total: 0, totalPages: 0 };
 
   const { data: { users: authUsers }, error: authError } = await adminSupabase.auth.admin.listUsers({
     perPage: 1000
@@ -80,7 +94,7 @@ export async function getUserAuditLogs(userId: string) {
     });
   }
 
-  return logs.map((log) => {
+  const logsWithEmail = logs.map((log) => {
     const actorId = log.actor_id;
     return {
       ...log,
@@ -89,4 +103,10 @@ export async function getUserAuditLogs(userId: string) {
       } : null
     };
   });
+
+  return {
+    logs: logsWithEmail,
+    total: count || 0,
+    totalPages: Math.ceil((count || 0) / pageSize)
+  };
 }

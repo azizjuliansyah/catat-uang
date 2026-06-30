@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { Lock } from "lucide-react";
-import { usePasswordValidation } from "./security/usePasswordValidation";
+import { usePasswordValidation } from "../hooks";
 import { PasswordChangeForm } from "./security/PasswordChangeForm";
 
 export function SecurityTab() {
@@ -17,12 +17,6 @@ export function SecurityTab() {
     setNewPassword,
     confirmPassword,
     setConfirmPassword,
-    showCurrentPassword,
-    setShowCurrentPassword,
-    showNewPassword,
-    setShowNewPassword,
-    showConfirmPassword,
-    setShowConfirmPassword,
     passwordSaving,
     passwordErrors,
     setPasswordErrors,
@@ -43,12 +37,6 @@ export function SecurityTab() {
         setNewPassword={setNewPassword}
         confirmPassword={confirmPassword}
         setConfirmPassword={setConfirmPassword}
-        showCurrentPassword={showCurrentPassword}
-        setShowCurrentPassword={setShowCurrentPassword}
-        showNewPassword={showNewPassword}
-        setShowNewPassword={setShowNewPassword}
-        showConfirmPassword={showConfirmPassword}
-        setShowConfirmPassword={setShowConfirmPassword}
         passwordSaving={passwordSaving}
         passwordErrors={passwordErrors}
         setPasswordErrors={setPasswordErrors}

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { IconSelector } from "@/components/ui/molecules/IconSelector";
@@ -108,11 +109,14 @@ export function CategoryModal({
         <FormField
           label="Nama Kategori"
           required
-          type="text"
-          value={catName}
-          onChange={(e) => setCatName(e.target.value)}
-          placeholder="Contoh: Belanja Bulanan, Gaji, Makan Luar"
-        />
+        >
+          <Input
+            type="text"
+            value={catName}
+            onChange={(e) => setCatName(e.target.value)}
+            placeholder="Contoh: Belanja Bulanan, Gaji, Makan Luar"
+          />
+        </FormField>
 
         <IconSelector
           icons={CATEGORY_PRESETS.icons}

@@ -3,16 +3,16 @@
 import { Plus, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { PageHeader } from "@/components/ui/molecules/PageHeader";
-import { useGoalsData } from "./hooks/useGoalsData";
-import { useGoalsState } from "./hooks/useGoalsState";
-import { useGoalsHandlers } from "./hooks/useGoalsHandlers";
-
-import { GoalsSummary } from "./components/GoalsSummary";
-import { GoalCard } from "./components/GoalCard";
-import { GoalsFilters } from "./components/GoalsFilters";
-import { GoalsEmptyState } from "./components/GoalsEmptyState";
-import { GoalsModals } from "./components/GoalsModals";
-import { GoalsGridSkeleton } from "./components/GoalsGridSkeleton";
+import { useGoalsData, useGoalsState, useGoalsHandlers } from "./hooks";
+import {
+  GoalHeader,
+  GoalFilterBar,
+  GoalsSummary,
+  GoalCard,
+  GoalsModals,
+  GoalsGridSkeleton
+} from "./components";
+import { EmptyState } from "@/components/ui/organisms/EmptyState";
 
 export default function GoalsPage() {
   const {
@@ -93,20 +93,10 @@ export default function GoalsPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <PageHeader
-        icon={PiggyBank}
-        title="Rencana Tabungan (Goals)"
-        description="Rencanakan, tabung, dan capai impian finansial Anda secara terstruktur."
-        actions={
-          <Button size="sm" onClick={state.openAddModal}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Tambah Target
-          </Button>
-        }
-      />
+      <GoalHeader onAddClick={state.openAddModal} />
 
       {/* Filters and Search */}
-      <GoalsFilters
+      <GoalFilterBar
         statusFilter={state.statusFilter}
         searchTerm={state.searchTerm}
         onStatusFilterChange={state.setStatusFilter}
@@ -120,10 +110,16 @@ export default function GoalsPage() {
       {loading ? (
         <GoalsGridSkeleton />
       ) : filteredGoals.length === 0 ? (
-        <GoalsEmptyState
-          searchTerm={state.searchTerm}
-          statusFilter={state.statusFilter}
-          onAddClick={state.openAddModal}
+        <EmptyState
+          icon={PiggyBank}
+          title="Tidak ada target tabungan"
+          description={
+            state.searchTerm
+              ? "Coba ganti kata kunci pencarian Anda."
+              : "Mulai buat target impian baru dan kelola tabungan Anda."
+          }
+          actionLabel={!state.searchTerm && state.statusFilter === "all" ? "Tambah Target Pertama Anda" : undefined}
+          onAction={!state.searchTerm && state.statusFilter === "all" ? state.openAddModal : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -37,8 +37,12 @@ interface FormModalProps {
  *   isSubmitting={isSubmitting}
  *   submitText="Simpan Target"
  * >
- *   <FormField label="Nama" required value={name} onChange={setName} />
- *   <FormField label="Jumlah" type="currency" value={amount} onChange={setAmount} />
+ *   <FormField label="Nama" required>
+ *     <Input value={name} onChange={(e) => setName(e.target.value)} />
+ *   </FormField>
+ *   <FormField label="Jumlah">
+ *     <CurrencyInput value={amount} onChange={(e) => setAmount(e.target.value)} />
+ *   </FormField>
  * </FormModal>
  */
 function FormModal({

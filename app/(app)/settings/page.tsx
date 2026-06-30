@@ -3,10 +3,7 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { Settings as SettingsIcon } from "lucide-react";
-import { CategoriesTab } from "./components/CategoriesTab";
-import { TemplatesTab } from "./components/TemplatesTab";
-import { SettingsTabs } from "./components/SettingsTabs";
-import { ProfileSecurityCombined } from "./components/ProfileSecurityCombined";
+import { CategoriesTab, TemplatesTab, SettingsTabs, ProfileSecurityCombined } from "./components";
 
 type TabType = "profile-security" | "categories" | "templates";
 

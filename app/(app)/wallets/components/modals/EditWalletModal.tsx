@@ -1,5 +1,7 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
+import { Checkbox } from "@/components/ui/atoms/Checkbox";
 import { IconSelector } from "@/components/ui/molecules/IconSelector";
 import { ColorPicker } from "@/components/ui/molecules/ColorPicker";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
@@ -56,10 +58,14 @@ export function EditWalletModal({
         <FormField
           label="Nama Dompet"
           required
-          type="text"
-          value={editName}
-          onChange={(e) => setEditName(e.target.value)}
-        />
+        >
+          <Input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            placeholder="Contoh: Dompet Utama, GoPay, BCA"
+          />
+        </FormField>
 
         <IconSelector
           icons={PRESETS.icons}
@@ -78,18 +84,12 @@ export function EditWalletModal({
 
         {/* Set as Default checkbox */}
         {canSetDefault && (
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="editIsDefault"
-              checked={editIsDefault}
-              onChange={(e) => setEditIsDefault(e.target.checked)}
-              className="rounded border-border text-primary focus:border-border-strong focus:ring-0 w-4 h-4 bg-surface-input cursor-pointer transition-all duration-150 ease"
-            />
-            <label htmlFor="editIsDefault" className="text-body text-text-secondary select-none cursor-pointer">
-              Jadikan sebagai dompet utama
-            </label>
-          </div>
+          <Checkbox
+            id="editIsDefault"
+            checked={editIsDefault}
+            onChange={(e) => setEditIsDefault(e.target.checked)}
+            label="Jadikan sebagai dompet utama"
+          />
         )}
       </div>
     </Modal>

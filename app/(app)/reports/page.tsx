@@ -1,16 +1,16 @@
 "use client";
 
 import { useApp } from "@/app/providers/AppProvider";
-import { ReportsHeader } from "./components/ReportsHeader";
-import { PeriodFilter } from "./components/FilterBar";
-import { SummaryCards } from "./components/SummaryCards";
-import { ReportsCharts } from "./components/ReportsCharts";
-import { ReportsTables } from "./components/ReportsTables";
-import { ReportsChartsSkeleton } from "./components/ReportsChartsSkeleton";
-import { ReportsTablesSkeleton } from "./components/ReportsTablesSkeleton";
-
-import { useReportsState } from "./hooks/useReportsState";
-import { useReportsHandlers } from "./hooks/useReportsHandlers";
+import {
+  ReportsHeader,
+  ReportsFilterBar,
+  ReportsSummary,
+  ReportsCharts,
+  ReportsTables,
+  ReportsChartsSkeleton,
+  ReportsTablesSkeleton
+} from "./components";
+import { useReportsState, useReportsHandlers } from "./hooks";
 
 const CHART_COLORS = {
   income: "hsl(142, 71%, 45%)", // Emerald Green
@@ -100,7 +100,7 @@ export default function ReportsPage() {
         }
       />
 
-      <PeriodFilter
+      <ReportsFilterBar
         periodFilter={periodFilter}
         setPeriodFilter={setPeriodFilter}
         customStartDate={customStartDate}
@@ -114,7 +114,7 @@ export default function ReportsPage() {
         categories={categories}
       />
 
-      <SummaryCards
+      <ReportsSummary
         totalIncome={totalIncome}
         totalExpense={totalExpense}
         netCashflow={netCashflow}

@@ -6,18 +6,21 @@ import { SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, arra
 import { useApp } from "@/app/providers/AppProvider";
 import { Button } from "@/components/ui/atoms/Button";
 
-import { useWalletsState } from "./hooks/useWalletsState";
-import { useWalletsHandlers } from "./hooks/useWalletsHandlers";
+import { useWalletsState, useWalletsHandlers } from "./hooks";
+import {
+  WalletHeader,
+  WalletSummary,
+  WalletFilterBar,
+  WalletCard,
+  WalletGridSkeleton,
+  AddWalletModal,
+  EditWalletModal,
+  TransferModal,
+  DeleteWalletModal
+} from "./components";
+import { EmptyState } from "@/components/ui/organisms/EmptyState";
+import { Wallet as DefaultWalletIcon, Search } from "lucide-react";
 
-import { WalletsHeader } from "./components/WalletsHeader";
-import { WalletsFilterBar } from "./components/WalletsFilter";
-import { WalletCard } from "./components/WalletCard";
-import { WalletsEmptyState } from "./components/WalletsEmptyState";
-import { WalletsGridSkeleton } from "./components/WalletsGridSkeleton";
-import { AddWalletModal } from "./components/modals/AddWalletModal";
-import { EditWalletModal } from "./components/modals/EditWalletModal";
-import { TransferModal } from "./components/modals/TransferModal";
-import { DeleteWalletModal } from "./components/modals/DeleteWalletModal";
 
 export default function WalletsPage() {
   const { user, wallets, loadingWallets: loading, refreshWallets } = useApp();
@@ -80,17 +83,22 @@ export default function WalletsPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* [1] Page Header + Summary Card */}
-      <WalletsHeader
-        activeWalletsTotal={state.activeWalletsTotal}
+      {/* [1] Page Header */}
+      <WalletHeader
         wallets={wallets}
         onTransferClick={state.openTransferModal}
         onAddClick={() => state.setIsAddModalOpen(true)}
+      />
+
+      {/* [1.5] Summary Card */}
+      <WalletSummary
+        activeWalletsTotal={state.activeWalletsTotal}
+        wallets={wallets}
         isLoading={loading}
       />
 
       {/* [2] Filter Bar (Tabs + Search) */}
-      <WalletsFilterBar
+      <WalletFilterBar
         activeTab={state.activeTab}
         onTabChange={state.setActiveTab}
         searchTerm={state.searchTerm}
@@ -100,13 +108,30 @@ export default function WalletsPage() {
 
       {/* [3] Content Grid */}
       {loading ? (
-        <WalletsGridSkeleton />
+        <WalletGridSkeleton />
       ) : state.filteredWallets.length === 0 ? (
-        <WalletsEmptyState
-          activeTab={state.activeTab}
-          onAddClick={() => state.setIsAddModalOpen(true)}
-          searchTerm={state.searchTerm}
-          onClearSearch={() => state.setSearchTerm("")}
+        <EmptyState
+          icon={state.searchTerm.trim().length > 0 ? Search : DefaultWalletIcon}
+          title={state.searchTerm.trim().length > 0 ? "Tidak ada hasil pencarian" : "Tidak ada dompet ditemukan"}
+          description={
+            state.searchTerm.trim().length > 0
+              ? `Kami tidak menemukan dompet dengan nama "${state.searchTerm}". Silakan bersihkan pencarian atau coba kata kunci lain.`
+              : state.activeTab === "active"
+                ? "Tambahkan dompet pertama Anda untuk mulai mencatat dan mengelola keuangan Anda."
+                : "Belum ada dompet yang Anda arsipkan."
+          }
+          actionLabel={
+            state.searchTerm.trim().length > 0
+              ? "Bersihkan Pencarian"
+              : state.activeTab === "active"
+                ? "Tambah Dompet Baru"
+                : undefined
+          }
+          onAction={
+            state.searchTerm.trim().length > 0
+              ? () => state.setSearchTerm("")
+              : () => state.setIsAddModalOpen(true)
+          }
         />
       ) : (
         <DndContext

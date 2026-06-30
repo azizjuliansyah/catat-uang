@@ -2,6 +2,8 @@
 
 import { User, Upload, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
+import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
 
 interface ProfileFormProps {
   userEmail?: string | null;
@@ -95,20 +97,18 @@ export function ProfileForm({
         </div>
 
         {/* Name Field */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Nama Lengkap
-            <span className="text-danger">*</span>
-          </label>
-          <input
+        <FormField
+          label="Nama Lengkap"
+          required
+        >
+          <Input
             type="text"
             value={profileName}
             onChange={(e) => onProfileNameChange(e.target.value)}
             placeholder="Masukkan nama lengkap"
             disabled={isSaving || isUploading}
-            className="w-full px-3.5 py-2.5 bg-surface-input border rounded-xl text-xs text-text-primary outline-none transition-all focus-glow border-border focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           />
-        </div>
+        </FormField>
 
         {/* Email Display (Read-only) */}
         <div className="space-y-2">

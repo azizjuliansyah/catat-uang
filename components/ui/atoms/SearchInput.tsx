@@ -24,17 +24,15 @@ export function SearchInput({
   className,
   ...props
 }: SearchInputProps) {
-  const sizeClasses = {
-    sm: "h-9 pl-9 pr-3 text-xs",
-    md: "h-10 pl-9 pr-4 text-xs",
-    lg: "h-11 pl-10 pr-4 text-sm",
-  };
-
   const iconSizeClasses = {
     sm: "w-3.5 h-3.5",
     md: "w-4 h-4",
     lg: "w-5 h-5",
   };
+
+  // Extra left padding for icon, extra right padding for clear button
+  const pl = "pl-10";
+  const pr = showClearButton ? "pr-10" : "pr-3";
 
   const hasValue = typeof value === "string" && value.length > 0;
 
@@ -43,11 +41,12 @@ export function SearchInput({
       <Icon
         className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary ${iconSizeClasses[size]}`}
       />
-      <input
+      <Input
         type="text"
         placeholder={placeholder}
         value={value}
-        className={`${sizeClasses[size]} w-full bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary outline-none transition-all focus-glow ${showClearButton && hasValue ? "pr-20" : ""} ${inputClassName} ${className}`}
+        className={`${pl} ${pr} ${showClearButton && hasValue ? "!pr-20" : ""} ${inputClassName} ${className}`}
+        size={size}
         {...props}
       />
       {showClearButton && hasValue && (

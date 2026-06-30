@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { User } from "lucide-react";
-import { useUserDetailState } from "./hooks/useUserDetailState";
+import { User, ArrowLeft } from "lucide-react";
+import { useUserDetailState } from "./hooks";
 import { UserDetailCard } from "../components/UserDetailCard";
 import { UserAuditLogs } from "../components/UserAuditLogs";
 import { UserModals } from "../components/UserModals";
-import { DetailPageHeader, CardSkeleton } from "@/components/ui/molecules";
+import { CardSkeleton } from "@/components/ui/molecules";
 import { ModalUserCompat } from "./types";
 
 export default function UserDetailPage() {
@@ -15,6 +15,12 @@ export default function UserDetailPage() {
     auditLogs,
     loading,
     loadingLogs,
+    currentPage,
+    totalPages,
+    total,
+    pageSize,
+    handlePageChange,
+    handlePageSizeChange,
     suspendModalOpen,
     setSuspendModalOpen,
     deleteModalOpen,
@@ -54,22 +60,14 @@ export default function UserDetailPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Header */}
-      <DetailPageHeader
-        backHref="/admin/users"
-        title="Detail Pengguna"
-        subtitle="Informasi lengkap dan riwayat aksi pengguna."
-        badges={[
-          {
-            label: user.role === "admin" ? "Admin" : "Pengguna",
-            variant: user.role === "admin" ? "primary" : "neutral",
-          },
-          {
-            label: user.status === "active" ? "Aktif" : "Ditangguhkan",
-            variant: user.status === "active" ? "success" : "danger",
-          },
-        ]}
-      />
+      {/* Back Button */}
+      <Link
+        href="/admin/users"
+        className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Kembali ke Daftar
+      </Link>
 
       {/* User Info Card */}
       <UserDetailCard
@@ -95,7 +93,16 @@ export default function UserDetailPage() {
       )}
 
       {/* Audit Log Section */}
-      <UserAuditLogs auditLogs={auditLogs} loadingLogs={loadingLogs} />
+      <UserAuditLogs
+        auditLogs={auditLogs}
+        loadingLogs={loadingLogs}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        total={total}
+      />
 
       {/* Modals */}
       <UserModals

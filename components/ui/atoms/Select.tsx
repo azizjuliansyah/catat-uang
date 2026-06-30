@@ -14,20 +14,20 @@ export function Select({
   ...props
 }: SelectProps) {
   const baseClasses =
-    "w-full bg-surface border outline-none transition-all duration-150 ease cursor-pointer font-sans";
+    "w-full bg-surface-input border transition-all duration-150 ease cursor-pointer font-sans text-text-primary";
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs min-h-[36px] rounded-md",
+    sm: "px-3 py-1.5 text-xs h-9 rounded-md",
     md: "px-3 py-2 text-sm min-h-[44px] rounded-md",
     lg: "px-4 py-2.5 text-sm min-h-[52px] rounded-md",
   };
 
   const stateClasses = hasError
-    ? "border-danger focus:border-danger text-text-primary"
-    : "border-border focus:border-border-focus text-text-primary hover:border-border-strong";
+    ? "border-danger focus:border-danger focus:outline-none"
+    : "border-border focus:border-border-focus hover:border-border-strong focus:outline-none";
 
   const disabledClasses = disabled
-    ? "opacity-50 cursor-not-allowed bg-surface-input"
+    ? "opacity-50 cursor-not-allowed bg-surface-input/50"
     : "";
 
   return (

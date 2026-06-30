@@ -1,0 +1,1 @@
+export { useUserDetailState } from "./useUserDetailState";

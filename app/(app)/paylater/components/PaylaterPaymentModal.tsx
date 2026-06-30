@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
+import { Checkbox } from "@/components/ui/atoms/Checkbox";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { Button } from "@/components/ui/atoms/Button";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
@@ -291,11 +293,9 @@ export function PaylaterPaymentModal({
                           : "bg-surface/30 border-border hover:border-border-strong")
                       }
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={isSelected}
                         onChange={() => toggleInternal(txn.id)}
-                        className="w-4 h-4 rounded border-border bg-surface-input text-primary focus:ring-primary focus:ring-2 cursor-pointer shrink-0"
                       />
                       {CategoryIcon && txn.categories && (
                         <div
@@ -390,11 +390,14 @@ export function PaylaterPaymentModal({
 
         <FormField
           label="Tanggal Pembayaran"
-          type="date"
           required
-          value={paymentDate}
-          onChange={(e) => setPaymentDate(e.target.value)}
-        />
+        >
+          <Input
+            type="date"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+          />
+        </FormField>
       </div>
     </Modal>
   );

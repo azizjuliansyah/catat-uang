@@ -2,6 +2,8 @@ import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
+import { Input } from "@/components/ui/atoms/Input";
+import { Textarea } from "@/components/ui/atoms/Textarea";
 import { WalletItem } from "../../types";
 import { formatIDR } from "../../utils";
 import { Wallet } from "lucide-react";
@@ -94,28 +96,36 @@ export function TransferModal({
         <FormField
           label="Jumlah Transfer (Rupiah)"
           required
-          type="currency"
-          value={tfAmount}
-          onChange={(e) => setTfAmount(e.target.value)}
-          placeholder="0"
-        />
+        >
+          <Input
+            type="text"
+            value={tfAmount}
+            onChange={(e) => setTfAmount(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
         <FormField
           label="Tanggal Transfer"
           required
-          type="datetime-local"
-          value={tfDate}
-          onChange={(e) => setTfDate(e.target.value)}
-        />
+        >
+          <Input
+            type="datetime-local"
+            value={tfDate}
+            onChange={(e) => setTfDate(e.target.value)}
+          />
+        </FormField>
 
         <FormField
           label="Catatan (Opsional)"
-          type="textarea"
-          value={tfDescription}
-          onChange={(e) => setTfDescription(e.target.value)}
-          placeholder="Contoh: Pindah saldo kas, top up saldo e-wallet"
-          resize="none"
-        />
+        >
+          <Textarea
+            value={tfDescription}
+            onChange={(e) => setTfDescription(e.target.value)}
+            placeholder="Contoh: Pindah saldo kas, top up saldo e-wallet"
+            resize="none"
+          />
+        </FormField>
       </div>
     </Modal>
   );

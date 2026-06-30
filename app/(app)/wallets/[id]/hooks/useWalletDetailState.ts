@@ -55,6 +55,9 @@ export function useWalletDetailState() {
   const [loading, setLoading] = useState(true);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Date range filter state
   const [dateRangeType, setDateRangeType] = useState<string>("1month");
@@ -166,11 +169,18 @@ export function useWalletDetailState() {
     router,
     id,
     wallet,
+    user,
     transactions,
     selectedTransaction,
     setSelectedTransaction,
     isDetailModalOpen,
     setIsDetailModalOpen,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    isDeleteSubmitting,
+    setIsDeleteSubmitting,
+    isActionLoading,
+    setIsActionLoading,
     totalIncome,
     totalExpense,
     netFlow,

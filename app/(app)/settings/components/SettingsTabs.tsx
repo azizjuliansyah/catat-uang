@@ -17,7 +17,7 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
         isActive={activeTab === "profile-security"}
         onClick={() => onTabChange("profile-security")}
         variant="pill"
-        className="px-3 py-0 h-full text-xs flex-1 min-w-[150px]"
+        className="px-3 py-0 h-full text-xs flex-1 min-w-[170px]"
       >
         <User className="w-3.5 h-3.5 mr-1.5 inline" />
         Profil & Keamanan

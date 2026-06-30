@@ -78,6 +78,10 @@ export function useTransactionsState(transactions: Transaction[]) {
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [receiptModalUrl, setReceiptModalUrl] = useState<string | null>(null);
   const [isRunTemplatesOpen, setIsRunTemplatesOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+  const [transactionToView, setTransactionToView] = useState<Transaction | null>(null);
 
   // Client-side filtering
   const filteredTransactions = useMemo(() => {
@@ -195,6 +199,14 @@ export function useTransactionsState(transactions: Transaction[]) {
     setReceiptModalUrl,
     isRunTemplatesOpen,
     setIsRunTemplatesOpen,
+    isEditModalOpen,
+    setIsEditModalOpen,
+    isDetailModalOpen,
+    setIsDetailModalOpen,
+    transactionToEdit,
+    setTransactionToEdit,
+    transactionToView,
+    setTransactionToView,
     filteredTransactions,
     totalIncome,
     totalExpense,

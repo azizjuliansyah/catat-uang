@@ -6,6 +6,7 @@
 import { PaylaterPlatform, PaylaterTransaction } from "../../types";
 import { FileText, Receipt, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
+import { Checkbox } from "@/components/ui/atoms/Checkbox";
 import { formatIDR } from "@/lib/utils/format";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { getIconComponent } from "@/lib/utils/icons";
@@ -107,11 +108,9 @@ export function PaylaterTransactionList({
                 }
               >
                 {/* Checkbox */}
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={isSelected}
                   onChange={() => toggleTransactionSelection(txn.id)}
-                  className="w-4 h-4 rounded border-border bg-surface-input text-primary focus:ring-primary focus:ring-2 cursor-pointer"
                 />
 
                 {CategoryIcon && txn.categories && (

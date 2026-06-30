@@ -73,11 +73,13 @@ export function DebtPaymentList({
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Lihat Bukti Pembayaran"
+                      size="sm"
                       icon={FileImage}
                       variant="primary"
                     />
                   )}
                   <ActionButton
+                    size="sm"
                     icon={Trash2}
                     title="Hapus Pembayaran"
                     variant="danger"

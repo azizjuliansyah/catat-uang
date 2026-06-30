@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { Wallet as WalletIcon, ArrowRightLeft, Edit2, Trash2, ArrowRight, Archive, RotateCcw, Star, Plus } from "lucide-react";
+import { useMemo } from "react";
+import { Wallet as WalletIcon, ArrowRightLeft, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { TransactionDetailModal } from "@/components/ui/organisms/TransactionDetailModal";
 import { EmptyState } from "@/components/ui/organisms/EmptyState";
@@ -10,19 +9,23 @@ import { Button } from "@/components/ui/atoms/Button";
 import { PageHeader } from "@/components/ui/molecules/PageHeader";
 import { DatePeriodFilter } from "@/components/ui/atoms/DatePeriodFilter";
 import { useApp } from "@/app/providers/AppProvider";
-import { deleteWallet, toggleArchiveWallet, setDefaultWallet } from "../services";
-import { useToast } from "@/components/ui/molecules/Toast";
-
-import { useWalletDetailState } from "./hooks/useWalletDetailState";
-import { useWalletDetailHandlers } from "./hooks/useWalletDetailHandlers";
-import { useWalletDetailForms } from "./hooks/useWalletDetailForms";
-import { WalletDetailStats } from "./components/WalletDetailStats";
 import { TransactionListGroup } from "@/app/(app)/transactions/components/TransactionListGroup";
-import { WalletDetailTransactionListSkeleton } from "./components/WalletDetailTransactionListSkeleton";
-import { EditWalletModal } from "../components/modals/EditWalletModal";
-import { DeleteWalletModal } from "../components/modals/DeleteWalletModal";
-import { TransferModal } from "../components/modals/TransferModal";
 import { formatIDR } from "@/lib/utils/format";
+
+import {
+  useWalletDetailState,
+  useWalletDetailHandlers,
+  useWalletDetailForms
+} from "./hooks";
+import {
+  WalletDetailSummary,
+  WalletDetailTransactionListSkeleton
+} from "./components";
+import {
+  EditWalletModal,
+  DeleteWalletModal,
+  TransferModal
+} from "../components";
 
 const PERIOD_OPTIONS = [
   { value: "all", label: "Semua Data" },
@@ -34,17 +37,19 @@ const PERIOD_OPTIONS = [
 ];
 
 export default function WalletDetailPage() {
-  const router = useRouter();
   const state = useWalletDetailState();
   const handlers = useWalletDetailHandlers(state);
   const supabase = createClient();
-  const { success: showSuccessToast, error: showErrorToast } = useToast();
-  const { user, wallets, refreshWallets } = useApp();
+  const { wallets, refreshWallets } = useApp();
 
   const {
     wallet,
     selectedTransaction,
     isDetailModalOpen,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    isDeleteSubmitting,
+    isActionLoading,
     totalIncome,
     totalExpense,
     netFlow,
@@ -69,75 +74,18 @@ export default function WalletDetailPage() {
     handleTransactionClick,
     handleModalClose,
     handleEditTransaction,
-    formatDateGroup
+    formatDateGroup,
+    handleDeleteWallet
   } = handlers;
 
   // Forms hook
   const forms = useWalletDetailForms({
     wallet,
-    userId: user?.id,
+    userId: state.user?.id,
     wallets,
     supabase,
     onTransferSuccess: refreshWallets,
   });
-
-  // Action modals state
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState(false);
-
-  // Actions
-  const handleToggleArchive = async () => {
-    if (!wallet) return;
-    setIsActionLoading(true);
-    try {
-      const nextArchived = !wallet.is_archived;
-      if (wallet.is_default && nextArchived) {
-        showErrorToast("Dompet utama tidak bisa diarsipkan.");
-        setIsActionLoading(false);
-        return;
-      }
-      await toggleArchiveWallet(supabase, wallet.id, nextArchived);
-      showSuccessToast(nextArchived ? "Dompet berhasil diarsipkan" : "Dompet berhasil diaktifkan kembali");
-    } catch (err) {
-      console.error(err);
-      showErrorToast("Gagal mengubah status arsip dompet");
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
-
-  const handleSetDefault = async () => {
-    if (!wallet) return;
-    setIsActionLoading(true);
-    try {
-      if (wallet.is_archived) {
-        showErrorToast("Dompet terarsip tidak bisa dijadikan dompet utama.");
-        setIsActionLoading(false);
-        return;
-      }
-      await setDefaultWallet(supabase, wallet.id);
-      showSuccessToast(`Dompet ${wallet.name} sekarang menjadi dompet utama!`);
-    } catch (err) {
-      console.error(err);
-      showErrorToast("Gagal menjadikan dompet utama");
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
-
-  const handleDeleteWallet = async () => {
-    if (!wallet) return;
-    setIsDeleteSubmitting(true);
-    try {
-      await deleteWallet(supabase, wallet.id);
-      setIsDeleteModalOpen(false);
-      router.push("/wallets");
-    } catch (err) {
-      console.error(err);
-      setIsDeleteSubmitting(false);
-    }
-  };
 
   if (!wallet && !isPageLoading) {
     return (
@@ -215,7 +163,7 @@ export default function WalletDetailPage() {
       </div>
 
       {/* Stats */}
-      <WalletDetailStats
+      <WalletDetailSummary
         wallet={wallet}
         currentBalance={wallet?.balance || 0}
         totalIncome={totalIncome}

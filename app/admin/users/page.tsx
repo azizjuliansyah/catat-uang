@@ -2,13 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Users, Plus } from "lucide-react";
 import { useToast } from "@/components/ui/molecules/Toast";
-import { UserFilters } from "./components/UserFilters";
-import { UserTable } from "./components/UserTable";
-import { UserModals } from "./components/UserModals";
-import { UsersHeader } from "./components/UsersHeader";
-import { useUsersState } from "./hooks/useUsersState";
-import { useUsersHandlers } from "./hooks/useUsersHandlers";
+import { PageHeader } from "@/components/ui/molecules/PageHeader";
+import { Button } from "@/components/ui/atoms/Button";
+import { UserFilterBar, UserTable, UserModals } from "./components";
+import { useUsersState, useUsersHandlers } from "./hooks";
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -33,6 +32,8 @@ export default function AdminUsersPage() {
     resetPasswordModalOpen,
     setResetPasswordModalOpen,
     selectedUser,
+    generatedPassword,
+    setGeneratedPassword,
     actionLoading,
     handleActionClick,
     closeAllModals,
@@ -43,6 +44,7 @@ export default function AdminUsersPage() {
     setLoading,
     setActionLoading,
     closeAllModals,
+    setGeneratedPassword,
     success,
     error,
   });
@@ -63,10 +65,26 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <UsersHeader onCreateClick={() => router.push("/admin/users/new")} />
+      <PageHeader
+        icon={Users}
+        iconClassName="w-6 h-6 text-warning"
+        title="Kelola Pengguna"
+        description="Kelola akun pengguna, status aktif/nonaktif, dan akses."
+        actions={
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => router.push("/admin/users/new")}
+            className="flex-1 sm:flex-initial"
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            Buat Pengguna
+          </Button>
+        }
+      />
 
       {/* Filters */}
-      <UserFilters
+      <UserFilterBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         statusFilter={statusFilter}
@@ -97,9 +115,10 @@ export default function AdminUsersPage() {
         setResetPasswordModalOpen={setResetPasswordModalOpen}
         selectedUser={selectedUser}
         actionLoading={actionLoading}
+        generatedPassword={generatedPassword}
         handleToggleSuspend={() => handleToggleSuspend(selectedUser)}
         handleDeleteUser={() => handleDeleteUser(selectedUser)}
-        handleResetPassword={() => handleResetPassword(selectedUser)}
+        handleResetPassword={(password) => handleResetPassword(selectedUser, password)}
       />
     </div>
   );

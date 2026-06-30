@@ -1,5 +1,8 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { Input } from "@/components/ui/atoms/Input";
+import { Checkbox } from "@/components/ui/atoms/Checkbox";
 import { IconSelector } from "@/components/ui/molecules/IconSelector";
 import { ColorPicker } from "@/components/ui/molecules/ColorPicker";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
@@ -56,20 +59,25 @@ export function AddWalletModal({
         <FormField
           label="Nama Dompet"
           required
-          type="text"
-          value={addName}
-          onChange={(e) => setAddName(e.target.value)}
-          placeholder="Contoh: Dompet Utama, GoPay, BCA"
-        />
+        >
+          <Input
+            type="text"
+            value={addName}
+            onChange={(e) => setAddName(e.target.value)}
+            placeholder="Contoh: Dompet Utama, GoPay, BCA"
+          />
+        </FormField>
 
         <FormField
           label="Saldo Awal (Rupiah)"
-          type="currency"
-          value={addInitialBalance}
-          onChange={(e) => setAddInitialBalance(e.target.value)}
-          placeholder="0"
           helperText="Saldo awal tidak bisa diubah setelah dibuat. Saldo saat ini akan otomatis disesuaikan."
-        />
+        >
+          <CurrencyInput
+            value={addInitialBalance}
+            onChange={(e) => setAddInitialBalance(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
         <IconSelector
           icons={PRESETS.icons}
@@ -87,18 +95,12 @@ export function AddWalletModal({
         />
 
         {/* Set as Default checkbox */}
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="addIsDefault"
-            checked={addIsDefault}
-            onChange={(e) => setAddIsDefault(e.target.checked)}
-            className="rounded border-border text-primary focus:border-border-strong focus:ring-0 w-4 h-4 bg-surface-input cursor-pointer transition-all duration-150 ease"
-          />
-          <label htmlFor="addIsDefault" className="text-body text-text-secondary select-none cursor-pointer">
-            Jadikan sebagai dompet utama
-          </label>
-        </div>
+        <Checkbox
+          id="addIsDefault"
+          checked={addIsDefault}
+          onChange={(e) => setAddIsDefault(e.target.checked)}
+          label="Jadikan sebagai dompet utama"
+        />
       </div>
     </Modal>
   );

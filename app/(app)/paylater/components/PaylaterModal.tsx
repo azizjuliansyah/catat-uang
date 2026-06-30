@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { Input } from "@/components/ui/atoms/Input";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { IconSelector } from "@/components/ui/molecules/IconSelector";
 import { ColorPicker } from "@/components/ui/molecules/ColorPicker";
@@ -137,45 +139,56 @@ export function PaylaterModal({
         <FormField
           label="Nama Platform"
           required
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Contoh: GoPay Later, Shopee PayLater, Kredivo"
-        />
+        >
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Contoh: GoPay Later, Shopee PayLater, Kredivo"
+          />
+        </FormField>
 
         <FormField
           label="Batas Limit Kredit (Rupiah)"
-          type="currency"
-          value={limitAmount}
-          onChange={(e) => setLimitAmount(e.target.value)}
-          placeholder="0"
           helperText="Batas maksimal penggunaan dana kredit pada platform ini."
-        />
+        >
+          <CurrencyInput
+            value={limitAmount}
+            onChange={(e) => setLimitAmount(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
         <div className="grid grid-cols-2 gap-4">
           <FormField
             label="Tanggal Siklus Tagihan"
             required
-            type="number"
-            min="1"
-            max="31"
-            value={billingCycleDate}
-            onChange={(e) => setBillingCycleDate(e.target.value)}
-            placeholder="5"
             helperText="Tanggal cetak tagihan bulanan (1-31)."
-          />
+          >
+            <Input
+              type="number"
+              min="1"
+              max="31"
+              value={billingCycleDate}
+              onChange={(e) => setBillingCycleDate(e.target.value)}
+              placeholder="5"
+            />
+          </FormField>
 
           <FormField
             label="Jatuh Tempo (Hari)"
             required
-            type="number"
-            min="1"
-            max="31"
-            value={dueDateOffset}
-            onChange={(e) => setDueDateOffset(e.target.value)}
-            placeholder="15"
             helperText="Jumlah hari sejak tanggal cetak (1-31)."
-          />
+          >
+            <Input
+              type="number"
+              min="1"
+              max="31"
+              value={dueDateOffset}
+              onChange={(e) => setDueDateOffset(e.target.value)}
+              placeholder="15"
+            />
+          </FormField>
         </div>
 
         <IconSelector

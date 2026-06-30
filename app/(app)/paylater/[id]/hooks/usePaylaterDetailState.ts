@@ -30,6 +30,9 @@ export function usePaylaterDetailState() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentToDelete, setPaymentToDelete] = useState<PaylaterPayment | null>(null);
   const [selectedTransactionIds, setSelectedTransactionIds] = useState<Set<string>>(new Set());
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Fetch data
   const loadData = useCallback(async () => {
@@ -106,6 +109,12 @@ export function usePaylaterDetailState() {
     setPaymentToDelete,
     selectedTransactionIds,
     setSelectedTransactionIds,
+    isEditModalOpen,
+    setIsEditModalOpen,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    isActionLoading,
+    setIsActionLoading,
 
     // Actions
     loadData,

@@ -2,8 +2,10 @@ import React from "react";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
 import { IconSelector } from "@/components/ui/molecules/IconSelector";
 import { ColorPicker } from "@/components/ui/molecules/ColorPicker";
+import { AlertCircle } from "lucide-react";
 import { AdminCategoriesState } from "../hooks/useAdminCategoriesState";
 
 interface CategoryTemplateModalsProps {
@@ -77,11 +79,14 @@ export function CategoryTemplateModals({
           <FormField
             label="Nama Template"
             required
-            type="text"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
-            placeholder="Contoh: Belanja Bulanan, Gaji, Makan Luar"
-          />
+          >
+            <Input
+              type="text"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="Contoh: Belanja Bulanan, Gaji, Makan Luar"
+            />
+          </FormField>
 
           {/* Type Selection */}
           <div className="space-y-2">
@@ -157,13 +162,18 @@ export function CategoryTemplateModals({
           />
         }
       >
-        <p className="text-xs text-text-secondary">
-          Apakah Anda yakin ingin menghapus template kategori{" "}
-          <span className="font-bold text-text-primary">
-            "{templateToDelete?.name}"
-          </span>
-          ? Aksi ini tidak dapat dibatalkan.
-        </p>
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-12 h-12 rounded-md bg-danger/10 text-danger flex items-center justify-center">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div className="flex-1 text-sm text-text-secondary leading-relaxed">
+            Apakah Anda yakin ingin menghapus template kategori{" "}
+            <span className="font-bold text-text-primary">
+              "{templateToDelete?.name}"
+            </span>
+            ? Aksi ini tidak dapat dibatalkan.
+          </div>
+        </div>
       </Modal>
     </>
   );

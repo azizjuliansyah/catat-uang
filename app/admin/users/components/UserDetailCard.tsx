@@ -4,6 +4,14 @@ import { Mail, Shield, UserCheck, UserX } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { UserDetails } from "../[id]/types";
 
+// Helper to get initials from name
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
 interface UserDetailCardProps {
   user: UserDetails;
   setSuspendModalOpen: (val: boolean) => void;
@@ -24,14 +32,20 @@ export function UserDetailCard({
       <div className="p-6">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            {/* Avatar - shows photo if available, otherwise shows initial */}
-            <div className="shrink-0 w-24 h-24 rounded-full overflow-hidden border border-border bg-surface-input flex items-center justify-center">
+            {/* Avatar - shows photo if available, otherwise shows gradient with initials */}
+            <div className="shrink-0">
               {user.avatar_url ? (
-                <img src={user.avatar_url} alt={user.name || "User"} className="w-full h-full object-cover" />
+                <img
+                  src={user.avatar_url}
+                  alt={user.name || "User"}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-surface"
+                />
               ) : (
-                <span className="text-text-secondary text-2xl font-bold font-mono truncate">
-                  {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "?"}
-                </span>
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center border-4 border-surface">
+                  <span className="text-3xl font-bold text-white font-display">
+                    {getInitials(user.name || user.email || "Pengguna")}
+                  </span>
+                </div>
               )}
             </div>
             <div>
@@ -89,40 +103,36 @@ export function UserDetailCard({
               })}
             </p>
           </div>
-          <div>
+          <div className="col-span-2">
             <p className="text-xs text-text-secondary mb-1">ID Pengguna</p>
-            <p className="text-sm font-mono text-text-secondary truncate">
-              {user.id.slice(0, 8)}...
+            <p className="text-sm font-mono text-text-secondary break-all">
+              {user.id}
             </p>
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 md:col-span-2">
             <p className="text-xs text-text-secondary mb-1">Aksi Tersedia</p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
-                variant="ghost"
+                variant={user.status === "active" ? "warning" : "success"}
                 size="sm"
                 onClick={() => setSuspendModalOpen(true)}
-                className={`px-3 py-1.5 min-h-0 h-auto rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  user.status === "active"
-                    ? "text-warning hover:bg-warning/10 hover:text-warning"
-                    : "text-success hover:bg-success/10 hover:text-success"
-                }`}
+                className="px-3 py-1.5 min-h-0 h-auto rounded-lg text-xs font-medium"
               >
                 {user.status === "active" ? "Tangguhkan" : "Aktifkan"}
               </Button>
               <Button
-                variant="ghost"
+                variant="primary"
                 size="sm"
                 onClick={() => setResetPasswordModalOpen(true)}
-                className="px-3 py-1.5 min-h-0 h-auto text-primary hover:bg-primary/10 hover:text-primary rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                className="px-3 py-1.5 min-h-0 h-auto rounded-lg text-xs font-medium"
               >
-                Reset
+                Reset Password
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => setDeleteModalOpen(true)}
-                className="px-3 py-1.5 min-h-0 h-auto"
+                className="px-3 py-1.5 min-h-0 h-auto rounded-lg text-xs font-medium"
               >
                 Hapus
               </Button>

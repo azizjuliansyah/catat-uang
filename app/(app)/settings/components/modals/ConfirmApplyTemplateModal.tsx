@@ -101,8 +101,7 @@ export function ConfirmApplyTemplateModal({
           <div className="space-y-4">
             {incomeTemplates.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-income mb-2 flex items-center gap-1.5">
-                  <CircleDot className="w-3.5 h-3.5" />
+                <h4 className="text-sm font-semibold text-income mb-2">
                   Pemasukan ({incomeTemplates.length})
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
@@ -131,8 +130,7 @@ export function ConfirmApplyTemplateModal({
 
             {expenseTemplates.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-expense mb-2 flex items-center gap-1.5">
-                  <CircleDot className="w-3.5 h-3.5" />
+                <h4 className="text-sm font-semibold text-expense mb-2">
                   Pengeluaran ({expenseTemplates.length})
                 </h4>
                 <div className="grid grid-cols-2 gap-2">

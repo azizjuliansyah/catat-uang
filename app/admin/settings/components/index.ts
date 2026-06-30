@@ -1,0 +1,1 @@
+export { AdminSettingsTabs } from "./AdminSettingsTabs";

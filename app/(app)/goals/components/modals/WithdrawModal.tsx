@@ -2,6 +2,7 @@ import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
+import { Input } from "@/components/ui/atoms/Input";
 import { SavingGoal } from "../../types";
 import { formatIDR } from "../../utils";
 import { Wallet } from "lucide-react";
@@ -53,11 +54,14 @@ export function WithdrawModal({
         <FormField
           label="Jumlah Penarikan (Rupiah)"
           required
-          type="currency"
-          value={txAmount}
-          onChange={(e) => onTxAmountChange(e.target.value)}
-          placeholder="0"
-        />
+        >
+          <Input
+            type="text"
+            value={txAmount}
+            onChange={(e) => onTxAmountChange(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-text-secondary">
@@ -78,10 +82,13 @@ export function WithdrawModal({
         <FormField
           label="Tanggal Transaksi"
           required
-          type="datetime-local"
-          value={txDate}
-          onChange={(e) => onTxDateChange(e.target.value)}
-        />
+        >
+          <Input
+            type="datetime-local"
+            value={txDate}
+            onChange={(e) => onTxDateChange(e.target.value)}
+          />
+        </FormField>
       </div>
     </Modal>
   );

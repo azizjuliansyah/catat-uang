@@ -3,10 +3,13 @@
 
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
-import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { TransactionTypeSelector } from "@/components/ui/molecules/TransactionTypeSelector";
 import { CategoryGridSelector } from "./CategoryGridSelector";
 import { ReceiptManager } from "./ReceiptManager";
+import { FormField } from "@/components/ui/molecules/FormField";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { DatetimeInput } from "@/components/ui/atoms/DatetimeInput";
+import { Textarea } from "@/components/ui/atoms/Textarea";
 import CustomSelect from "@/components/ui/atoms/CustomSelect";
 import { formatIDR } from "@/lib/utils/format";
 import { useTransactionFormState } from "../hooks/useTransactionFormState";
@@ -92,89 +95,45 @@ export function CreateTransactionModal({
     >
       <div className="space-y-5">
         {/* Segment Type Selector */}
-        <div className="space-y-2">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Jenis Transaksi</label>
-          <TabButtonGroup variant="pill-colored" uniformWidth className="h-10 items-center gap-1">
-            <TabButton
-              isActive={type === "expense"}
-              onClick={() => setType("expense")}
-              variant="pill-colored"
-              className={`px-2 py-0 h-full text-xs transition-all ${type === "expense"
-                ? "bg-expense/25 border-none text-expense"
-                : "text-text-secondary hover:text-text-primary"
-                }`}
-            >
-              <TrendingDown className="w-3.5 h-3.5 mr-1.5 inline" />
-              Pengeluaran
-            </TabButton>
-            <TabButton
-              isActive={type === "income"}
-              onClick={() => setType("income")}
-              variant="pill-colored"
-              className={`px-2 py-0 h-full text-xs transition-all ${type === "income"
-                ? "bg-income/25 border-none text-income"
-                : "text-text-secondary hover:text-text-primary"
-                }`}
-            >
-              <TrendingUp className="w-3.5 h-3.5 mr-1.5 inline" />
-              Pemasukan
-            </TabButton>
-          </TabButtonGroup>
-        </div>
+        <TransactionTypeSelector
+          value={type}
+          onChange={setType}
+        />
 
         {/* Amount Field */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Jumlah Uang (Rupiah)
-            <span className="text-danger">*</span>
-          </label>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm font-bold text-text-secondary select-none">
-              Rp.
-            </span>
-            <input
-              ref={amountInputRef}
-              type="text"
-              value={amount ? parseInt(amount).toLocaleString("id-ID") : ""}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/[^0-9]/g, "");
-                setAmount(raw);
-              }}
-              placeholder="0"
-              className="w-full pl-11 pr-4 py-3 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-base font-bold font-mono outline-none transition-all"
-              required
-            />
-          </div>
-          <p className="text-xs text-text-muted mt-1.5">
-            Terformat: {getFormattedPreview()}
-          </p>
-        </div>
+        <FormField
+          label="Jumlah Uang (Rupiah)"
+          required
+          helperText={`Terformat: ${getFormattedPreview()}`}
+        >
+          <CurrencyInput
+            ref={amountInputRef}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+            size="md"
+          />
+        </FormField>
 
         {/* Date and Wallet Selection */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Transaction Date */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              Tanggal Transaksi
-              <span className="text-danger">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="datetime-local"
-                value={transactionDate}
-                onChange={(e) => setTransactionDate(e.target.value)}
-                className="w-full min-h-[44px] pl-4 pr-3 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all cursor-pointer"
-                required
-              />
-            </div>
-          </div>
+          <FormField
+            label="Tanggal Transaksi"
+            required
+          >
+            <DatetimeInput
+              value={transactionDate}
+              onChange={(e) => setTransactionDate(e.target.value)}
+              size="md"
+            />
+          </FormField>
 
           {/* Source/Target Wallet */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-              {type === "income" ? "Dompet Tujuan" : "Sumber Dana"}
-              <span className="text-danger">*</span>
-            </label>
+          <FormField
+            label={type === "income" ? "Dompet Tujuan" : "Sumber Dana"}
+            required
+          >
             <CustomSelect
               value={sourceId}
               onChange={setSourceId}
@@ -196,7 +155,7 @@ export function CreateTransactionModal({
               ]}
               placeholder={type === "income" ? "Pilih Dompet Tujuan" : "Pilih Sumber Dana"}
             />
-          </div>
+          </FormField>
         </div>
 
         {/* Category Selection */}
@@ -208,18 +167,18 @@ export function CreateTransactionModal({
         />
 
         {/* Description */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-text-secondary">Deskripsi / Catatan (Opsional)</label>
-          <div className="relative">
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Contoh: Beli makan siang nasi goreng kambing"
-              rows={3}
-              className="w-full pl-4 pr-4 py-2.5 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs outline-none transition-all resize-none"
-            />
-          </div>
-        </div>
+        <FormField
+          label="Deskripsi / Catatan"
+          helperText="Opsional"
+        >
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Contoh: Beli makan siang nasi goreng kambing"
+            rows={3}
+            resize="none"
+          />
+        </FormField>
 
         {/* Receipt Upload */}
         <ReceiptManager

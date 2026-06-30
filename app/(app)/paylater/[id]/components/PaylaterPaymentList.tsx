@@ -53,6 +53,7 @@ export function PaylaterPaymentList({
 
                 <ActionButton
                   icon={Trash2}
+                  size="sm"
                   title="Hapus Pembayaran"
                   variant="danger"
                   onClick={() => setPaymentToDelete(payment)}

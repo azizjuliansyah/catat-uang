@@ -1,5 +1,9 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { DatetimeInput } from "@/components/ui/atoms/DatetimeInput";
+import { Textarea } from "@/components/ui/atoms/Textarea";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { TabButton, TabButtonGroup } from "@/components/ui/molecules/TabButtonGroup";
@@ -169,11 +173,14 @@ export function DebtFormModal({
         <FormField
           label="Nama Kontak"
           required
-          type="text"
-          value={formName}
-          onChange={(e) => setFormName(e.target.value)}
-          placeholder="Contoh: Budi, Bank Mandiri, Sisca"
-        />
+        >
+          <Input
+            type="text"
+            value={formName}
+            onChange={(e) => setFormName(e.target.value)}
+            placeholder="Contoh: Budi, Bank Mandiri, Sisca"
+          />
+        </FormField>
 
         {/* Packages List */}
         <div className="space-y-3 pt-2">
@@ -205,35 +212,46 @@ export function DebtFormModal({
                     <FormField
                       label="Jumlah Dana (Rupiah)"
                       required
-                      type="currency"
-                      value={pkg.totalAmount}
-                      onChange={(e) => handleUpdateRow(pkg.id, "totalAmount", e.target.value)}
-                      placeholder="0"
-                    />
+                    >
+                      <CurrencyInput
+                        value={pkg.totalAmount}
+                        onChange={(e) => handleUpdateRow(pkg.id, "totalAmount", e.target.value)}
+                        placeholder="0"
+                      />
+                    </FormField>
 
                     <FormField
                       label="Tanggal Hutang/Piutang"
                       required
-                      type="datetime-local"
-                      value={pkg.createdAt || ""}
-                      onChange={(e) => handleUpdateRow(pkg.id, "createdAt", e.target.value)}
-                    />
+                    >
+                      <DatetimeInput
+                        value={pkg.createdAt || ""}
+                        onChange={(e) => handleUpdateRow(pkg.id, "createdAt", e.target.value)}
+                      />
+                    </FormField>
                   </div>
 
                   <FormField
-                    label="Tanggal Jatuh Tempo (Opsional)"
-                    type="datetime-local"
-                    value={pkg.dueDate}
-                    onChange={(e) => handleUpdateRow(pkg.id, "dueDate", e.target.value)}
-                  />
+                    label="Tanggal Jatuh Tempo"
+                    helperText="Opsional"
+                  >
+                    <DatetimeInput
+                      value={pkg.dueDate}
+                      onChange={(e) => handleUpdateRow(pkg.id, "dueDate", e.target.value)}
+                    />
+                  </FormField>
 
                   <FormField
-                    label="Catatan Keterangan (Opsional)"
-                    type="textarea"
-                    value={pkg.description}
-                    onChange={(e) => handleUpdateRow(pkg.id, "description", e.target.value)}
-                    placeholder="Masukkan keterangan detail jika ada..."
-                  />
+                    label="Catatan Keterangan"
+                    helperText="Opsional"
+                  >
+                    <Textarea
+                      value={pkg.description}
+                      onChange={(e) => handleUpdateRow(pkg.id, "description", e.target.value)}
+                      placeholder="Masukkan keterangan detail jika ada..."
+                      rows={3}
+                    />
+                  </FormField>
 
                   {/* Proof Uploader for Package */}
                   <ProofUploader

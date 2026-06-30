@@ -15,3 +15,6 @@ export { FinancialCard } from "./FinancialCard";
 // New organisms
 export { FilterBar } from "./FilterBar";
 export { DataTable } from "./DataTable";
+export { FormModal } from "./FormModal";
+export { Table } from "./Table";
+

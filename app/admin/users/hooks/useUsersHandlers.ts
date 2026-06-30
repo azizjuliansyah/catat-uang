@@ -1,11 +1,12 @@
 import { getUsers, toggleSuspendUser, deleteUser, resetPassword } from "../actions";
-import type { User } from "./useUsersState";
+import type { User } from "../types";
 
 interface UseUsersHandlersProps {
   setUsers: (users: User[]) => void;
   setLoading: (loading: boolean) => void;
   setActionLoading: (loading: boolean) => void;
   closeAllModals: () => void;
+  setGeneratedPassword: (password: string) => void;
   success: (message: string) => void;
   error: (message: string) => void;
 }
@@ -15,6 +16,7 @@ export function useUsersHandlers({
   setLoading,
   setActionLoading,
   closeAllModals,
+  setGeneratedPassword,
   success,
   error,
 }: UseUsersHandlersProps) {
@@ -74,15 +76,17 @@ export function useUsersHandlers({
     }
   };
 
-  const handleResetPassword = async (selectedUser: User | null) => {
+  const handleResetPassword = async (selectedUser: User | null, newPassword?: string) => {
     if (!selectedUser) return;
 
     try {
       setActionLoading(true);
-      const tempPassword = await resetPassword(selectedUser.id, selectedUser.email);
+      const tempPassword = await resetPassword(selectedUser.id, selectedUser.email, newPassword);
 
-      success(`Password reset berhasil untuk ${selectedUser.email}. Password baru: ${tempPassword}`);
-      closeAllModals();
+      // Store the generated password for display in modal
+      setGeneratedPassword(tempPassword);
+
+      success(`Password reset berhasil untuk ${selectedUser.email}.`);
     } catch (err: unknown) {
       console.error("Error resetting password:", err);
       const msg = err instanceof Error ? err.message : String(err);

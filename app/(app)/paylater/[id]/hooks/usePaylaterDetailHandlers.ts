@@ -6,19 +6,27 @@
 import { createClient } from "@/lib/supabase/client";
 import { useApp } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
-import { deletePaylaterPayment } from "../../services";
-import { PaylaterPayment } from "../../types";
+import { deletePaylaterPayment, toggleArchivePaylaterPlatform } from "../../services";
+import { PaylaterPayment, PaylaterPlatform } from "../../types";
 
 interface UsePaylaterDetailHandlersProps {
   paymentToDelete: PaylaterPayment | null;
   setPaymentToDelete: (value: PaylaterPayment | null) => void;
   loadData: () => Promise<void>;
+  platform: PaylaterPlatform | null;
+  setIsEditModalOpen: (val: boolean) => void;
+  setIsDeleteModalOpen: (val: boolean) => void;
+  setIsActionLoading: (val: boolean) => void;
 }
 
 export function usePaylaterDetailHandlers({
   paymentToDelete,
   setPaymentToDelete,
-  loadData
+  loadData,
+  platform,
+  setIsEditModalOpen,
+  setIsDeleteModalOpen,
+  setIsActionLoading
 }: UsePaylaterDetailHandlersProps) {
   const supabase = createClient();
   const { refreshWallets, refreshPaylaterPlatforms } = useApp();
@@ -48,8 +56,38 @@ export function usePaylaterDetailHandlers({
     }
   };
 
+  // Archive/Unarchive handler
+  const handleToggleArchive = async () => {
+    if (!platform) return;
+    setIsActionLoading(true);
+    try {
+      const nextArchived = !platform.is_archived;
+      await toggleArchivePaylaterPlatform(supabase, platform.id, nextArchived);
+      showSuccessToast(nextArchived ? "Platform berhasil diarsipkan" : "Platform berhasil diaktifkan kembali");
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      showErrorToast("Gagal mengubah status arsip platform");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false);
+    loadData();
+  };
+
+  const handleDeleteSuccess = (router: any) => {
+    setIsDeleteModalOpen(false);
+    router.push("/paylater");
+  };
+
   return {
     handlePaymentSuccess,
-    handleDeletePayment
+    handleDeletePayment,
+    handleToggleArchive,
+    handleEditSuccess,
+    handleDeleteSuccess
   };
 }

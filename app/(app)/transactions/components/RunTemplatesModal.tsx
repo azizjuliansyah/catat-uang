@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useApp, TransactionTemplateItem } from "@/app/providers/AppProvider";
 import { useToast } from "@/components/ui/molecules/Toast";
+import { FormField } from "@/components/ui/molecules/FormField";
+import { Input } from "@/components/ui/atoms/Input";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { getIconComponent } from "@/lib/utils/icons";
@@ -167,18 +169,18 @@ export function RunTemplatesModal({
               </p>
 
               {/* Date Picker for Bulk Transactions */}
-              <div className="space-y-2 bg-surface-hover/30 border border-border rounded-xl p-3">
-                <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-primary" />
-                  Tanggal Transaksi
-                </label>
-                <input
-                  type="date"
-                  value={transactionDate}
-                  onChange={(e) => setTransactionDate(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-surface-input border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-text-primary text-xs font-semibold outline-none transition-all focus-glow"
+              <div className="bg-surface-hover/30 border border-border rounded-xl p-3">
+                <FormField
+                  label="Tanggal Transaksi"
                   required
-                />
+                  containerClassName="!mb-0"
+                >
+                  <Input
+                    type="date"
+                    value={transactionDate}
+                    onChange={(e) => setTransactionDate(e.target.value)}
+                  />
+                </FormField>
               </div>
 
               {/* Select All Toggle */}

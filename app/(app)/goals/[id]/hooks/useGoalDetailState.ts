@@ -48,6 +48,7 @@ export function useGoalDetailState() {
   // Deletion Submitting States
   const [isDeletingGoal, setIsDeletingGoal] = useState(false);
   const [isDeletingTx, setIsDeletingTx] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Fetch Page Data
   const loadData = useCallback(async () => {
@@ -225,6 +226,8 @@ export function useGoalDetailState() {
     setIsDeletingGoal,
     isDeletingTx,
     setIsDeletingTx,
+    isActionLoading,
+    setIsActionLoading,
 
     // Actions
     loadData,

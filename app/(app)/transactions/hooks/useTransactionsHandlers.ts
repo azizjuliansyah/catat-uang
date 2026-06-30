@@ -74,11 +74,35 @@ export function useTransactionsHandlers(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, dateRangeType, customStartDate, customEndDate]);
 
+  const handleDetail = (tx: Transaction, state: any) => {
+    state.setTransactionToView(tx);
+    state.setIsDetailModalOpen(true);
+  };
+
+  const handleEdit = (tx: Transaction, state: any) => {
+    state.setTransactionToEdit(tx);
+    state.setIsEditModalOpen(true);
+  };
+
+  const handleCloseDetail = (state: any) => {
+    state.setIsDetailModalOpen(false);
+    state.setTransactionToView(null);
+  };
+
+  const handleCloseEdit = (state: any) => {
+    state.setIsEditModalOpen(false);
+    state.setTransactionToEdit(null);
+  };
+
   return {
     loading,
     transactions,
     deletingId,
     fetchTransactions,
     handleDeleteTransaction,
+    handleDetail,
+    handleEdit,
+    handleCloseDetail,
+    handleCloseEdit,
   };
 }

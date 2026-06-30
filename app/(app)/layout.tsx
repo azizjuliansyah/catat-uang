@@ -111,7 +111,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       if (!user) {
         router.push("/login");
       } else if (user.app_metadata?.role === "admin") {
-        router.push("/admin");
+        router.push("/admin/dashboard");
       }
     }
   }, [user, loadingUser, router]);

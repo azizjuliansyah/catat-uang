@@ -5,16 +5,18 @@ import { useApp } from "@/app/providers/AppProvider";
 import { Plus, HandCoins } from "lucide-react";
 import { Button } from "@/components/ui/atoms/Button";
 import { PageHeader } from "@/components/ui/molecules/PageHeader";
-import { useDebtsState } from "./hooks/useDebtsState";
-import { useDebtsHandlers } from "./hooks/useDebtsHandlers";
-
-import { DebtsSummary } from "./components/DebtsSummary";
-import { DebtCard } from "./components/DebtCard";
-import { DebtsFilters } from "./components/DebtsFilters";
-import { DebtsEmptyState } from "./components/DebtsEmptyState";
-import { DebtsGridSkeleton } from "./components/DebtsGridSkeleton";
-import { DebtFormModal } from "./components/modals/DebtFormModal";
-import { DeleteDebtModal } from "./components/modals/DeleteDebtModal";
+import { useDebtsState, useDebtsHandlers } from "./hooks";
+import {
+  DebtHeader,
+  DebtFilterBar,
+  DebtsSummary,
+  DebtCard,
+  DebtGridSkeleton,
+  DebtFormModal,
+  DeleteDebtModal
+} from "./components";
+import { EmptyState } from "@/components/ui/organisms/EmptyState";
+import { Receipt } from "lucide-react";
 
 export default function DebtsPage() {
   const { user, loadingUser, wallets, loadingWallets, refreshWallets } = useApp();
@@ -68,20 +70,10 @@ export default function DebtsPage() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header */}
-      <PageHeader
-        icon={HandCoins}
-        title="Kelola Hutang & Piutang"
-        description="Catat dan lacak pembayaran hutang piutang Anda dengan mudah."
-        actions={
-          <Button size="sm" onClick={state.openAddModal}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Tambah Catatan
-          </Button>
-        }
-      />
+      <DebtHeader onAddClick={state.openAddModal} />
 
       {/* Filters and Search */}
-      <DebtsFilters
+      <DebtFilterBar
         activeTab={state.activeTab}
         onTabChange={(tab) => {
           state.setActiveTab(tab);
@@ -98,13 +90,18 @@ export default function DebtsPage() {
 
       {/* Main List */}
       {loading ? (
-        <DebtsGridSkeleton />
+        <DebtGridSkeleton />
       ) : state.filteredDebts.length === 0 ? (
-        <DebtsEmptyState
-          searchTerm={state.searchTerm}
-          activeTab={state.activeTab}
-          subTab={state.subTab}
-          onAddClick={state.openAddModal}
+        <EmptyState
+          icon={Receipt}
+          title="Tidak ada catatan ditemukan"
+          description={
+            state.searchTerm
+              ? "Coba ganti kata kunci pencarian Anda."
+              : `Belum ada catatan ${state.activeTab === "owe" ? "hutang" : "piutang"} ${state.subTab === "active" ? "aktif" : "lunas"} Anda.`
+          }
+          actionLabel={!state.searchTerm && state.subTab === "active" ? "Tambah Catatan Baru" : undefined}
+          onAction={!state.searchTerm && state.subTab === "active" ? state.openAddModal : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

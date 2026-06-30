@@ -1,5 +1,7 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { DatetimeInput } from "@/components/ui/atoms/DatetimeInput";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { DebtItem } from "../../types";
@@ -64,16 +66,18 @@ export function PaymentModal({
         <FormField
           label="Jumlah Pembayaran (Rupiah)"
           required
-          type="currency"
-          value={payAmount}
-          onChange={(e) => setPayAmount(e.target.value)}
-          placeholder="0"
-        />
+        >
+          <CurrencyInput
+            value={payAmount}
+            onChange={(e) => setPayAmount(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-text-secondary">
-            {payingDebt?.type === "lend" ? "Bayar Ke Dompet" : "Bayar Menggunakan Dompet"} <span className="text-danger">*</span>
-          </label>
+        <FormField
+          label={payingDebt?.type === "lend" ? "Bayar Ke Dompet" : "Bayar Menggunakan Dompet"}
+          required
+        >
           <CustomSelect
             value={payWalletId}
             onChange={setPayWalletId}
@@ -84,15 +88,17 @@ export function PaymentModal({
             }))}
             placeholder="Pilih Dompet"
           />
-        </div>
+        </FormField>
 
         <FormField
           label="Tanggal Pembayaran"
           required
-          type="datetime-local"
-          value={payDate}
-          onChange={(e) => setPayDate(e.target.value)}
-        />
+        >
+          <DatetimeInput
+            value={payDate}
+            onChange={(e) => setPayDate(e.target.value)}
+          />
+        </FormField>
 
         {/* Proof of Payment Uploader */}
         <ProofUploader

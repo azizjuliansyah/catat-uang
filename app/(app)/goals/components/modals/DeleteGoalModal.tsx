@@ -35,15 +35,18 @@ export function DeleteGoalModal({
         />
       }
     >
-      <div className="space-y-4 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger/10 text-danger mb-2">
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 w-12 h-12 rounded-md bg-danger/10 text-danger flex items-center justify-center">
           <AlertCircle className="w-6 h-6" />
         </div>
-        <p className="text-xs text-text-secondary leading-relaxed">
-          Apakah Anda yakin ingin menghapus target tabungan <span className="font-bold text-text-primary">{goalToDelete?.name}</span>?
-          <br/><br/>
-          Tindakan ini juga akan menghapus riwayat top-up/penarikan dan dana terkumpul pada target ini akan terhapus. Tindakan ini tidak dapat dibatalkan.
-        </p>
+        <div className="flex-1 text-sm text-text-secondary leading-relaxed">
+          <p>
+            Apakah Anda yakin ingin menghapus target tabungan <span className="font-bold text-text-primary">{goalToDelete?.name}</span>?
+          </p>
+          <p className="mt-2">
+            Tindakan ini juga akan menghapus riwayat top-up/penarikan dan dana terkumpul pada target ini akan terhapus. Tindakan ini tidak dapat dibatalkan.
+          </p>
+        </div>
       </div>
     </Modal>
   );

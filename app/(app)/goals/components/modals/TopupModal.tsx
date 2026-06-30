@@ -1,5 +1,7 @@
 import { Modal } from "@/components/ui/organisms/Modal";
 import { FormField } from "@/components/ui/molecules/FormField";
+import { CurrencyInput } from "@/components/ui/atoms/CurrencyInput";
+import { DatetimeInput } from "@/components/ui/atoms/DatetimeInput";
 import { CustomSelect } from "@/components/ui/atoms/CustomSelect";
 import { ModalFooter } from "@/components/ui/molecules/ModalFooter";
 import { SavingGoal } from "../../types";
@@ -53,16 +55,18 @@ export function TopupModal({
         <FormField
           label="Jumlah Top-up (Rupiah)"
           required
-          type="currency"
-          value={txAmount}
-          onChange={(e) => onTxAmountChange(e.target.value)}
-          placeholder="0"
-        />
+        >
+          <CurrencyInput
+            value={txAmount}
+            onChange={(e) => onTxAmountChange(e.target.value)}
+            placeholder="0"
+          />
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-text-secondary">
-            Gunakan Dana Dari Dompet <span className="text-danger">*</span>
-          </label>
+        <FormField
+          label="Gunakan Dana Dari Dompet"
+          required
+        >
           <CustomSelect
             value={txWalletId}
             onChange={onTxWalletIdChange}
@@ -73,15 +77,17 @@ export function TopupModal({
             }))}
             placeholder="Pilih Dompet"
           />
-        </div>
+        </FormField>
 
         <FormField
           label="Tanggal Transaksi"
           required
-          type="datetime-local"
-          value={txDate}
-          onChange={(e) => onTxDateChange(e.target.value)}
-        />
+        >
+          <DatetimeInput
+            value={txDate}
+            onChange={(e) => onTxDateChange(e.target.value)}
+          />
+        </FormField>
       </div>
     </Modal>
   );
