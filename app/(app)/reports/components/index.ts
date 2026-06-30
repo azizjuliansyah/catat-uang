@@ -6,3 +6,5 @@ export { ReportsSkeleton } from "./ReportsSkeleton";
 export { ReportsTables } from "./ReportsTables";
 export { ReportsTablesSkeleton } from "./ReportsTablesSkeleton";
 export { ReportsSummary } from "./ReportsSummary";
+export { ReportsCategorySummary } from "./ReportsCategorySummary";
+

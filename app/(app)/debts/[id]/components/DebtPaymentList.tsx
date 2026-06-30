@@ -3,12 +3,14 @@
  * Displays payment history with actions
  */
 
+import React, { useState } from "react";
 import { DebtPaymentItem } from "../types";
 import { formatIDR } from "../../utils";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { History, Plus, FileImage, Trash2 } from "lucide-react";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { Button } from "@/components/ui/atoms/Button";
+import { Pagination } from "@/components/ui/molecules";
 
 interface DebtPaymentListProps {
   payments: DebtPaymentItem[];
@@ -26,6 +28,14 @@ export function DebtPaymentList({
   onDeletePayment
 }: DebtPaymentListProps) {
   const isOwe = debtType === "owe";
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  // Paginated payments
+  const paginatedPayments = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return payments.slice(startIndex, startIndex + pageSize);
+  }, [payments, currentPage, pageSize]);
 
   return (
     <div className="bg-surface-card border border-border rounded-2xl p-5 space-y-4">
@@ -50,15 +60,15 @@ export function DebtPaymentList({
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {payments.length === 0 ? (
           <div className="text-center py-8 text-xs text-text-secondary border border-dashed border-border rounded-xl">
             Belum ada pembayaran dicatat.
           </div>
         ) : (
           <div className="divide-y divide-border/50">
-            {payments.map((pm, idx) => (
-              <div key={pm.id} className={`flex items-center justify-between py-3.5 ${idx === 0 ? "pt-0" : ""} ${idx === payments.length - 1 ? "pb-0" : ""}`}>
+            {paginatedPayments.map((pm, idx) => (
+              <div key={pm.id} className="flex items-center justify-between py-3.5">
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-text-primary font-mono">{formatIDR(pm.amount)}</p>
                   <p className="text-[10px] text-text-secondary">
@@ -90,6 +100,14 @@ export function DebtPaymentList({
             ))}
           </div>
         )}
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={payments.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+        />
       </div>
     </div>
   );

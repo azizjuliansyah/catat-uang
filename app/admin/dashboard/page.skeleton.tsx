@@ -27,7 +27,7 @@ export function AdminDashboardPageSkeleton() {
       </div>
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* User Management Section Skeleton */}
         <div className="bg-surface-card border border-border rounded-2xl p-5 animate-pulse">
           <div className="space-y-3">

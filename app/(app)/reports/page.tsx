@@ -8,7 +8,8 @@ import {
   ReportsCharts,
   ReportsTables,
   ReportsChartsSkeleton,
-  ReportsTablesSkeleton
+  ReportsTablesSkeleton,
+  ReportsCategorySummary
 } from "./components";
 import { useReportsState, useReportsHandlers } from "./hooks";
 import { ReportsPageSkeleton } from "./page.skeleton";
@@ -123,19 +124,26 @@ export default function ReportsPage() {
         isLoading={loading}
       />
 
+      <ReportsCategorySummary
+        transactions={transactions}
+        categories={categories}
+        startDate={startDate}
+        endDate={endDate}
+        isLoading={loading}
+      />
+
       {viewMode === "visual" ? (
         loading ? (
-          <ReportsPageSkeleton />
+          <ReportsChartsSkeleton />
         ) : (
           <ReportsCharts
-            cashflowData={cashflowData}
             categoryBreakdown={categoryBreakdown}
             incomeCategoryBreakdown={incomeCategoryBreakdown}
             chartColors={CHART_COLORS}
           />
         )
       ) : loading ? (
-        <ReportsPageSkeleton />
+        <ReportsTablesSkeleton />
       ) : (
         <ReportsTables
           cashflowData={cashflowData}

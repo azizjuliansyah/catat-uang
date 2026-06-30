@@ -26,4 +26,5 @@ export { DatetimeInput } from "./DatetimeInput";
 export { DetailLink } from "./DetailLink";
 export { ErrorText } from "./ErrorText";
 export { HelperText } from "./HelperText";
+export { SelectionPill } from "./SelectionPill";
 

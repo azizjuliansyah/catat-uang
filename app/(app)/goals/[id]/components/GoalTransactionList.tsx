@@ -3,12 +3,14 @@
  * Displays transaction history with actions
  */
 
+import React, { useState } from "react";
 import { GoalTransaction } from "../../types";
 import { formatIDR } from "@/lib/utils/format";
 import { formatDateTimeShort } from "@/lib/utils/date";
 import { History, Plus, ArrowUpRight, Trash2 } from "lucide-react";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
 import { Button } from "@/components/ui/atoms/Button";
+import { Pagination } from "@/components/ui/molecules";
 
 interface GoalTransactionListProps {
   transactions: GoalTransaction[];
@@ -29,6 +31,15 @@ export function GoalTransactionList({
   onWithdraw,
   onDeleteTransaction
 }: GoalTransactionListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  // Paginated transactions
+  const paginatedTransactions = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return transactions.slice(startIndex, startIndex + pageSize);
+  }, [transactions, currentPage, pageSize]);
+
   return (
     <div className="bg-surface-card border border-border rounded-2xl p-5 space-y-4">
       <div className="flex items-center justify-between gap-4">
@@ -65,19 +76,17 @@ export function GoalTransactionList({
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {transactions.length === 0 ? (
           <div className="text-center py-8 text-xs text-text-secondary border border-dashed border-border rounded-xl">
             Belum ada transaksi dicatat.
           </div>
         ) : (
           <div className="divide-y divide-border/50">
-            {transactions.map((tx, idx) => (
+            {paginatedTransactions.map((tx, idx) => (
               <div
                 key={tx.id}
-                className={`flex items-center justify-between py-3.5 ${
-                  idx === 0 ? "pt-0" : ""
-                } ${idx === transactions.length - 1 ? "pb-0" : ""}`}
+                className="flex items-center justify-between py-3.5"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -108,6 +117,14 @@ export function GoalTransactionList({
             ))}
           </div>
         )}
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={transactions.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+        />
       </div>
     </div>
   );

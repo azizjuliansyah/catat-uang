@@ -29,8 +29,8 @@ export function GoalsPageSkeleton() {
         <InfoCardSkeleton title="Target Berhasil Dicapai" valueAsZero />
       </div>
 
-      {/* Goals grid: grid grid-cols-1 md:grid-cols-2 gap-6 */}
-      <div className={GRID_PATTERNS.cards.dualGap6}>
+      {/* Goals grid: grid grid-cols-1 md:grid-cols-2 gap-4 */}
+      <div className={GRID_PATTERNS.cards.dual}>
         {Array.from({ length: 6 }).map((_, i) => (
           <ItemCardSkeleton
             key={i}
@@ -48,7 +48,7 @@ export function GoalsPageSkeleton() {
 // Grid-only skeleton (used when header/filter/summary are already rendered)
 export function GoalsGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {Array.from({ length: 6 }).map((_, i) => (
         <ItemCardSkeleton
           key={i}

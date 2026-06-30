@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
       {/* Stats Cards */}
       <AdminStatsCards stats={stats} loading={statsLoading} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* User Management Section */}
         <AdminUserCard userEmail={user?.email} />
 

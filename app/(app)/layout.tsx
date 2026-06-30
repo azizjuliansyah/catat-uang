@@ -22,7 +22,8 @@ import {
   User,
   Menu,
   X,
-  Plus
+  Plus,
+  Heart
 } from "lucide-react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -144,6 +145,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { name: "Paylater", href: "/paylater", icon: CreditCard },
     { name: "Hutang", href: "/debts", icon: Receipt },
     { name: "Tabungan", href: "/goals", icon: Target },
+    { name: "Wishlist", href: "/wishlist", icon: Heart },
     { name: "Laporan", href: "/reports", icon: TrendingUp },
   ];
 

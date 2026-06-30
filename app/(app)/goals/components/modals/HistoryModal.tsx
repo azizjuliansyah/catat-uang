@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Modal } from "@/components/ui/organisms/Modal";
 import { Button } from "@/components/ui/atoms/Button";
 import { ActionButton } from "@/components/ui/atoms/ActionButton";
@@ -5,6 +6,7 @@ import { SavingGoal, GoalTransaction } from "../../types";
 import { formatIDR } from "../../utils";
 import { Trash2 } from "lucide-react";
 import { formatDateTimeShort } from "@/lib/utils/date";
+import { Pagination } from "@/components/ui/molecules";
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -23,6 +25,22 @@ export function HistoryModal({
   loadingHistory,
   onDeleteTx
 }: HistoryModalProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  // Reset to page 1 when modal is closed/opened
+  React.useEffect(() => {
+    if (!isOpen) {
+      setCurrentPage(1);
+    }
+  }, [isOpen]);
+
+  // Paginated transactions
+  const paginatedTransactions = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return transactionsHistory.slice(startIndex, startIndex + pageSize);
+  }, [transactionsHistory, currentPage, pageSize]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -40,35 +58,47 @@ export function HistoryModal({
       }
     >
       <div className="space-y-4">
-        <div className="space-y-2 pr-1">
+        <div className="space-y-4 pr-1">
           {loadingHistory ? (
             <div className="text-center py-8 text-xs text-text-secondary">Memuat riwayat...</div>
           ) : transactionsHistory.length === 0 ? (
             <div className="text-center py-8 text-xs text-text-secondary">Belum ada riwayat transaksi tabungan.</div>
           ) : (
-            transactionsHistory.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between p-3 bg-surface-hover/30 border border-border rounded-xl">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                      tx.type === "topup" ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
-                    }`}>
-                      {tx.type === "topup" ? "Top-up" : "Tarik"}
-                    </span>
-                    <p className="text-xs font-bold text-text-primary font-mono">{formatIDR(tx.amount)}</p>
+            <div className="space-y-3">
+              {paginatedTransactions.map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between p-3 bg-surface-hover/30 border border-border rounded-xl">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                        tx.type === "topup" ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                      }`}>
+                        {tx.type === "topup" ? "Top-up" : "Tarik"}
+                      </span>
+                      <p className="text-xs font-bold text-text-primary font-mono">{formatIDR(tx.amount)}</p>
+                    </div>
+                    <p className="text-[10px] text-text-secondary mt-0.5">
+                      {tx.wallet_name} • {formatDateTimeShort(tx.date)}
+                    </p>
                   </div>
-                  <p className="text-[10px] text-text-secondary mt-0.5">
-                    {tx.wallet_name} • {formatDateTimeShort(tx.date)}
-                  </p>
+                  <ActionButton
+                    icon={Trash2}
+                    title="Hapus Transaksi"
+                    variant="danger"
+                    onClick={() => onDeleteTx(tx)}
+                  />
                 </div>
-                <ActionButton
-                  icon={Trash2}
-                  title="Hapus Transaksi"
-                  variant="danger"
-                  onClick={() => onDeleteTx(tx)}
-                />
-              </div>
-            ))
+              ))}
+            </div>
+          )}
+
+          {!loadingHistory && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={transactionsHistory.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
         </div>
       </div>

@@ -37,4 +37,5 @@ export { ProgressStatCard } from "./ProgressStatCard";
 export { TableBody } from "./TableBody";
 export { TableHeader } from "./TableHeader";
 export { TransactionTypeSelector } from "./TransactionTypeSelector";
+export { Pagination } from "./Pagination";
 

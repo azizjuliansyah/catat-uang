@@ -1,3 +1,5 @@
+import { CategoryItem } from "@/app/providers/AppProvider";
+
 export interface Transaction {
   id: string;
   amount: number;
@@ -24,3 +26,28 @@ export interface DebtData {
 }
 
 export type PeriodFilterType = "this_month" | "last_3_months" | "last_6_months" | "this_year" | "custom";
+
+export interface CategoryTotalItem {
+  id: string;
+  name: string;
+  type: "income" | "expense";
+  icon: string;
+  color: string;
+  amount: number;
+}
+
+export interface SelectedDetailsResult {
+  expenses: CategoryTotalItem[];
+  income: CategoryTotalItem[];
+  totalExpenseNominal: number;
+  totalIncomeNominal: number;
+}
+
+export interface ReportsCategorySummaryProps {
+  transactions: Transaction[];
+  categories: CategoryItem[];
+  startDate: Date;
+  endDate: Date;
+  isLoading?: boolean;
+}
+

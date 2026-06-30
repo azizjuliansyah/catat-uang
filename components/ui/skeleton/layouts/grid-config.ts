@@ -25,8 +25,7 @@ export const GRID_PATTERNS = {
   },
   // Item cards (wallets, debts, goals, paylater)
   cards: {
-    dual: "grid grid-cols-1 md:grid-cols-2 gap-4", // Debts, Paylater
-    dualGap6: "grid grid-cols-1 md:grid-cols-2 gap-6", // Goals uses gap-6
+    dual: "grid grid-cols-1 md:grid-cols-2 gap-4", // Debts, Paylater\
     triple: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4", // Wallets (3 col on lg)
     quad: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4", // Wallets (4 col on lg)
   },

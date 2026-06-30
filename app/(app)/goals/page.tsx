@@ -123,7 +123,7 @@ export default function GoalsPage() {
           onAction={!state.searchTerm && state.statusFilter === "all" ? state.openAddModal : undefined}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredGoals.map((goal) => (
             <GoalCard
               key={goal.id}

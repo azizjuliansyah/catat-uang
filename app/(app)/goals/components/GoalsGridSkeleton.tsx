@@ -1,6 +1,6 @@
 export function GoalsGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {[1, 2, 3, 4].map((n) => (
         <div key={n} className="bg-surface-card border border-border rounded-2xl p-5 flex flex-col gap-4 animate-pulse">
           {/* Header: icon + name + badge + action buttons */}
